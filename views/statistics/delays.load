@@ -1,0 +1,186 @@
+<div id="cajaretrasos" style="display:none;" title="Parte por Retrasos">
+    <div id='foto' width="20%" style="float:left;padding-right:15px;">
+        <img src='' class='ui-corner-all' style='background-color:#bbb;width:80px;border:solid 1px;padding:5px;'>
+    </div>
+    <div id="listaretrasos" width="80%">
+    </div>
+</div>
+
+
+<div id="contenedorestadisticasretrasos" class='centerGrid'>       
+    <table id='retrasosresponsable' style='width: 100%'></table>
+    <div id='pagerretrasosresponsable'></div>
+</div>    
+<div id="dialog-alert-avisos-retraso" title="Atención" style="display:none;">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Para operar sobre un registro debe seleccionarlo previamente.</p>
+</div>
+
+<script type="text/javascript">
+jQuery(document).ready(function(){ 
+
+  var getColumnIndexByName = function(grid, columnName) {
+        var cm = grid.jqGrid('getGridParam', 'colModel'), i, l;
+        for (i = 0, l = cm.length; i < l; i += 1) {
+            if (cm[i].name === columnName) {
+                return i; // return the index
+            }
+        }
+        return -1;
+  }; 
+     
+  jQuery("#retrasosresponsable").jqGrid({
+    url:'{{=URL(c="services_responsables",f="call",args=["json","getAllWarningsDelays"])}}',
+    data: "{}",
+    datatype: 'json',
+    mtype: 'GET',
+    contentType: "application/json; charset=utf-8",
+    complete: function(jsondata, stat) {
+        if (stat == "success") {
+            var thegrid = jQuery("#retrasosresponsable")[0];
+            thegrid.addJSONData(JSON.parse(jsondata.responseText).d);
+        }
+    },
+    colNames:['Id','Fecha','Grupo','Alumno/a','id_grupo_alumno'],
+    colModel :[ 
+      {name:'idavisosretraso',index:'id',width:40,fixed:true,align:'right',sortype:'int',search:false,editable:false}, 
+      {name:'fechaavisosretraso', index:'fecha',width:80,fixed:true,align:'center',sortype:'date',search:true,stype:'text',editable:false,
+          searchoptions:{dataInit: function (elem) { $(elem).datepicker({dateFormat: 'yy-mm-dd'}).change(function(){$('#retrasosresponsable')[0].triggerToolbar();})      }}},
+      {name:'grupoavisosretraso', index:'grupo',width:50,fixed:true,sortable:true,stype:'text',editable:false,align:'center'},                  
+      {name:'alumnoavisosretraso', index:'alumno',sortable:true,stype:'text',editable:false}, 
+      {name:'idgrupoalumnoavisosretraso', index:'id_grupo_alumno',hidden:true,viewable:false}
+    ],
+    autowidth: true,
+    height: '100%',
+    pagerpos: 'center',
+    shrinkToFit: true,
+    pager: '#pagerretrasosresponsable',
+    rowNum:10,
+    rowList:[10,20,30],
+    sortname: 'fecha',
+    sortorder: 'desc',
+    viewrecords: true,
+    caption: '{{=T('Partes por retrasos')}}',
+    ondblClickRow: function(rowid) {
+        jQuery.getJSON("{{=URL(c='services',f='call',args=['json','getDelaysFromWarning'])}}", { id: rowid }, function(result) {
+            jQuery("#listaretrasos").html('<p>Lista de retrasos para amonestacion <strong>'+rowid+'</strong></p>');
+            jQuery("#listaretrasos").append('<table></table>');
+            jQuery("#listaretrasos table").append('<tr id="cabecera"></tr>');
+            jQuery("#listaretrasos table tr#cabecera").append('<td>Fecha</td><td>Hora</td>');                        
+            var i=0;
+            for (i=0;i<result.response.retrasos.length;i++) {
+                jQuery("#listaretrasos table").append('<tr id=linea'+i+'></tr>');                               
+                jQuery("#listaretrasos table tr#linea"+i).append('<td>'+result.response.retrasos[i].fecha+'</td');
+                jQuery("#listaretrasos table tr#linea"+i).append('<td>'+result.response.retrasos[i].hora+'</td>');
+            }
+            $('#foto img').hide().attr('src','');                                                                         
+            $.getJSON("{{=URL(c='services',f='call',args=['json','getPhotoStudent'])}}", {"alumno": result.response.id_grupo_alumno}, function(foto){
+                    if (foto.foto.foto != null) {
+                        fotog = "/gesiesweb/default/download/"+foto.foto.foto                  
+                        $("#foto img").attr('src',fotog).show();                   
+                    }
+                    else
+                        $('#foto img').hide().attr('src','');                                                             
+                    jQuery("#cajaretrasos").dialog("open")
+            });           
+            //jQuery("#cajaretrasos").dialog("open")
+        });    
+    },   
+    multiselect: false,
+    subGrid: true,
+    subGridRowExpanded: function(subgrid_id, row_id) {
+        // we pass two parameters
+        // subgrid_id is a id of the div tag created whitin a table data
+        // the id of this elemenet is a combination of the "sg_" + id of the row 
+        // the row_id is the id of the row 
+        // If we wan to pass additinal parameters to the url we can use 
+        // a method getRowData(row_id) - which returns associative array in type name-value 
+        // here we can easy construct the flowing 
+        var subgrid_table_id, pager_id; 
+        subgrid_table_id = subgrid_id+"_t"; 
+        pager_id = "p_"+subgrid_table_id; 
+        $("#"+subgrid_id).html("<table id='"+subgrid_table_id+"' class='scroll'></table><div id='"+pager_id+"' class='scroll'></div>"); 
+        jQuery("#"+subgrid_table_id).jqGrid({ 
+            url:"/gesiesweb/services_responsables/call/json/getRetrasos?id="+row_id, 
+            datatype: 'json',
+            mtype: 'GET',
+            colNames: ['Id','Fecha','Hora','Profesor'], 
+            colModel: [ {name:"idretraso",index:"id",width:50,fixed:true,sortable:true,editable:false,align:"right"},
+                        {name:"fecharetraso",index:"fecha",width:80,fixed:true,sortable:true,align:"center"},
+                        {name:"horaretraso",index:"hora",width:50,fixed:true,sortable:true,editable:false,align:"center"}, 
+                        {name:"profesorretraso",index:"profesor",sortable:true,fixed:false} ], 
+            rowNum:5, 
+            pager: pager_id, 
+            sortname: 'fecha', 
+            sortorder: "desc", 
+            height: '100%',
+            autowidth: true,
+            shrinkToFit: true,
+            ondblClickRow: function(){}            
+        }); 
+        
+        jQuery("#"+subgrid_table_id).jqGrid('navGrid',"#"+pager_id,
+            {view:false,search:false,add:false,edit:false,del:false} //options
+        );
+        
+        //jQuery("#"+subgrid_table_id).jqGrid('filterToolbar')
+
+        }, 
+        
+    subGridRowColapsed: function(subgrid_id, row_id) { 
+            // this function is called before removing the data 
+            //var subgrid_table_id; 
+            //subgrid_table_id = subgrid_id+"_t"; 
+            //jQuery("#"+subgrid_table_id).remove(); 
+    }   
+  });       
+
+  jQuery("#retrasosresponsable").jqGrid('navGrid','#pagerretrasosresponsable',{add:false,edit:false,del:false,view:false,search:false});
+  jQuery("#retrasosresponsable").jqGrid('filterToolbar');
+  var gwdth = jQuery("#contenedorestadisticasretrasos").width();
+  jQuery("#retrasosresponsable").jqGrid().setGridWidth(gwdth);  
+  
+  jQuery("#cajaretrasos" ).dialog({ autoOpen: false,
+                                         width: 500,
+                                         height: 300,
+                                         show: 'slide',
+                                         hide: 'slide',
+                                         modal: true });  
+
+  jQuery("#retrasosresponsable").jqGrid('navButtonAdd','#pagerretrasosresponsable',{
+      caption: "Alumn@",
+      buttonicon :'ui-icon-print',
+      title: "Informe de alumn@",
+      onClickButton : function (){ 
+          informeAlumnoRetrasos();
+      } 
+  }); 
+}); 
+
+
+function rowSelectedRetrasos(){
+    var id = jQuery("#retrasosresponsable").jqGrid('getGridParam','selrow'); 
+    if( id == null ){
+        jQuery( "#dialog-alert-avisos-retraso" ).dialog({
+            resizable: false,
+            height:150,
+            width:290,
+            modal: true,
+            buttons: { "Aceptar": function() { $( this ).dialog( "close" ); }}
+        }).dialog('open');
+        jQuery(".ui-button-text").css("padding-top", "0px");        
+        return false;
+    }
+    return id;
+};           
+
+function informeAlumnoRetrasos(){
+    var id = rowSelectedRetrasos();
+    if(id==false) return false;
+    var ret = jQuery("#retrasosresponsable").jqGrid('getRowData',id);
+    //alert("idgrupoalumnoavisos="+ret.idgrupoalumnoavisos);
+    //window.location.replace("{{=URL(c='reports', f='warningsStudent', args="+ret.idgrupoalumnoavisos+")}}");
+    window.open("/gesiesweb/reportspyfpdf/warningsDelaysStudent/"+ret.idgrupoalumnoavisosretraso);
+};
+
+
+</script>

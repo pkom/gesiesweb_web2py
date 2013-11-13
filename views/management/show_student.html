@@ -1,0 +1,26 @@
+{{extend 'layout.html'}}
+{{form['_class' ] = 'formulariopaco'}}
+{{=H3(T('Datos Alumn@'))}}
+<!--<img src="{{=URL('default','download', args=alumno.foto)}}" />-->
+<!--<img src="{{=URL('static','images/poweredby.png')}}"/> -->
+{{=form}}
+<table class="tablasgestion">
+    <tr class="cabtablasgestion">
+        <th>{{=T('Grupos')+': '+str(len(grupos))}}</th>
+    </tr>
+    <tr>
+        <td>
+            {{if len(grupos) > 0:}}
+            <ul>
+            {{for grupo in grupos:}}
+            {{=LI(A(grupo.grupo.grupo, _href=URL('show_group', args=grupo.grupo_alumno.id_curso_academico_grupo)),
+            ' (' if grupo.grupo_alumno.id_curso_academico_grupo.id_tutor else ' (Sin asignar tutoría)',
+            A(db.profesor(grupo.grupo_alumno.id_curso_academico_grupo.id_tutor).apellidos+', '+db.profesor(grupo.grupo_alumno.id_curso_academico_grupo.id_tutor).nombre,
+             _href=URL('show_teacher', args=grupo.grupo_alumno.id_curso_academico_grupo.id_tutor)) if grupo.grupo_alumno.id_curso_academico_grupo.id_tutor else '',
+            ')' if grupo.grupo_alumno.id_curso_academico_grupo.id_tutor else '')}}
+            {{pass}}
+            </ul>
+            {{pass}}        
+        </td>        
+    </tr>
+</table>

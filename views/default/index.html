@@ -1,0 +1,58 @@
+{{response.files.append(URL('static','tzineClock/jquery.tzineClock.css'))}}
+{{response.files.append(URL('static','tzineClock/jquery.tzineClock.js'))}}
+
+{{left_sidebar_enabled=right_sidebar_enabled=False}}
+{{extend 'layout.html'}}
+
+{{if 'message' in globals():}}
+<h1>{{#=message}}</h1>
+
+{{if form:}}
+<h2>Es la primera vez que se accede al sistema</h2>
+<h3>Rellena la siguiente información para configurar la aplicación</h3>
+{{=form}}
+<h3>Para que la aplicación sea operativa, realiza después los siguientes pasos:</h3>
+<ul>
+<li>Inicias la sesión</li>
+<li>Ejecutas la opción Gestión->Importar, para cargar los datos de Rayuela</li>
+<li>Subir las imágenes del sello, firma del director y logo del centro en Gestión->Centro (Opcional)</li>
+<li>Definir las tutorías en Gestión->Grupos->Tutorías</li>
+<li>Definir las jefaturas de departamento en Gestión->Departamentos->Jefes</li>
+<li>Definir los usuarios responsables en Gestión->Responsables</li>
+<li>Definir las asignaturas</li>
+<li>Definir las evaluaciones</li>
+<li>Definir las asignaciones de Grupo->Profesor->Asignatura->Alumnos</li>
+<li>Crear fichas de evaluaciones en el mantenimiento de evaluaciones</li>
+</ul>
+{{pass}}
+{{else:}}
+{{=BEAUTIFY(response._vars)}}
+{{pass}}
+
+{{block left_sidebar}}New Left Sidebar Content{{end}}
+{{block right_sidebar}}New Right Sidebar Content{{end}}
+
+<div>
+    {{if settings.produccion == False:}}
+		{{=response.toolbar()}}
+    {{pass}}
+<!--
+<button onclick="document.location='{{=URL("admin","default","design",args=request.application)}}'">admin</button>
+<button onclick="jQuery('#request').slideToggle()">request</button>
+<div class="hidden" id="request"><h2>request</h2>{{=BEAUTIFY(request)}}</div>
+<button onclick="jQuery('#session').slideToggle()">session</button>
+<div class="hidden" id="session"><h2>session</h2>{{=BEAUTIFY(session)}}</div>
+<button onclick="jQuery('#response').slideToggle()">response</button>
+<div class="hidden" id="response"><h2>response</h2>{{=BEAUTIFY(response)}}</div>
+-->
+</div>
+
+<div id="fancyClock" style="margin-left:190px;"></div>
+
+
+
+<script type="text/javascript">
+    jQuery(document).ready(function(){
+        jQuery('#fancyClock').tzineClock();
+    });
+</script>

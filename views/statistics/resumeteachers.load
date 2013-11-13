@@ -1,0 +1,242 @@
+<div id="cajaamonestacion" style="display:none;" title='Parte'>
+    <div id='foto' width="20%" style="float:left;padding-right:15px;">
+        <img src='' class='ui-corner-all' style='background-color:#bbb;width:80px;border:solid 1px;padding:5px;'>
+    </div>
+    <div id="avisoamonestacion" width="80%">
+    </div>
+</div>
+
+<div id="contenedorestadisticasprofesorado" class='centerGrid'>       
+            <table id='resumenprofesores' style='width: 100%'></table>
+            <div id='pagerresumenprofesores'></div>
+</div>
+<div id="dialog-alert-profesores" title="Atención" style="display:none;">
+            <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Para operar sobre un registro debe seleccionarlo previamente.</p>
+</div>
+
+<script type="text/javascript">
+
+jQuery(document).ready(function(){ 
+
+  var getColumnIndexByName = function(grid, columnName) {
+        var cm = grid.jqGrid('getGridParam', 'colModel'), i, l;
+        for (i = 0, l = cm.length; i < l; i += 1) {
+            if (cm[i].name === columnName) {
+                return i; // return the index
+            }
+        }
+        return -1;
+  }; 
+
+  jQuery("#resumenprofesores").jqGrid({
+    url:'{{=URL(c="services_responsables",f="call",args=["json","getTeachersResume"])}}',
+    data: "{}",
+    datatype: 'json',
+    mtype: 'GET',
+    contentType: "application/json; charset=utf-8",
+    complete: function(jsondata, stat) {
+        if (stat == "success") {
+            var thegrid = jQuery("#resumenprofesores")[0];
+            thegrid.addJSONData(JSON.parse(jsondata.responseText).d);
+        }
+    },
+    colNames:['Profesor/a','Departamento','Total de Partes','iddepartamentoprofesor'],
+    colModel :[ 
+      {name:'profesorresumen', index:'profesor',stype:'text',editable:false,sortable:false}, 
+      {name:'departamentoresumen', index:'departamento',width:250,fixed:true,stype:'text',editable:false,align:'center',sortable:false},                  
+      {name:'totalavisosprofesor',index:'totalavisos',width:130,fixed:true,align:'right',sortype:'int',search:false,editable:false,sortable:false}, 
+      {name:'iddepartamentoprofesor', index:'id_departamento_profesor',hidden:true,viewable:false}
+    ],
+    autowidth: true,
+    height: '100%',
+    pagerpos: 'center',
+    shrinkToFit: true,
+    pager: '#pagerresumenprofesores',
+    rowNum:10,
+    rowList:[10,20,30],
+    sortname: 'totalavisos',
+    sortorder: 'desc',
+    viewrecords: true,
+    caption: 'Resumen del profesorado',
+    ondblClickRow: function(rowid) {
+    	informeProfesorAvisos();
+  	},
+    multiselect: false,
+    subGrid: true,
+    subGridRowExpanded: function(subgrid_id, row_id) {
+        // we pass two parameters
+        // subgrid_id is a id of the div tag created whitin a table data
+        // the id of this elemenet is a combination of the "sg_" + id of the row 
+        // the row_id is the id of the row 
+        // If we wan to pass additinal parameters to the url we can use 
+        // a method getRowData(row_id) - which returns associative array in type name-value 
+        // here we can easy construct the flowing 
+        var subgrid_table_id, pager_id; 
+        subgrid_table_id = subgrid_id+"_t"; 
+        pager_id = "p_"+subgrid_table_id; 
+        $("#"+subgrid_id).html("<table id='"+subgrid_table_id+"' class='scroll'></table><div id='"+pager_id+"' class='scroll'></div>"); 
+        jQuery("#"+subgrid_table_id).jqGrid({ 
+            url:"/gesiesweb/services_responsables/call/json/getWarningsTeacher?id_departamento_profesor="+row_id, 
+            datatype: 'json',
+            mtype: 'GET',
+            colNames: ['Id','Fecha','Alumno','Grupo','Parte','Comunicada','Cerrada'], 
+            colModel: [ {name:"id",index:"id",width:80,align:"right",fixed:true,search:false},
+    					{name:'fecha', index:'fecha',width:80,fixed:true,align:'center',sortype:'date',search:true,stype:'text',editable:false,
+				          searchoptions:{dataInit: function (elem) { $(elem).datepicker({dateFormat: 'yy-mm-dd'}).change(function(){$("#"+subgrid_table_id)[0].triggerToolbar();}) }}},                        
+                        {name:"alumno",index:"alumno",search:true}, 
+                        {name:"grupo",index:"grupo",search:true,width:80,fixed:true,align:'center'},  
+                        {name:"parte",index:"parte",sortable:false,width:50,fixed:true,align:'center',formatter:'checkbox', 
+      						formatoptions:{disabled:false},search:false,editable:true,edittype:'checkbox'},                        
+                        {name:"comunicada",index:"comunicada",sortable:false,width:80,fixed:true,align:'center',formatter:'checkbox', 
+      						formatoptions:{disabled:false},search:false,editable:true,edittype:'checkbox'},                        
+                        {name:"cerrada",index:"cerrada",sortable:false,width:60,fixed:true,align:'center',formatter:'checkbox', 
+      						formatoptions:{disabled:false},search:false,editable:true,edittype:'checkbox'} ], 
+            rowNum:5, 
+			autowidth: true,
+		    shrinkToFit: true,
+            pager: pager_id, 
+            sortname: 'fecha', 
+            sortorder: "desc", 
+            height: '100%',
+            loadComplete: function () {
+                var iCol = getColumnIndexByName ($(this), 'comunicada'), rows = this.rows, i,
+                    c = rows.length;
+                for (i = 0; i < c; i += 1) {
+                    $(rows[i].cells[iCol]).click(function (e) {
+                        var id = $(e.target).closest('tr')[0].id, isChecked = $(e.target).is(':checked');
+                        jQuery.ajax( { url: '{{=URL(c="services",f="call",args=["json","updateComunicated"])}}', 
+                                        type: 'POST',
+                                        data: {id:id,isChecked:isChecked }});
+                    });           
+                }    
+                var iCol = getColumnIndexByName ($(this), 'parte'), rows = this.rows, i,
+                    c = rows.length;
+                for (i = 0; i < c; i += 1) {
+                    $(rows[i].cells[iCol]).click(function (e) {
+                        var id = $(e.target).closest('tr')[0].id, isChecked = $(e.target).is(':checked');
+                        jQuery.ajax( { url: '{{=URL(c="services_responsables",f="call",args=["json","updateReported"])}}', 
+                                        type: 'POST',
+                                        data: {id:id,isChecked:isChecked }});
+                    });           
+                }           
+                var iCol = getColumnIndexByName ($(this), 'cerrada'), rows = this.rows, i,
+                    c = rows.length;
+                for (i = 0; i < c; i += 1) {
+                    $(rows[i].cells[iCol]).click(function (e) {
+                        var id = $(e.target).closest('tr')[0].id, isChecked = $(e.target).is(':checked');
+                        jQuery.ajax( { url: '{{=URL(c="services_responsables",f="call",args=["json","updateClosed"])}}', 
+                                        type: 'POST',
+                                        data: {id:id,isChecked:isChecked }});
+                    });           
+                }
+            },
+
+            ondblClickRow: function(rowid) {
+                jQuery.getJSON("{{=URL(c='services_responsables',f='call',args=['json','getWarning'])}}", { id: rowid }, function(result) {
+                    jQuery("#avisoamonestacion").html('<p><strong>'+result.response[0].amonestacion.amonestacion+'</strong></p>');
+                    jQuery("#avisoamonestacion").append('<p><strong>Seguimientos efectuados por responsables</strong></p>');                    
+                    jQuery("#avisoamonestacion").append('<table></table>');
+                    jQuery("#avisoamonestacion table").append('<tr id="cabecera"></tr>');
+                    jQuery("#avisoamonestacion table tr#cabecera").append('<td>Id</td><td>Fecha</td><td>Seguimiento</td>');                        
+                    var i=0;
+                    for (i=0;i<result.response.length;i++) {
+                        if (result.response[i].seguimiento.id != null) {
+                            jQuery("#avisoamonestacion table").append('<tr id=linea'+i+'></tr>');                               
+                            jQuery("#avisoamonestacion table tr#linea"+i).append('<td>'+result.response[i].seguimiento.id+'</td');
+                            jQuery("#avisoamonestacion table tr#linea"+i).append('<td>'+result.response[i].seguimiento.fecha+'</td');                        
+                            jQuery("#avisoamonestacion table tr#linea"+i).append('<td>'+result.response[i].seguimiento.seguimiento+'</td>');
+                        }    
+                    }                    
+                    
+                    
+                    //jQuery("#avisoamonestacion").text(result.response.amonestacion.amonestacion);
+                    $('#foto img').hide().attr('src','');                                                                         
+                    $.getJSON("{{=URL(c='services',f='call',args=['json','getPhotoStudent'])}}", {"alumno": result.response[0].amonestacion.id_grupo_alumno}, function(foto){
+                            if (foto.foto.foto != null) {
+                                fotog = "/gesiesweb/default/download/"+foto.foto.foto
+                                $("#foto img").attr('src',fotog).show();                   
+                            }
+                            else
+                                $('#foto img').hide().attr('src','');                                                             
+                    });
+                    jQuery("#cajaamonestacion").dialog("open")
+                });    
+            },                        
+            
+                                                                        
+        }); 
+
+    	
+    	jQuery("#"+subgrid_table_id).jqGrid('filterToolbar');            
+        
+                        
+        jQuery("#"+subgrid_table_id).jqGrid('navGrid',"#"+pager_id,
+            {view:false,search:false,add:false,edit:false,del:false} //options
+        );
+        
+        //jQuery("#"+subgrid_table_id).jqGrid('filterToolbar')
+
+        }, 
+        
+    subGridRowColapsed: function(subgrid_id, row_id) { 
+            // this function is called before removing the data 
+            //var subgrid_table_id; 
+            //subgrid_table_id = subgrid_id+"_t"; 
+            //jQuery("#"+subgrid_table_id).remove(); 
+    }
+        
+  });       
+
+  jQuery("#resumenprofesores").jqGrid('navGrid','#pagerresumenprofesores',{add:false,edit:false,del:false,view:false,search:false});
+  jQuery("#resumenprofesores").jqGrid('filterToolbar');
+  var gwdth = jQuery("#contenedorestadisiticasprofesorado").width();
+  jQuery("#resumenprofesorado").jqGrid().setGridWidth(gwdth);  
+
+  jQuery("#resumenprofesores").jqGrid('navButtonAdd','#pagerresumenprofesores',{
+      caption: "Profesor/a",
+      buttonicon :'ui-icon-print',
+      title: "Informe de profesor/a",
+      onClickButton : function (){ 
+          informeProfesorAvisos();
+      } 
+  }); 
+  
+  jQuery("#cajaamonestacion" ).dialog({ autoOpen: false,
+                                         width: 500,
+                                         height: 300,
+                                         show: 'slide',
+                                         hide: 'slide',
+                                         modal: true });
+                                         
+                                         
+                                         
+                                         
+}); 
+
+
+function rowSelectedAvisos(){
+    var id = jQuery("#resumenprofesores").jqGrid('getGridParam','selrow'); 
+    if( id == null ){
+        jQuery( "#dialog-alert-profesores" ).dialog({
+            resizable: false,
+            height:150,
+            width:290,
+            modal: true,
+            buttons: { "Aceptar": function() { $( this ).dialog( "close" ); }}
+        }).dialog('open');
+        jQuery(".ui-button-text").css("padding-top", "0px");         
+        return false;
+    }
+    return id;
+};           
+
+function informeProfesorAvisos(){
+    var id = rowSelectedAvisos();
+    if(id==false) return false;
+    var ret = jQuery("#resumenprofesores").jqGrid('getRowData',id);
+    //alert("idgrupoalumnoavisos="+ret.idgrupoalumnoavisos);
+    //window.location.replace("{{=URL(c='reports', f='warningsStudent', args="+ret.idgrupoalumnoavisos+")}}");
+    window.open("/gesiesweb/reportspyfpdf/warningsTeacher/"+ret.iddepartamentoprofesor);
+};
+
+</script>

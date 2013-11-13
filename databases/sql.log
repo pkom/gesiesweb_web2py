@@ -1,0 +1,280 @@
+timestamp: 2013-09-27T10:38:55.326564
+CREATE TABLE curso_academico(
+    id INT AUTO_INCREMENT NOT NULL,
+    curso VARCHAR(9) NOT NULL UNIQUE,
+    retrasos_para_amonestacion INT NOT NULL DEFAULT 2,
+    retrasos_por_trimestres CHAR(1) NOT NULL DEFAULT 'T',
+    inicio_trimestre_1 DATE NOT NULL,
+    fin_trimestre_1 DATE NOT NULL,
+    inicio_trimestre_2 DATE NOT NULL,
+    fin_trimestre_2 DATE NOT NULL,
+    inicio_trimestre_3 DATE NOT NULL,
+    fin_trimestre_3 DATE NOT NULL,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:55.397880
+CREATE TABLE grupo(
+    id INT AUTO_INCREMENT NOT NULL,
+    grupo VARCHAR(60) NOT NULL UNIQUE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:55.444177
+CREATE TABLE profesor(
+    id INT AUTO_INCREMENT NOT NULL,
+    dni VARCHAR(15) NOT NULL UNIQUE,
+    nombre VARCHAR(20) NOT NULL,
+    apellidos VARCHAR(40) NOT NULL,
+    usuario_rayuela VARCHAR(20) NOT NULL UNIQUE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:55.492128
+CREATE TABLE departamento(
+    id INT AUTO_INCREMENT NOT NULL,
+    departamento VARCHAR(60) NOT NULL UNIQUE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:55.544435
+CREATE TABLE curso_academico_grupo(
+    id INT AUTO_INCREMENT NOT NULL,
+    id_curso_academico INT, INDEX id_curso_academico__idx (id_curso_academico), FOREIGN KEY (id_curso_academico) REFERENCES curso_academico (id) ON DELETE CASCADE,
+    id_grupo INT, INDEX id_grupo__idx (id_grupo), FOREIGN KEY (id_grupo) REFERENCES grupo (id) ON DELETE CASCADE,
+    id_tutor INT, INDEX id_tutor__idx (id_tutor), FOREIGN KEY (id_tutor) REFERENCES profesor (id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:55.600522
+CREATE TABLE alumno(
+    id INT AUTO_INCREMENT NOT NULL,
+    nie VARCHAR(15) NOT NULL UNIQUE,
+    nombre VARCHAR(20) NOT NULL,
+    apellidos VARCHAR(40) NOT NULL,
+    fecha_nacimiento DATE,
+    foto VARCHAR(255),
+    usuario_rayuela VARCHAR(20),
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:55.644623
+CREATE TABLE curso_academico_departamento(
+    id INT AUTO_INCREMENT NOT NULL,
+    id_curso_academico INT, INDEX id_curso_academico__idx (id_curso_academico), FOREIGN KEY (id_curso_academico) REFERENCES curso_academico (id) ON DELETE CASCADE,
+    id_departamento INT, INDEX id_departamento__idx (id_departamento), FOREIGN KEY (id_departamento) REFERENCES departamento (id) ON DELETE CASCADE,
+    id_jefe INT, INDEX id_jefe__idx (id_jefe), FOREIGN KEY (id_jefe) REFERENCES profesor (id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:55.696599
+CREATE TABLE grupo_alumno(
+    id INT AUTO_INCREMENT NOT NULL,
+    id_curso_academico_grupo INT, INDEX id_curso_academico_grupo__idx (id_curso_academico_grupo), FOREIGN KEY (id_curso_academico_grupo) REFERENCES curso_academico_grupo (id) ON DELETE CASCADE,
+    id_alumno INT, INDEX id_alumno__idx (id_alumno), FOREIGN KEY (id_alumno) REFERENCES alumno (id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:55.744440
+CREATE TABLE departamento_profesor(
+    id INT AUTO_INCREMENT NOT NULL,
+    id_curso_academico_departamento INT, INDEX id_curso_academico_departamento__idx (id_curso_academico_departamento), FOREIGN KEY (id_curso_academico_departamento) REFERENCES curso_academico_departamento (id) ON DELETE CASCADE,
+    id_profesor INT, INDEX id_profesor__idx (id_profesor), FOREIGN KEY (id_profesor) REFERENCES profesor (id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:55.798049
+CREATE TABLE amonestacion(
+    id INT AUTO_INCREMENT NOT NULL,
+    fecha DATE NOT NULL DEFAULT '2013-09-27',
+    id_grupo_alumno INT, INDEX id_grupo_alumno__idx (id_grupo_alumno), FOREIGN KEY (id_grupo_alumno) REFERENCES grupo_alumno (id) ON DELETE CASCADE,
+    id_departamento_profesor INT, INDEX id_departamento_profesor__idx (id_departamento_profesor), FOREIGN KEY (id_departamento_profesor) REFERENCES departamento_profesor (id) ON DELETE CASCADE,
+    amonestacion LONGTEXT NOT NULL DEFAULT '',
+    parte CHAR(1) NOT NULL DEFAULT 'F',
+    comunicada CHAR(1) NOT NULL DEFAULT 'F',
+    cerrada CHAR(1) NOT NULL DEFAULT 'F',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:55.851755
+CREATE TABLE amonestacion_retraso(
+    id INT AUTO_INCREMENT NOT NULL,
+    fecha DATE NOT NULL DEFAULT '2013-09-27',
+    id_grupo_alumno INT, INDEX id_grupo_alumno__idx (id_grupo_alumno), FOREIGN KEY (id_grupo_alumno) REFERENCES grupo_alumno (id) ON DELETE CASCADE,
+    id_departamento_profesor INT, INDEX id_departamento_profesor__idx (id_departamento_profesor), FOREIGN KEY (id_departamento_profesor) REFERENCES departamento_profesor (id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:55.907465
+CREATE TABLE retraso(
+    id INT AUTO_INCREMENT NOT NULL,
+    fecha DATE NOT NULL DEFAULT '2013-09-27',
+    hora VARCHAR(1) NOT NULL DEFAULT '1',
+    id_grupo_alumno INT, INDEX id_grupo_alumno__idx (id_grupo_alumno), FOREIGN KEY (id_grupo_alumno) REFERENCES grupo_alumno (id) ON DELETE CASCADE,
+    id_departamento_profesor INT, INDEX id_departamento_profesor__idx (id_departamento_profesor), FOREIGN KEY (id_departamento_profesor) REFERENCES departamento_profesor (id) ON DELETE CASCADE,
+    procesar CHAR(1),
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:55.951664
+CREATE TABLE grupo_profesor(
+    id INT AUTO_INCREMENT NOT NULL,
+    id_curso_academico_grupo INT, INDEX id_curso_academico_grupo__idx (id_curso_academico_grupo), FOREIGN KEY (id_curso_academico_grupo) REFERENCES curso_academico_grupo (id) ON DELETE CASCADE,
+    id_profesor INT, INDEX id_profesor__idx (id_profesor), FOREIGN KEY (id_profesor) REFERENCES profesor (id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:55.994929
+CREATE TABLE asignatura(
+    id INT AUTO_INCREMENT NOT NULL,
+    abreviatura VARCHAR(10) NOT NULL,
+    asignatura VARCHAR(50) NOT NULL,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:56.048639
+CREATE TABLE grupo_profesor_asignatura(
+    id INT AUTO_INCREMENT NOT NULL,
+    id_grupo_profesor INT, INDEX id_grupo_profesor__idx (id_grupo_profesor), FOREIGN KEY (id_grupo_profesor) REFERENCES grupo_profesor (id) ON DELETE CASCADE,
+    id_asignatura INT, INDEX id_asignatura__idx (id_asignatura), FOREIGN KEY (id_asignatura) REFERENCES asignatura (id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:56.099383
+CREATE TABLE curso_academico_evaluacion(
+    id INT AUTO_INCREMENT NOT NULL,
+    id_curso_academico INT, INDEX id_curso_academico__idx (id_curso_academico), FOREIGN KEY (id_curso_academico) REFERENCES curso_academico (id) ON DELETE CASCADE,
+    evaluacion VARCHAR(50) NOT NULL,
+    fecha DATE NOT NULL,
+    bloqueada CHAR(1) NOT NULL DEFAULT 'T',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:56.143106
+CREATE TABLE grupo_profesor_asignatura_alumno(
+    id INT AUTO_INCREMENT NOT NULL,
+    id_grupo_profesor_asignatura INT, INDEX id_grupo_profesor_asignatura__idx (id_grupo_profesor_asignatura), FOREIGN KEY (id_grupo_profesor_asignatura) REFERENCES grupo_profesor_asignatura (id) ON DELETE CASCADE,
+    id_grupo_alumno INT, INDEX id_grupo_alumno__idx (id_grupo_alumno), FOREIGN KEY (id_grupo_alumno) REFERENCES grupo_alumno (id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:56.191800
+CREATE TABLE config(
+    id INT AUTO_INCREMENT NOT NULL,
+    codigo_centro VARCHAR(15) NOT NULL UNIQUE,
+    nombre_centro VARCHAR(50) NOT NULL UNIQUE,
+    curso_academico_defecto INT, INDEX curso_academico_defecto__idx (curso_academico_defecto), FOREIGN KEY (curso_academico_defecto) REFERENCES curso_academico (id) ON DELETE CASCADE,
+    nombre_director VARCHAR(50),
+    firma_director VARCHAR(255),
+    sello_centro VARCHAR(255),
+    logo_centro VARCHAR(255),
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:56.251071
+CREATE TABLE auth_group(
+    id INT AUTO_INCREMENT NOT NULL,
+    role VARCHAR(255),
+    description LONGTEXT,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:56.331240
+CREATE TABLE auth_user(
+    id INT AUTO_INCREMENT NOT NULL,
+    first_name VARCHAR(128),
+    last_name VARCHAR(128),
+    email VARCHAR(255),
+    username VARCHAR(128),
+    password VARCHAR(255),
+    registration_key VARCHAR(255),
+    reset_password_key VARCHAR(255),
+    registration_id VARCHAR(255),
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:38:56.378891
+CREATE TABLE auth_event(
+    id INT AUTO_INCREMENT NOT NULL,
+    time_stamp DATETIME,
+    client_ip VARCHAR(255),
+    user_id INT, INDEX user_id__idx (user_id), FOREIGN KEY (user_id) REFERENCES auth_user (id) ON DELETE CASCADE,
+    origin VARCHAR(255),
+    description LONGTEXT,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-27T10:39:45.551242
+CREATE TABLE auth_membership(
+    id INT AUTO_INCREMENT NOT NULL,
+    user_id INT, INDEX user_id__idx (user_id), FOREIGN KEY (user_id) REFERENCES auth_user (id) ON DELETE CASCADE,
+    group_id INT, INDEX group_id__idx (group_id), FOREIGN KEY (group_id) REFERENCES auth_group (id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-28T20:34:11.675445
+CREATE TABLE amonestacion_absentismo(
+    id INT AUTO_INCREMENT NOT NULL,
+    fecha DATE NOT NULL DEFAULT '2013-09-28',
+    id_grupo_alumno INT, INDEX id_grupo_alumno__idx (id_grupo_alumno), FOREIGN KEY (id_grupo_alumno) REFERENCES grupo_alumno (id) ON DELETE CASCADE,
+    id_departamento_profesor INT, INDEX id_departamento_profesor__idx (id_departamento_profesor), FOREIGN KEY (id_departamento_profesor) REFERENCES departamento_profesor (id) ON DELETE CASCADE,
+    absentismo LONGTEXT NOT NULL DEFAULT '',
+    comunicada CHAR(1) NOT NULL DEFAULT 'F',
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-30T11:18:28.961148
+CREATE TABLE auth_permission(
+    id INT AUTO_INCREMENT NOT NULL,
+    group_id INT, INDEX group_id__idx (group_id), FOREIGN KEY (group_id) REFERENCES auth_group (id) ON DELETE CASCADE,
+    name VARCHAR(255),
+    table_name VARCHAR(255),
+    record_id INT,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-30T11:18:29.047025
+CREATE TABLE auth_cas(
+    id INT AUTO_INCREMENT NOT NULL,
+    user_id INT, INDEX user_id__idx (user_id), FOREIGN KEY (user_id) REFERENCES auth_user (id) ON DELETE CASCADE,
+    created_on DATETIME,
+    service VARCHAR(255),
+    ticket VARCHAR(255),
+    renew CHAR(1),
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-30T11:18:29.181600
+CREATE TABLE seguimiento(
+    id INT AUTO_INCREMENT NOT NULL,
+    id_amonestacion INT, INDEX id_amonestacion__idx (id_amonestacion), FOREIGN KEY (id_amonestacion) REFERENCES amonestacion (id) ON DELETE CASCADE,
+    fecha DATE NOT NULL DEFAULT '2013-09-30',
+    seguimiento LONGTEXT NOT NULL DEFAULT '',
+    id_responsable INT, INDEX id_responsable__idx (id_responsable), FOREIGN KEY (id_responsable) REFERENCES departamento_profesor (id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-30T11:18:29.266755
+CREATE TABLE amonestacion_retraso_retraso(
+    id INT AUTO_INCREMENT NOT NULL,
+    id_amonestacion_retraso INT, INDEX id_amonestacion_retraso__idx (id_amonestacion_retraso), FOREIGN KEY (id_amonestacion_retraso) REFERENCES amonestacion_retraso (id) ON DELETE CASCADE,
+    id_retraso INT, INDEX id_retraso__idx (id_retraso), FOREIGN KEY (id_retraso) REFERENCES retraso (id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2013-09-30T11:18:29.361314
+CREATE TABLE evaluacion_alumno(
+    id INT AUTO_INCREMENT NOT NULL,
+    id_curso_academico_evaluacion INT, INDEX id_curso_academico_evaluacion__idx (id_curso_academico_evaluacion), FOREIGN KEY (id_curso_academico_evaluacion) REFERENCES curso_academico_evaluacion (id) ON DELETE CASCADE,
+    id_grupo_profesor_asignatura_alumno INT, INDEX id_grupo_profesor_asignatura_alumno__idx (id_grupo_profesor_asignatura_alumno), FOREIGN KEY (id_grupo_profesor_asignatura_alumno) REFERENCES grupo_profesor_asignatura_alumno (id) ON DELETE CASCADE,
+    nivel INT,
+    trabajo_clase INT,
+    trabajo_casa INT,
+    interes INT,
+    participa INT,
+    comportamiento INT,
+    observaciones LONGTEXT,
+    evaluacion NUMERIC(4,2),
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!

@@ -1,0 +1,105 @@
+<div id="dialog-form-evaluacion">
+</div>
+
+<div id="contenedormisevaluaciones" class='centerGrid'>       
+            <table id='misevaluaciones' style='width: 100%'></table>
+            <div id='pagermisevaluaciones'></div>
+</div>
+
+<script type="text/javascript">
+
+jQuery(document).ready(function(){ 
+
+  jQuery("#misevaluaciones").jqGrid({
+    url:'{{=URL(c="services",f="call",args=["json","getMisGruposAsignaturas"])}}',
+    data: "{}",
+    datatype: 'json',
+    mtype: 'GET',
+    contentType: "application/json; charset=utf-8",
+    complete: function(jsondata, stat) {
+        if (stat == "success") {
+            var thegrid = jQuery("#misevaluaciones")[0];
+            thegrid.addJSONData(JSON.parse(jsondata.responseText).d);
+        }
+    },
+    colNames:['Grupo','Asignatura','Tutor/a'],
+    colModel :[ 
+      {name:'grupo', index:'grupo',width:80,fixed:true,sortable:true,align:'center'},                  
+      {name:'asignatura', index:'asignatura',sortable:true,align:'left'},         
+      {name:'tutor',index:'tutor',align:'left'},     
+    ],
+    autowidth: true,
+    height: '100%',
+    pagerpos: 'center',
+    shrinkToFit: true,
+    pager: '#pagermisevaluaciones',
+    rowNum:10,
+    rowList:[10,20,30],
+    sortname: 'grupo',
+    sortorder: 'asc',
+    viewrecords: true,
+    caption: '{{=T('Mis Evaluaciones')}}',
+    multiselect: false,
+    subGrid: true,
+    subGridRowExpanded: function(subgrid_id, row_id) {
+        // we pass two parameters
+        // subgrid_id is a id of the div tag created whitin a table data
+        // the id of this elemenet is a combination of the "sg_" + id of the row 
+        // the row_id is the id of the row 
+        // If we wan to pass additinal parameters to the url we can use 
+        // a method getRowData(row_id) - which returns associative array in type name-value 
+        // here we can easy construct the flowing 
+        var subgrid_table_id, pager_id; 
+		var filagrupoasignatura = jQuery('#misevaluaciones').jqGrid('getRowData', row_id);   
+        subgrid_table_id = subgrid_id+"_t"; 
+        pager_id = "p_"+subgrid_table_id; 
+        $("#"+subgrid_id).html("<table id='"+subgrid_table_id+"' class='scroll'></table><div id='"+pager_id+"' class='scroll'></div>"); 
+        jQuery("#"+subgrid_table_id).jqGrid({ 
+		    url:'{{=URL(c="services",f="call",args=["json","getMisEvaluaciones"])}}?id='+row_id,
+            datatype: 'json',
+            mtype: 'GET',
+            colNames: ['Evaluación','Bloqueada'], 
+            colModel: [ 
+      			{name:"evaluacion",index:"evaluacion",sortable:false,editable:false,align:'left'},
+            	{name:"bloqueada",index:"bloqueada",fixed:true,width:100,formatter:'checkbox',sortable:false,editable:false,align:'center'}     
+			], 
+            rowNum:5, 
+            pager: pager_id, 
+            height: '100%',
+    		autowidth: true,
+		    shrinkToFit: true,            
+		    ondblClickRow: function(rowid) {
+				var filaevaluacion = jQuery("#"+subgrid_table_id).jqGrid('getRowData', rowid);  
+                titulo = "Evaluación de alumnos: "+filaevaluacion.evaluacion+" Grupo: "+filagrupoasignatura.grupo+" Asignatura: "+filagrupoasignatura.asignatura;
+      			window.datos = {idgrupoprofesorasignatura: row_id,
+                                idevaluacion: rowid,
+                                bloqueada: filaevaluacion.bloqueada};
+				jQuery("#dialog-form-evaluacion").load("form_evaluacion.html", function() {
+      				x = (jQuery(window).width()-1000)/2;
+      				y = (jQuery(window).height()-700)/2;
+      				jQuery("#dialog-form-evaluacion").dialog({
+      	    			resizable: false,
+      	    			position: top,
+      		   			modal: false,
+      		   			width: 1000,                     
+      					height: 500,
+      					title: titulo,
+                        position: [x, y], 
+      				});
+                        //.dialog('option', 'position', [x, y]);  
+                    //jQuery('#dialog-form-evaluacion').dialog('open');
+                  //jQuery(".ui-button-text").css("padding-top", "0px");         
+      			});
+        	},
+        });
+        jQuery("#"+subgrid_table_id).jqGrid('navGrid',"#"+pager_id,
+            {add:false,edit:false,del:false,view:false,search:false} //options
+        );
+    }    
+  });     
+  jQuery("#misevaluaciones").jqGrid('navGrid','#pagermisevaluaciones',{add:false,edit:false,del:false,view:false,search:false});
+  jQuery("#misevaluaciones").jqGrid('filterToolbar');
+  var gwdth = jQuery("#contenedormisevaluaciones").width();
+  jQuery("#misevaluaciones").jqGrid().setGridWidth(gwdth);  
+});
+</script>

@@ -1,0 +1,17 @@
+{{extend 'layout.html'}}
+{{=H3(T('Evaluaciones'))}}
+{{=grid}}
+<img id=actividad src="{{=URL('static','images/ajax.gif')}}" style="display:None;">
+
+<script language="javascript">
+    $(document).ready(function() {
+ 
+		$(document).ajaxSend(function() {
+   			$('#actividad').show();
+ 		});
+ 
+ 		$(document).ajaxComplete(function() {
+   			$('#actividad').hide();
+		});
+    });		
+</script>

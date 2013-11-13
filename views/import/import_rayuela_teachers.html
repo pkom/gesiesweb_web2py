@@ -1,0 +1,12 @@
+{{extend 'layout.html'}}
+{{form['_class' ] = 'formulariopaco'}}
+{{=H4(T('Importar profesorado desde Rayuela'))}}
+{{=form}}
+<!--
+{{#=H2(T('Result of import from Rayuela'))}}
+{{#for linea in resultado['linea']:}}
+{{#=linea}}
+<br>
+{{#pass}}
+-->
+{{#=BEAUTIFY(response._vars)}}

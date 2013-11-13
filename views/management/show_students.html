@@ -1,0 +1,15 @@
+{{extend 'layout.html'}}
+{{form['_class' ] = 'formulariopaco'}}
+{{=H3(T('Búsqueda de alumnado'))}}
+{{=form}}
+<table class="tablasgestion">
+    <tr class="cabtablasgestion">
+        <th>{{=T('Alumn@s encontrados')}}</th>
+    </tr>
+    <tr>
+        <td>
+            <div id='resultado'>{{=T('Sin datos')}}
+            </div>
+        </td>
+    </tr>
+</table>

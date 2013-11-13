@@ -1,0 +1,170 @@
+<div id="cajaamonestacion" style="display:none;" title="Absentismo Pasivo">
+    <div id='foto' width="20%" style="float:left;padding-right:15px;">
+        <img src='' class='ui-corner-all' style='background-color:#bbb;width:80px;border:solid 1px;padding:5px;'>
+    </div>
+    <div id="avisoamonestacion" width="80%">
+    </div>
+</div>
+
+<div id="contenedorestadisticasabsentismos" class='centerGrid'>       
+            <table id='absentismosresponsable' style='width: 100%'></table>
+            <div id='pagerabsentismosresponsable'></div>
+</div>
+<div id="dialog-alert-avisos" title="Atención" style="display:none;">
+            <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Para operar sobre un registro debe seleccionarlo previamente.</p>
+</div>
+
+<script type="text/javascript">
+
+jQuery(document).ready(function(){ 
+
+  var getColumnIndexByName = function(grid, columnName) {
+        var cm = grid.jqGrid('getGridParam', 'colModel'), i, l;
+        for (i = 0, l = cm.length; i < l; i += 1) {
+            if (cm[i].name === columnName) {
+                return i; // return the index
+            }
+        }
+        return -1;
+  }; 
+
+  jQuery("#absentismosresponsable").jqGrid({
+    url:'{{=URL(c="services_responsables",f="call",args=["json","getAllAbsentismos"])}}',
+    data: "{}",
+    datatype: 'json',
+    mtype: 'GET',
+    contentType: "application/json; charset=utf-8",
+    complete: function(jsondata, stat) {
+        if (stat == "success") {
+            var thegrid = jQuery("#absentismosresponsable")[0];
+            thegrid.addJSONData(JSON.parse(jsondata.responseText).d);
+        }
+    },
+    colNames:['Id','Fecha','Grupo','Profesor/a','Alumno/a','Comunicada','idgrupoalumno','iddepartamentoprofesor'],
+    colModel :[ 
+      {name:'idavisos',index:'id',width:40,fixed:true,align:'right',sortype:'int',search:false,editable:false}, 
+      {name:'fechaavisos', index:'fecha',width:80,fixed:true,align:'center',sortype:'date',search:true,stype:'text',editable:false,
+          searchoptions:{dataInit: function (elem) { $(elem).datepicker({dateFormat: 'yy-mm-dd'}).change(function(){$('#absentismosresponsable')[0].triggerToolbar();})      }}},
+      {name:'grupoavisos', index:'grupo',width:50,fixed:true,sortable:true,stype:'text',editable:false,align:'center'},                  
+      {name:'profesoravisos', index:'profesor',sortable:true,stype:'text',editable:false},         
+      {name:'alumnoavisos', index:'alumno',sortable:true,stype:'text',editable:false}, 
+      {name:'comunicadaavisos', index:'comunicada',width:80,fixed:true,align:'center',sortable:false,formatter:'checkbox',formatoptions:{disabled:false},
+          search:true,editable:true,edittype:'checkbox',stype:'select', editoptions:{value:':Todas;comunicadas:Comunicadas;nocomunicadas:No Comunicadas'}},
+      {name:'idgrupoalumnoavisos', index:'id_grupo_alumno',hidden:true,viewable:false},
+      {name:'iddepartamentoprofesoravisos', index:'id_departamento_profesor',hidden:true,viewable:false}      
+    ],
+    autowidth: true,
+    height: '100%',
+    pagerpos: 'center',
+    shrinkToFit: true,
+    pager: '#pagerabsentismosresponsable',
+    rowNum:10,
+    rowList:[10,20,30],
+    sortname: 'fecha',
+    sortorder: 'desc',
+    viewrecords: true,
+    caption: '{{=T('Absentismos Pasivos')}}',
+    ondblClickRow: function(rowid) {
+        jQuery.getJSON("{{=URL(c='services_absentismo',f='call',args=['json','getAbsentismo'])}}", { id: rowid }, function(result) {
+            jQuery("#avisoamonestacion").html('<p><strong>'+result.response.amonestacion_absentismo.absentismo+'</strong></p>');
+            $('#foto img').hide().attr('src','');                                                                         
+            $.getJSON("{{=URL(c='services',f='call',args=['json','getPhotoStudent'])}}", {"alumno": result.response.amonestacion_absentismo.id_grupo_alumno}, function(foto){
+                    if (foto.foto.foto != null) {
+                        fotog = "/gesiesweb/default/download/"+foto.foto.foto
+                        $("#foto img").attr('src',fotog).show();                   
+                    }
+                    else
+                        $('#foto img').hide().attr('src','');                                                             
+            });
+            jQuery("#cajaamonestacion").dialog("open")
+        });    
+    },
+    loadComplete: function () {
+        var iCol = getColumnIndexByName ($(this), 'comunicadaavisos'), rows = this.rows, i,
+            c = rows.length;
+        for (i = 0; i < c; i += 1) {
+            $(rows[i].cells[iCol]).click(function (e) {
+                var id = $(e.target).closest('tr')[0].id, isChecked = $(e.target).is(':checked');
+                jQuery.ajax( { url: '{{=URL(c="services_absentismo",f="call",args=["json","updateComunicated"])}}', 
+                                type: 'POST',
+                                data: {id:id,isChecked:isChecked }});
+            });           
+        }    
+    },
+    
+    multiselect: false,
+    subGrid: false,
+        
+  });       
+
+  jQuery("#absentismosresponsable").jqGrid('navGrid','#pagerabsentismosresponsable',{add:false,edit:false,del:false,view:false,search:false});
+  jQuery("#absentismosresponsable").jqGrid('filterToolbar');
+  var gwdth = jQuery("#contenedorestadisticasabsentismos").width();
+  jQuery("#absentismosresponsable").jqGrid().setGridWidth(gwdth);  
+
+  jQuery("#absentismosresponsable").jqGrid('navButtonAdd','#pagerabsentismosresponsable',{
+      caption: "Alumn@",
+      buttonicon :'ui-icon-print',
+      title: "Informe de absentismos pasivos del alumnado",
+      onClickButton : function (){ 
+          informeAlumnoAbsentismos();
+      } 
+  }); 
+  jQuery("#absentismosresponsable").jqGrid('navButtonAdd','#pagerabsentismosresponsable',{
+      caption: "Profesor/a",
+      buttonicon :'ui-icon-print',
+      title: "Informe de absentimos pasivos emitidos por el profesorado",      
+      onClickButton : function (){ 
+          informeProfesorAbsentismos();
+      } 
+  }); 
+  
+  jQuery("#cajaamonestacion" ).dialog({ autoOpen: false,
+                                         width: 500,
+                                         height: 300,
+                                         show: 'slide',
+                                         hide: 'slide',
+                                         modal: true });
+                                         
+                                         
+                                         
+                                         
+}); 
+
+
+function rowSelectedAvisos(){
+    var id = jQuery("#absentismosresponsable").jqGrid('getGridParam','selrow'); 
+    if( id == null ){
+        jQuery( "#dialog-alert-avisos" ).dialog({
+            resizable: false,
+            height:150,
+            width:290,
+            modal: true,
+            buttons: { "Aceptar": function() { $( this ).dialog( "close" ); }}
+        }).dialog('open');
+        jQuery(".ui-button-text").css("padding-top", "0px");        
+        return false;
+    }
+    return id;
+};           
+
+function informeAlumnoAbsentismos(){
+    var id = rowSelectedAvisos();
+    if(id==false) return false;
+    var ret = jQuery("#absentismosresponsable").jqGrid('getRowData',id);
+    //alert("idgrupoalumnoavisos="+ret.idgrupoalumnoavisos);
+    //window.location.replace("{{=URL(c='reports', f='warningsStudent', args="+ret.idgrupoalumnoavisos+")}}");
+    window.open("/gesiesweb/reportspyfpdf/absentismosStudent/"+ret.idgrupoalumnoavisos);
+};
+
+function informeProfesorAbsentismos(){
+    var id = rowSelectedAvisos();
+    if(id==false) return false;
+    var ret = jQuery("#absentismosresponsable").jqGrid('getRowData',id);
+    //alert("iddepartamentoprofesor="+ret.iddepartamentoprofesoravisos);    
+    //window.location.replace("{{=URL(c='reports',f='warningsTeacher')}}");
+    window.open("/gesiesweb/reportspyfpdf/absentismosTeacher/"+ret.iddepartamentoprofesoravisos);    
+};
+
+
+</script>

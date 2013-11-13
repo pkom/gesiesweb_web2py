@@ -1,0 +1,94 @@
+<div id="cajaamonestacion" style="display:none;" title='Absentismo Pasivo Tutoría'>
+    <div id='foto' width="20%" style="float:left;padding-right:15px;">
+        <img src='' class='ui-corner-all' style='background-color:#bbb;width:80px;border:solid 1px;padding:5px;'>
+    </div>
+    <div id="avisoamonestacion" width="80%">
+    </div>
+</div>
+
+<div id="contenedormisabsentismostutoria" class='centerGrid'>     
+            <table id='misabsentismostutoria' style='width: 100%'></table>
+            <div id='pagermisabsentismostutoria'></div>            
+</div>
+
+<script type="text/javascript">
+jQuery(document).ready(function(){ 
+
+  
+  
+  var getColumnIndexByName = function(grid, columnName) {
+        var cm = grid.jqGrid('getGridParam', 'colModel'), i, l;
+        for (i = 0, l = cm.length; i < l; i += 1) {
+            if (cm[i].name === columnName) {
+                return i; // return the index
+            }
+        }
+        return -1;
+  }; 
+  
+  jQuery("#misabsentismostutoria").jqGrid({
+    url:"{{=URL(c='services_absentismo',f='call',args=['json','getMisAbsentismosTutor'])}}",
+    data: "{}",
+    datatype: 'json',
+    mtype: 'GET',
+    contentType: "application/json; charset=utf-8",
+    complete: function(jsondata, stat) {
+        if (stat == "success") {
+            var thegrid = jQuery("#misavisostutoria")[0];
+            thegrid.addJSONData(JSON.parse(jsondata.responseText).d);
+        }
+    },
+    colNames:['Id','Fecha','Profesor/a','Alumno/a','Comunicada'],
+    colModel :[ 
+      {name:'idtutoria',index:'id',width:50,fixed:true,align:'right',sortype:'int',search:false,editable:false}, 
+      {name:'fechatutoria', index:'fecha',width:90,fixed:true,align:'center',sortype:'date',search:true,stype:'text',editable:false,
+          searchoptions:{dataInit: function (elem) { $(elem).datepicker({dateFormat: 'yy-mm-dd'}).change(function(){$('#misabsentismostutoria')[0].triggerToolbar();})      }}},       
+      {name:'profesortutoria', index:'profesor',sortable:true,stype:'text',editable:false},         
+        {name:'alumnotutoria', index:'alumno',sortable:true,stype:'text',editable:false}, 
+      {name:'comunicadatutoria', index:'comunicada',width:90,fixed:true,align:'center',sortable:false,formatter:'checkbox',search:false,editable:false},
+    ],
+    autowidth: true,
+    height: '100%',
+    pagerpos: 'center',
+    shrinkToFit: true,
+    pager: '#pagermisabsentismostutoria',
+    rowNum:10,
+    rowList:[10,20,30],
+    sortname: 'fecha',
+    sortorder: 'desc',
+    viewrecords: true,
+      caption: '{{=T('Absentismo Pasivo Tutoría %s', session.profesor.tutor.curso)}}',
+    ondblClickRow: function(rowid) {
+        jQuery.getJSON("{{=URL(c='services_absentismo',f='call',args=['json','getAbsentismo'])}}", { id: rowid }, function(result) {
+            jQuery("#avisoamonestacion").text(result.response.amonestacion_absentismo.absentismo);
+            $('#foto img').hide().attr('src','');                                                                         
+            $.getJSON("{{=URL(c='services',f='call',args=['json','getPhotoStudent'])}}", {"alumno": result.response.amonestacion_absentismo.id_grupo_alumno}, function(foto){
+                    if (foto.foto.foto != null) {
+                        fotog = "/gesiesweb/default/download/"+foto.foto.foto                  
+                        $("#foto img").attr('src',fotog).show();                   
+                    }
+                    else
+                        $('#foto img').hide().attr('src','');                                                             
+            });           
+            jQuery("#cajaamonestacion").dialog("open")
+        });    
+    }    
+  });   
+
+  jQuery("#misabsentismostutoria").jqGrid('navGrid','#pagermisabsentismostutoria',{add:false,edit:false,del:false,view:false,search:false});
+  jQuery("#misabsentismostutoria").jqGrid('filterToolbar');
+  var gwdthmisabsentismostutoria = $("#contenedormisabsentismostutoria").width();
+  jQuery("#misabsentismostutoria").jqGrid().setGridWidth(gwdthmisabsentismostutoria);  
+  
+  
+  jQuery("#cajaamonestacion" ).dialog({ autoOpen: false,
+                                         width: 500,
+                                         height: 300,
+                                         show: 'slide',
+                                         hide: 'slide',
+                                         modal: true });
+  
+
+}); 
+
+</script>

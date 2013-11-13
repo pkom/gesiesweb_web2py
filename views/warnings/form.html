@@ -1,0 +1,161 @@
+<script language="javascript">
+
+    $(document).ready(function() {
+
+        $("#fechaaviso").datepicker({
+            showOn: 'focus',
+            showAnim: 'fold'
+        });         
+
+        $("#fechaaviso").datepicker('setDate', '{{=session.fecha_hoy}}');
+        
+        $("#saveButton").button({ icons: { primary: "ui-icon-disk"}});
+        $("#cancelButton")
+            .button({ icons: { primary: "ui-icon-close"}})
+            .click( function(){ $('#dialog-form').dialog('close'); });              
+        $('#foto img').hide();                          
+
+        $("#ajax").ajaxStart(function(){
+            $(this).show();
+        });
+
+        $("#ajax").ajaxStop(function(){
+            $(this).hide();
+        });
+
+
+        $.getJSON("{{=URL(c='services',f='call',args=['json','getGroups'])}}", function(options){
+                var opciones = '';    
+                for (var i = 0; i < options.options.length; i++) {
+                    opciones += '<option value="' + options.options[i].valor + '">' + options.options[i].grupo + '</option>';
+                }               
+                $("#grupoaviso").html(opciones);
+        });  
+        
+        $("#grupoaviso").change(function(opcion) {
+            var grupo = $(this).val();
+            $('#foto img').hide().attr('src','');                                     
+            $.getJSON("{{=URL(c='services',f='call',args=['json','getStudentsGroup'])}}", {"grupo": grupo }, function(options){
+                var opciones = '';    
+                for (var i = 0; i < options.options.length; i++) {
+                    opciones += '<option value="' + options.options[i].valor + '">' + options.options[i].alumno + '</option>';
+                }
+                $("#alumnoaviso").html(opciones).attr('disabled', false).change().focus();
+
+            });
+        });      
+        
+        $("#alumnoaviso").bind("change keyup", function(opcion) {
+            var alumno = $(this).val();
+            //var alumno = $(this).children("option:selected").attr('value');        
+            //console.log('Alumno...',alumno);
+            
+            if (alumno == '0' || null)
+                $('#foto img').hide().attr('src','');                                     
+            else {                 
+                $.getJSON("{{=URL(c='services',f='call',args=['json','getPhotoStudent'])}}", {"alumno": alumno}, function(foto){
+                    if (foto.foto.foto != null) {
+                        fotog = "/gesiesweb/default/download/"+foto.foto.foto                  
+                        $("#foto img").attr('src',fotog).show();                   
+                    }
+                    else
+                        $('#foto img').hide().attr('src','');                                                             
+                });                
+            };    
+        });      
+                               
+        $("#selecciones").change(function(event) {
+            $('[value="0"]',event.target).remove();
+        });    
+            
+    });
+
+    function restartStyle(){
+        $("#form_data p span").css("color","black");
+        $('#message').html("");
+    }
+
+
+    function send(){
+
+        restartStyle();
+        
+        // comprobemos si los valores pasados son validos, comprobación en el lado del cliente
+        if ($('#grupoaviso').val() == '0' || $('#alumnoaviso').val() == '0' || $('#fechaaviso').val() == '' || $('#aviso').val() == '') {  
+                    jQuery('#message').html("Hay campos vacíos o incorrectos").effect("slide");                                   
+        }
+        else 
+
+        $.post('{{=URL(c="services",f="call",args=["json","addWarning"])}}', jQuery("#form_data").serialize(), function(result) {
+            switch(result.response){
+                case "OK":{
+                    $('#message').html("Operación realizada correctamente").css("color","green").effect("highlight", {"color":"yellow"}, 5000);
+                    //setTimeout("$('#dialog-form').dialog('close')",1000);
+                    $("#misavisos").trigger("reloadGrid");
+                    $('#aviso').val("");
+                    
+                    break;
+                }
+                case "fallo":{
+                    $('#message').html("Se produjo un error").effect("highlight", {"color":"yellow"}, 1000);
+                    break;
+                }
+                default:{
+                    $('#'+result.response+"Tag").css("color","red");
+                    $('#'+result.response).effect("highlight", {"color":"yellow"}, 1000).focus();
+                    $('#message').html("Hay campos vacíos o incorrectos").effect("slide");
+                    break;
+                }
+            }
+        });
+        
+        
+        
+        return false;
+    }
+    
+</script> 
+
+<form id="form_data" onsubmit="return send();">
+    <input type="hidden" id="action" name="action"/>
+    <input type="hidden" id="idaviso" name="idaviso"/>    
+    <div>
+    <div id="selecciones" style="width:75%;float:left;">
+   
+    <p>
+        <label for="grupoaviso">{{=T('Grupo')}}</label>
+        <select id="grupoaviso" name="grupoaviso"></select>
+        <img style='display:none;' id='ajax' src='/gesiesweb/static/images/ajaxbarras.gif' />                   
+    </p>
+      
+    <p>
+        <label for="alumnoaviso">{{=T('Alumno/a')}}</label>
+        <select id="alumnoaviso" name="alumnoaviso" disabled="disabled"></select>
+    </p>
+
+    <p>
+        <label for="fechaaviso">{{=T('Fecha')}}</label>
+        <input type="text" id="fechaaviso" name="fechaaviso"/>
+    </p>    
+    
+    <p>
+        <label for="comunicadaaviso">{{=T('Comunicada')}}</label>
+        <input style="margin-left:5px;" type="checkbox" id="comunicadaaviso" name="comunicadaaviso"/>
+    </p>
+    </div>
+    
+    <div id='foto' style="float:right;">
+        <img src='' class='ui-corner-all' style='background-color:#bbb;width:80px;border:solid 1px;padding:5px;'/>
+    </div>
+    </div>
+    <div style="clear:both;"></div>
+    <p>
+        <label for="aviso">{{=T('Aviso')}}</label>
+        <div>
+           <textarea class='ui-corner-all' id="aviso" name="aviso" rows="15" style="width:100%; margin:0"></textarea>
+        </div>       
+    <div id="message" style="text-align:center; font-weight:bold; color:red; padding:3px; "></div>
+    <div style="text-align:center;">
+        <button id="saveButton" type="submit" style="width:100px;">{{=T('Enviar')}}</button>&nbsp;&nbsp;<button type="button" id="cancelButton" style="width:100px;">{{=T('Cancelar')}}</button>
+    </div>      
+</form>

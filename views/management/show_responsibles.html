@@ -1,0 +1,21 @@
+{{extend 'layout.html'}}
+{{form['_class' ] = 'formulariopaco'}}
+{{=H3(T('Responsables de Centro'))}}
+{{=form}}
+<br>
+{{if len(responsables) > 0:}}
+<table class='tablasgestion'>
+    <tr class='cabtablasgestion'>
+        <th>{{=T('Responsable')}}</th>
+        <th>{{=T('Acción')}}</th>        
+    </tr>
+    {{for responsable in responsables:}}
+    <tr>
+        <td>{{=A(responsable.last_name+', '+responsable.first_name, _href=URL('show_teacher',args=responsable.idprofesor))}}</td>
+        <td>{{=A(T('Borrar'), _href=URL('delete_responsible', args=responsable.username))}}</td>
+    </tr>         
+    {{pass}}
+</table>
+{{else:}}
+{{=H5(T('No hay responsables definidos'))}}
+{{pass}}

@@ -1,0 +1,29 @@
+{{extend 'layout.html'}}
+
+{{form['_class' ] = 'formulariopaco'}}
+{{form['_id'] = 'formulariocentro'}}
+{{=H3(T('Informes de evaluaciones'))}}
+{{=form}}
+
+<script>
+	jQuery(document).ready(function(){
+		jQuery("#selecttiposinformes").change(function(){
+			if (jQuery("#selecttiposinformes").val() == 2)
+				jQuery("#fieldsetescogeevaluacion").hide();
+			else
+				jQuery("#fieldsetescogeevaluacion").show();
+		});
+		jQuery("#pideinforme").click(function(){
+			console.log("id de grupo -> ", jQuery("#selectgruposinformes").val());
+			console.log("id de tipo -> ", jQuery("#selecttiposinformes").val());
+			console.log("id de evaluacion -> ", jQuery("#selectevaluacionesinformes").val());
+			if (jQuery("#selecttiposinformes").val() == 0)
+			    window.open("/gesiesweb/reportspyfpdf/hojasevaluacion/"+jQuery("#selectevaluacionesinformes").val()+"/"+jQuery("#selectgruposinformes").val());
+			else if (jQuery("#selecttiposinformes").val() == 1)
+			    window.open("/gesiesweb/reportspyfpdf/informeevaluacion/"+jQuery("#selectevaluacionesinformes").val()+"/"+jQuery("#selectgruposinformes").val());
+			else if (jQuery("#selecttiposinformes").val() == 2)
+			    window.open("/gesiesweb/reportspyfpdf/informecurso/"+jQuery("#selectgruposinformes").val());
+			return false;
+		});		
+	})
+</script>

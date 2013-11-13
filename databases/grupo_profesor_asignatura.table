@@ -1,0 +1,58 @@
+(dp1
+S'id'
+p2
+(dp3
+S'length'
+p4
+I255
+sS'unique'
+p5
+I00
+sS'sortable'
+p6
+I1
+sS'sql'
+p7
+S'INT AUTO_INCREMENT NOT NULL'
+p8
+sS'notnull'
+p9
+I00
+sS'type'
+p10
+g2
+ssS'id_asignatura'
+p11
+(dp12
+g4
+I255
+sg5
+I00
+sg6
+I3
+sg7
+S'INT, INDEX id_asignatura__idx (id_asignatura), FOREIGN KEY (id_asignatura) REFERENCES asignatura (id) ON DELETE CASCADE'
+p13
+sg9
+I00
+sg10
+S'reference asignatura'
+p14
+ssS'id_grupo_profesor'
+p15
+(dp16
+g4
+I255
+sg5
+I00
+sg6
+I2
+sg7
+S'INT, INDEX id_grupo_profesor__idx (id_grupo_profesor), FOREIGN KEY (id_grupo_profesor) REFERENCES grupo_profesor (id) ON DELETE CASCADE'
+p17
+sg9
+I00
+sg10
+S'reference grupo_profesor'
+p18
+ss.

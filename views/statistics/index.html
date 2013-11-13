@@ -1,0 +1,38 @@
+{{extend 'layout.html'}}
+
+<div id="estadisticasTab" style="display:none;">
+    <ul>
+        <li><a href="#tabtodosavisos">{{=T('Avisos/Seguimientos en el Centro')}}</a></li>
+        <li><a href="#tabtodosretrasos">{{=T('Avisos por retrasos en el Centro')}}</a></li>        
+        <li><a href="#tabresumenalumnos">{{=T('Resumen Alumnado')}}</a></li>        
+        <li><a href="#tabresumenprofesores">{{=T('Resumen Profesorado')}}</a></li>        
+    </ul>
+    <div id="tabtodosavisos">
+        {{=LOAD(c='statistics',f='warnings',extension='load',ajax=True,ajax_trap=False,target='contenedoravisos')}}
+    </div>    
+    <div id="tabtodosretrasos">
+        {{=LOAD(c='statistics',f='delays',extension='load',ajax=True,ajax_trap=False,target='contenedorretrasos')}}
+    </div>    
+    <div id="tabresumenalumnos">
+        {{=LOAD(c='statistics',f='students',extension='load',ajax=True,ajax_trap=False,target='contenedoralumnos')}}
+    </div>    
+    <div id="tabresumenprofesores"><div id="contenedorresumenprofesores" class='centerGrid'></div></div>
+    
+</div>
+
+<script type="text/javascript">
+jQuery(document).ready(function(){ 
+
+  
+  jQuery("#estadisticasTab").tabs().show();
+  
+  jQuery("#estadisticasTab").bind('tabsselect',function (e, tab) {
+      if (tab.index == 0) jQuery("#avisosresponsable").trigger("reloadGrid");
+      if (tab.index == 1) jQuery("#retrasosresponsable").trigger("reloadGrid");      
+      if (tab.index == 2) jQuery("#resumenalumnos").trigger("reloadGrid");            
+  });
+
+});
+
+
+</script>

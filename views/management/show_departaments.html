@@ -1,0 +1,26 @@
+{{extend 'layout.html'}}
+{{=H3(T('Departamentos'))}}
+{{if departamentos:}}
+<table class="tablasgestion">
+    <tr class="cabtablasgestion">
+        <th>{{=T('Departamentos')+': '+str(len(departamentos))}}</th>
+    </tr>
+    <tr>
+        <td>
+            {{if len(departamentos) > 0:}}
+            <ul>
+            {{for departamento in departamentos:}}
+            {{=LI(A(departamento.departamento.departamento, _href=URL('show_departament', args=departamento.curso_academico_departamento.id)),
+            ' (' if departamento.curso_academico_departamento.id_jefe else ' (Sin asignar jefatura de departamento)',
+            A(db.profesor(departamento.curso_academico_departamento.id_jefe).apellidos+', '+db.profesor(departamento.curso_academico_departamento.id_jefe).nombre,
+             _href=URL('show_teacher', args=departamento.curso_academico_departamento.id_jefe)) if departamento.curso_academico_departamento.id_jefe else '',
+            ')' if departamento.curso_academico_departamento.id_jefe else '')}}
+            {{pass}}
+            </ul>
+            {{pass}}        
+        </td>
+    </tr>
+</table>
+{{else:}}
+{{=H5(T('No departaments'))}}
+{{pass}}

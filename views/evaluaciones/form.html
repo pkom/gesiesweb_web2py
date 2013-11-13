@@ -1,0 +1,131 @@
+<script language="javascript">
+
+    $(document).ready(function() {
+        
+        $("#saveButton").button({ icons: { primary: "ui-icon-disk"}});
+        $("#cancelButton")
+            .button({ icons: { primary: "ui-icon-close"}})
+            .click( function(){ $('#dialog-form').dialog('close'); });              
+
+        $("#ajax").ajaxStart(function(){
+            $(this).show();
+        });
+
+        $("#ajax").ajaxStop(function(){
+            $(this).hide();
+        });
+
+
+        $.getJSON("{{=URL(c='services',f='call',args=['json','getGroups'])}}", function(options){
+                var opciones = '';    
+                for (var i = 0; i < options.options.length; i++) {
+                    opciones += '<option value="' + options.options[i].valor + '">' + options.options[i].grupo + '</option>';
+                }               
+                $("#grupo").html(opciones);
+        });  
+
+        $.getJSON("{{=URL(c='services',f='call',args=['json','getAsignaturas'])}}", function(options){
+                var opciones = '';    
+                for (var i = 0; i < options.options.length; i++) {
+                    opciones += '<option value="' + options.options[i].valor + '">' + options.options[i].asignatura + '</option>';
+                }               
+                $("#asignatura").html(opciones);
+        });          
+                        
+        $("#grupo").change(function(opcion) {
+            var grupo = $(this).val();
+            $.getJSON("{{=URL(c='services',f='call',args=['json','getTeachersGroup'])}}", {"grupo": grupo }, function(options){
+                var opciones = '';    
+                for (var i = 0; i < options.options.length; i++) {
+                    opciones += '<option value="' + options.options[i].valor + '">' + options.options[i].profesor + '</option>';
+                }
+                $("#profesor").html(opciones).attr('disabled', false).change().focus();
+
+            });
+        });      
+                                      
+        $("#selecciones").change(function(event) {
+            $('[value="0"]',event.target).remove();
+        });    
+            
+    });
+
+    function restartStyle(){
+        $("#form_data p span").css("color","black");
+        $('#message').html("");
+    }
+
+
+    function send(){
+
+        restartStyle();
+        
+        // comprobemos si los valores pasados son validos, comprobación en el lado del cliente
+        if ($('#grupo').val() == '0' || $('#profesor').val() == '0' || $('#asignatura').val() == '0') {  
+                    jQuery('#message').html("Hay campos vacíos o incorrectos").effect("slide");                                   
+        }
+        else 
+
+        $.post('{{=URL(c="services_evaluacion",f="call",args=["json","addGrupoProfesorAsignatura"])}}', jQuery("#form_data").serialize(), function(result) {
+            switch(result.response){
+                case "OK":{
+                    $('#message').html("Operación realizada correctamente").css("color","green").effect("highlight", {"color":"yellow"}, 5000);
+                    //setTimeout("$('#dialog-form').dialog('close')",1000);
+                    $("#grupoprofesorasignaturas").trigger("reloadGrid");
+                    
+                    break;
+                }
+                case "fallo":{
+                    $('#message').html("Se produjo un error").effect("highlight", {"color":"yellow"}, 1000);
+                    break;
+                }
+                case "duplicado":{
+                    $('#message').html("Esta asignación ya se ha realizado").effect("highlight", {"color":"yellow"}, 1000);
+                    break;
+                }                
+                default:{
+                    $('#'+result.response+"Tag").css("color","red");
+                    $('#'+result.response).effect("highlight", {"color":"yellow"}, 1000).focus();
+                    $('#message').html("Hay campos vacíos o incorrectos").effect("slide");
+                    break;
+                }
+            }
+        });
+        
+        
+        
+        return false;
+    }
+    
+</script> 
+
+<form id="form_data" onsubmit="return send();">
+    <input type="hidden" id="action" name="action"/>
+    <div>
+    <div id="selecciones" style="width:75%;float:left;">
+   
+    <p>
+        <label for="grupo">{{=T('Grupo')}}</label>
+        <select id="grupo" name="grupo"></select>
+        <img style='display:none;' id='ajax' src='/gesiesweb/static/images/ajaxbarras.gif' />                   
+    </p>
+      
+    <p>
+        <label for="profesor">{{=T('Profesor/a')}}</label>
+        <select id="profesor" name="profesor" disabled="disabled"></select>
+    </p>
+    
+    <p>
+        <label for="asignatura">{{=T('Asignatura')}}</label>
+        <select id="asignatura" name="asignatura"></select>
+    </p>
+    
+
+    </div>
+    </div>    
+    <div style="clear:both;"></div>    
+    <div id="message" style="text-align:center; font-weight:bold; color:red; padding:3px; "></div>
+    <div style="text-align:center;">
+        <button id="saveButton" type="submit" style="width:100px;">{{=T('Enviar')}}</button>&nbsp;&nbsp;<button type="button" id="cancelButton" style="width:100px;">{{=T('Cancelar')}}</button>
+    </div>      
+</form>

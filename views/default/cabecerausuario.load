@@ -1,0 +1,26 @@
+<div id="cabecerausuario">
+            {{if auth.is_logged_in():}}
+            {{if not session.esProfesor:}}
+                <h3><a>{{=T('Usuario/a')+': '}}</span><em>{{=auth.user.last_name+', '+auth.user.first_name+' ('+auth.user.username+')'}}</em></a></h3>                       
+            {{else:}}
+                <h3><a href=#>{{=T('Profesor/a')+': '}}</span><em>{{=session.profesor['apellidos']+', '+session.profesor['nombre']+' ('+auth.user.username+')'}}</em></a></h3>                
+            {{pass}}
+            <div>
+            <p>{{=T('Responsable de Centro') if session.esResponsable else ''}}</p>
+            <p>{{=T('Informático/a') if session.esInformatico else ''}}</p>
+            <p>{{=T('Administrativo/a') if session.esAdministrativo else ''}}</p>
+            <p>{{=(T('Jefe/a de Departamento')+' ' if session.profesor.esJefe else '')+session.profesor.departamento if session.profesor.departamento else ''}}</p>
+            <p>{{=(T('Tutor/a')+': '+session.profesor.tutor.curso if session.profesor.esTutor else '')}}</p>
+            </div>
+            {{else:}}
+                <h3><a>{{=T('Usuario/a no conectado/a')}}</a></h3>                                   
+            {{pass}}
+</div>
+<script>
+    $(function() {
+        $( "#cabecerausuario" ).accordion({
+            collapsible: true,
+            active: false
+        });
+    });
+</script>

@@ -1,0 +1,13 @@
+<div id="datoscentro">
+          {{=H3(A((session.nombre_centro+' ('+session.codigo_centro+')' if session.nombre_centro else '')
+                      +' '+T('Curso Académico Actual:')+' '+session.curso_academico_nombre if session.curso_academico_nombre else ''))}}
+          {{=H4(T('Curso Académico Seleccionado:')+' '+session.curso_academico_nombre if session.curso_academico_nombre else '')}}   
+</div>
+<script>
+    $(function() {
+        jQuery( "#datoscentro" ).accordion({
+            collapsible: true,
+            active: false
+        });
+    });
+</script>

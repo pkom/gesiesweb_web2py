@@ -1,0 +1,34 @@
+{{extend 'layout.html'}}
+
+<div id="retrasosTab" style="display:none;">
+    <ul>
+        <li><a href="#tabmisretrasos">{{=T('Mis Retrasos')}}</a></li>
+        {{if session.profesor.esTutor:}}
+        <li><a href="#tabmisretrasostutoria">{{=T('Avisos por Retrasos Tutoría')+' '+session.profesor.tutor.curso}}</a></li>
+        {{pass}}
+    </ul>
+    <div id="tabmisretrasos">
+        {{=LOAD(c='delays',f='delays',extension='load',ajax=True,ajax_trap=False,target='contenedormistretrasos')}}    
+    </div>
+    {{if session.profesor.esTutor:}}
+    <div id="tabmisretrasostutoria">
+        {{=LOAD(c='delays',f='delaystutor',extension='load',ajax=True,ajax_trap=False,target='contenedormistretrasostutoria')}}    
+    </div>
+    {{pass}}
+</div>
+
+
+<script type="text/javascript">
+jQuery(document).ready(function(){ 
+
+  
+  jQuery("#retrasosTab").tabs().show(); 
+  
+  jQuery("#retrasosTab").bind('tabsselect',function (e, tab) {
+      if (tab.index == 0) jQuery("#misretrasos").trigger("reloadGrid");
+      if (tab.index == 1) jQuery("#misretrasostutoria").trigger("reloadGrid");
+    });
+
+});  
+
+</script>

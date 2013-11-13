@@ -1,0 +1,218 @@
+<div id="cajaamonestacion" style="display:none;" title={{=T('Parte')}}>
+    <div id='foto' width="20%" style="float:left;padding-right:15px;">
+        <img src='' class='ui-corner-all' style='background-color:#bbb;width:80px;border:solid 1px;padding:5px;'>
+    </div>
+    <div id="avisoamonestacion" width="80%">
+    </div>
+</div>                   
+
+<div id="contenedormisavisos" class='centerGrid'>
+        <table id='misavisos' style='width: 100%'></table>
+        <div id='pagermisavisos'></div>
+</div>
+        
+<div id="dialog-form"></div>
+
+<div id="dialog-confirm" title="¿Borrar el registro seleccionado?" style="display:none;">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Este elemento quedará permanentemente eliminado. ¿Está seguro?</p>
+</div>
+
+<div id="dialog-alert" title="Atención" style="display:none;">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Para operar sobre un registro debe seleccionarlo previamente.</p>
+</div>
+
+<script type="text/javascript">
+jQuery(document).ready(function(){ 
+
+  var getColumnIndexByName = function(grid, columnName) {
+        var cm = grid.jqGrid('getGridParam', 'colModel'), i, l;
+        for (i = 0, l = cm.length; i < l; i += 1) {
+            if (cm[i].name === columnName) {
+                return i; // return the index
+            }
+        }
+        return -1;
+  };
+  
+  jQuery("#misavisos").jqGrid({
+    url:"{{=URL(c='services',f='call',args=['json','getMyWarnings'])}}",
+    data: "{}",
+    datatype: 'json',
+    mtype: 'GET',
+    contentType: "application/json; charset=utf-8",
+    complete: function(jsondata, stat) {
+        if (stat == "success") {
+            var thegrid = jQuery("#misavisos")[0];
+            thegrid.addJSONData(JSON.parse(jsondata.responseText).d);
+        }
+    },
+    colNames:['Id','Fecha','Grupo','Alumno/a','Parte','Comunicada','Cerrada'],
+    colModel :[ 
+      {name:'idavisos',index:'id',width:50,fixed:true,align:'right',sortype:'int',search:false,editable:false}, 
+      {name:'fechaavisos', index:'fecha',width:90,fixed:true,align:'center',sortype:'date',search:true,editable:false,
+          searchoptions:{dataInit: function (elem) { $(elem).datepicker({dateFormat: 'yy-mm-dd'}).change(function(){$('#misavisos')[0].triggerToolbar();})      }}},
+      {name:'grupoavisos', index:'grupo',sortable:true,width:85,fixed:true,search:true,editable:false,align:'center'},
+      {name:'alumnoavisos', index:'alumno',sortable:true,stype:'text',editable:false}, 
+      {name:'parteavisos', index:'parte',width:47,fixed:true,align:'center',sortable:false,formatter:'checkbox',search:false,editable:false},
+      {name:'comunicadaavisos', index:'comunicada',width:100,fixed:true,align:'center',sortable:false,formatter:'checkbox',formatoptions:{disabled:false},
+          search:false,editable:true,edittype:'checkbox'},
+      {name:'cerrada', index:'cerrada',width:75,fixed:true,align:'center',sortable:false,formatter:'checkbox',search:false,editable:false}
+    ],
+    autowidth: true,
+    height: '100%',
+    pagerpos: 'center',
+    shrinkToFit: true,
+    pager: '#pagermisavisos',
+    rowNum:10,
+    rowList:[10,20,30],
+    sortname: 'fecha',
+    sortorder: 'desc',
+    viewrecords: true,
+    caption: '{{=T('Mis Avisos')}}',
+    ondblClickRow: function(rowid) {
+        jQuery.getJSON("{{=URL(c='services',f='call',args=['json','getWarning'])}}", { id: rowid }, function(result) {
+            jQuery("#avisoamonestacion").text(result.response.amonestacion.amonestacion);            
+            $('#foto img').hide().attr('src','');                                                                         
+            $.getJSON("{{=URL(c='services',f='call',args=['json','getPhotoStudent'])}}", {"alumno": result.response.amonestacion.id_grupo_alumno}, function(foto){
+                    if (foto.foto.foto != null) {
+                        fotog = "/gesiesweb/default/download/"+foto.foto.foto                  
+                        $("#foto img").attr('src',fotog).show();                   
+                    }
+                    else
+                        $('#foto img').hide().attr('src','');                                                             
+            });
+            jQuery("#cajaamonestacion").dialog("open")
+        });    
+    },
+    loadComplete: function () {
+        var iCol = getColumnIndexByName ($(this), 'comunicadaavisos'), rows = this.rows, i,
+            c = rows.length;
+        for (i = 0; i < c; i += 1) {
+            $(rows[i].cells[iCol]).click(function (e) {
+                var id = $(e.target).closest('tr')[0].id, isChecked = $(e.target).is(':checked');
+                jQuery.ajax( { url: '{{=URL(c="services",f="call",args=["json","updateComunicated"])}}', 
+                                type: 'POST',
+                                data: {id:id,isChecked:isChecked }});
+            });           
+        }
+    }
+  }); 
+  
+  
+  jQuery("#misavisos").jqGrid('navGrid','#pagermisavisos',{add:false,edit:false,del:false,view:false,search:false});
+  jQuery("#misavisos").jqGrid('filterToolbar');
+  var gwdthmisavisos = $("#contenedormisavisos").width(); 
+  jQuery("#misavisos").jqGrid().setGridWidth(gwdthmisavisos);  
+  
+  jQuery("#misavisos").jqGrid('navButtonAdd','#pagermisavisos',{
+                caption: "Añadir",
+                buttonicon :'ui-icon-plus',
+                onClickButton : function (){ 
+                    addAviso();
+                } 
+  }); 
+  jQuery("#misavisos").jqGrid('navButtonAdd','#pagermisavisos',{
+                caption: "Editar",
+                buttonicon :'ui-icon-pencil',
+                onClickButton : function (){ 
+                    modifyAviso();
+                } 
+  }); 
+  
+  
+  jQuery("#cajaamonestacion" ).dialog({ autoOpen: false,
+                                         width: 500,
+                                         height: 300,
+                                         show: 'slide',
+                                         hide: 'slide',
+                                         modal: true });
+  
+
+}); 
+
+function rowSelected(){
+        var id = jQuery("#misavisos").jqGrid('getGridParam','selrow'); 
+    
+        if( id == null ){
+            jQuery( "#dialog-alert" ).dialog({
+                resizable: false,
+                height:150,
+                width:290,
+                modal: true,
+                buttons: { "Aceptar": function() { $( this ).dialog( "close" ); }}
+            }).dialog('open');
+            return false;
+        }
+        return id;
+}           
+
+function addAviso(){
+    jQuery("#dialog-form").html("");
+    jQuery("#dialog-form").load("form.html", function() {
+        jQuery("#form_data #action").val("add");
+        jQuery("#form_data #messageForm").html("Todos los campos son obligatorios");                                     
+    
+        x = (jQuery(window).width()-700)/2;
+        y = (jQuery(window).height()-600)/2;
+    
+        jQuery("#dialog-form").dialog({
+            resizable: false,
+            position: top,
+            modal: true,
+            width: 700,                     
+            title: "Añadir Aviso"
+        }).dialog('option', 'position', [x, y]);           
+        jQuery(".ui-button-text").css("padding-top", "0px");    
+    });
+}
+
+function modifyAviso(){
+    var id = rowSelected();
+    if(id==false) return false;
+    jQuery("#dialog-form").html("").css("display","none");
+    jQuery("#dialog-form").load("form.html", function() {
+        jQuery("#form_data #action").val("modify");
+        jQuery.getJSON("{{=URL(c='services',f='call',args=['json','getWarning'])}}",{ id: id }, function(result) {
+                $.getJSON("{{=URL(c='services',f='call',args=['json','getStudentsGroup'])}}", {"grupo": result.response.curso_academico_grupo.id }, function(options){
+                    jQuery("#grupoaviso [value='0']").remove();
+                    jQuery("#grupoaviso").val(result.response.curso_academico_grupo.id);
+                    
+                    var opciones = '';    
+                    for (var i = 0; i < options.options.length; i++) {
+                        //if (i == 0) { continue };
+                        opciones += '<option value="' + options.options[i].valor + '">' + options.options[i].alumno + '</option>';
+                    }
+                    jQuery("#alumnoaviso").html(opciones);
+                    jQuery("#alumnoaviso").val(result.response.amonestacion.id_grupo_alumno);                
+                    jQuery("#alumnoaviso").change();                
+                    jQuery("#alumnoaviso").attr('disabled', false);              
+                    
+                    jQuery("#fechaaviso").val(result.response.amonestacion.fecha);
+                    if (result.response.amonestacion.comunicada) jQuery("#comunicadaaviso").click();
+                    jQuery("#aviso").val(result.response.amonestacion.amonestacion);
+                    jQuery("#idaviso").val(result.response.amonestacion.id);
+
+                    
+                });
+                
+                //jQuery("#fechaaviso").val(result.response.amonestacion.fecha);
+                //if (result.response.amonestacion.comunicada) jQuery("#comunicadaaviso").click();
+                //jQuery("#aviso").val(result.response.amonestacion.amonestacion);
+                //jQuery("#idaviso").val(result.response.amonestacion.id);
+                
+                x = (jQuery(window).width()-700)/2;
+                y = (jQuery(window).height()-600)/2;
+                
+              
+                jQuery("#dialog-form").dialog({
+                    resizable: false,
+                    modal: true,
+                    width: 700,
+                    title: "Modificar Aviso"
+                }).dialog('option', 'position', [x, y]);        
+                jQuery(".ui-button-text").css("padding-top", "0px");
+        });    
+    });
+}
+
+</script>

@@ -1,0 +1,119 @@
+@charset "UTF-8";
+
+/* This file is contains css rules by Francisco Mora Sanchez */
+
+/*
+form input {
+    padding: .2em; 
+{
+*/
+
+.enlinea {
+    display: inline;
+    padding: .5em;
+}
+
+.tablasgestion {
+    border: 1px solid;
+    color: #acacac;
+    margin-top: 1em;
+}
+
+.tablasgestion td {
+    border-top: 1px solid;
+}
+
+.tablasgestion .cabtablasgestion {
+    color: #333;
+    background: #EAEAEA;
+}
+
+.formulariopaco {
+    border: 1px solid #acacac;
+}
+
+#logocentro {
+    color: #777;
+    background-repeat: no-repeat;
+    background-position: right center;
+}
+
+#cabecerageneral {
+    background-image: url(../images/logo.png);
+    background-repeat: no-repeat;
+    background-position: left center;
+    padding: 5px;
+}
+
+#cabecerageneral h1 {
+    margin-left: 160px;
+}    
+
+#cabecerageneral h3 {
+    margin-left: 160px;
+}    
+
+#cabecerausuario em {
+    font-weight: bold;
+}
+
+
+
+.selectcursolabel { font-weight: bold }
+.selectcurso { font-weight: bold; width: 100px; }
+
+
+.lineaPar  {
+        background-color: #ededed;
+}
+
+.lineaImpar {
+        background-color: #ffffff;
+}
+
+.verAmonestacion  {
+        background-color: #cdcdcd;
+}
+
+.cabAmonestacion  {
+        background-color: #adadad;
+}
+
+
+.columna1AltaAviso {
+        float:left;
+        width: 90%;
+    }
+
+.columna2AltaAviso {
+        float:right;
+        width: 10%;
+    }
+   
+.aviso {
+    margin: 2px 15px 2px 5px;
+    width: 100%;      
+    background: #fff;
+    color: #555;
+    border: 1px solid #dedede; 
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;       
+    font-size: 12px;
+}
+
+/*
+#columna_izquierda_cabecera
+{
+   float:left;
+   width:50%; 
+   color: #acacac;
+}
+#columna_derecha_cabecera
+{
+   width:50%; 
+   float:right;
+   color: #acacac;   
+}
+
+*/

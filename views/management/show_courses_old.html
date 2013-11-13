@@ -1,0 +1,20 @@
+{{extend 'layout.html'}}
+{{#form['_class' ] = 'formulariopaco'}}
+{{=H3(T('Cursos Académicos'))}}
+{{=grid}}
+{{#=form}}
+<br>
+<table class="tablasgestion">
+    <tr class="cabtablasgestion">
+        <th>{{#=T('Cursos')+': '+str(len(cursos))}}</th>
+    </tr>
+    <tr>
+        <td>
+            <ul>
+            {{#for curso in cursos:}}
+            {{#=LI(A(curso.curso, _href=URL('show_course', args=curso.id)))}}
+            {{#pass}}
+            </ul>
+        </td>
+    </tr>
+</table>

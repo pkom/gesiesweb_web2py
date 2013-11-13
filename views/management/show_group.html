@@ -1,0 +1,46 @@
+{{extend 'layout.html'}}
+{{=H3(T('Datos del Grupo')+': '+gruponombre)}}
+<table class="tablasgestion">
+    <tr class="cabtablasgestion">
+        <th>{{=T('Alumnado')+': '+str(len(alumnos))}}</th>        
+        <th>{{=T('Profesorado')+': '+str(len(profesores))}}</th>        
+        <th>{{=T('Tutor')}}</th>
+        <th>{{=tutor}}</th>    
+    </tr>
+    <tr>
+        <td>
+            {{if alumnos:}}
+            <ul>
+            {{for alumno in alumnos:}}
+            {{=LI(A(alumno.alumno.apellidos+', '+alumno.alumno.nombre, _href=URL('show_student', args=alumno.alumno.id)))}}
+            {{pass}}
+            </ul>
+            {{else:}}
+            {{=T('No students')}}
+            {{pass}}              
+        </td>        
+        <td>
+            {{if profesores:}}
+            <ul>
+            {{for profesor in profesores:}}
+            {{=LI(A(profesor.profesor.apellidos+', '+profesor.profesor.nombre, _href=URL('show_teacher', args=profesor.profesor.id)))}}
+            {{pass}}
+            </ul>
+            {{else:}}
+            {{=T('No teachers')}}
+            {{pass}}              
+        </td>
+        <td></td>
+        <td></td>        
+    </tr>
+</table>    
+
+<script type="text/javascript">
+$(document).ready(function(){
+    //debemos asignar el evento onchange del select para cuando cambiemos el jefe del departamento
+    $("#selecttutor").change(function(opcion) {
+        var profe = $(this).val();
+        $.post('{{=URL(c="services_responsables",f="call",args=["json","updateTutor"])}}', {idtutor:profe, idcursoacademicogrupo: '{{=grupoid}}'});
+    });             
+});
+</script>

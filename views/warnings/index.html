@@ -1,0 +1,37 @@
+{{extend 'layout.html'}}
+
+<div id="cajaamonestacion" style="display:none;" title={{=T('Aviso')}}>
+    <div id='foto' width="20%" style="float:left;padding-right:15px;">
+        <img src='' class='ui-corner-all' style='background-color:#bbb;width:80px;border:solid 1px;padding:5px;'>
+    </div>
+    <div id="avisoamonestacion" width="80%">
+    </div>
+</div>
+
+<div id="avisosTab">
+    <ul>
+        <li><a href="#tabmisavisos">{{=T('Mis Avisos')}}</a></li>
+        {{if session.profesor.esTutor:}}
+        <li><a href="#tabavisostutoria">{{=T('Avisos Tutoría')+' '+session.profesor.tutor.curso}}</a></li>
+        {{pass}}
+    </ul>
+    <div id="tabmisavisos">
+        {{=LOAD(c='warnings',f='warnings',extension='load',ajax=True,ajax_trap=False,target='contenedormisavisos')}}    
+    </div>
+    {{if session.profesor.esTutor:}}
+    <div id="tabavisostutoria">
+        {{=LOAD(c='warnings',f='warningstutor',extension='load',ajax=True,ajax_trap=False,target='contenedormisavisostutoria')}}    
+    </div>        
+    {{pass}}
+</div>
+
+
+<script type="text/javascript">
+jQuery(document).ready(function(){ 
+    jQuery("#avisosTab").tabs();
+    jQuery("#avisosTab").bind('tabsselect',function (e, tab) {
+      if (tab.index == 0) jQuery("#misavisos").trigger("reloadGrid");
+      if (tab.index == 1) jQuery("#misavisostutoria").trigger("reloadGrid");
+    });
+});   
+</script>

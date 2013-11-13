@@ -1,0 +1,22 @@
+{{extend 'layout.html'}}
+{{=H3(T('Profesorado'))}}
+{{if profesores:}}
+<table class="tablasgestion">
+    <tr class="cabtablasgestion">
+        <th>{{=T('Profesores/as')+': '+str(len(profesores))}}</th>
+    </tr>
+    <tr>
+        <td>
+            {{if len(profesores) > 0:}}
+            <ul>
+            {{for profesor in profesores:}}
+            {{=LI(A(profesor.profesor.apellidos+', '+profesor.profesor.nombre, _href=URL('show_teacher', args=profesor.profesor.id)))}}
+            {{pass}}
+            </ul>
+            {{pass}}        
+        </td>
+    </tr>
+</table>
+{{else:}}
+{{=H5(T('No hay profesorado'))}}
+{{pass}}

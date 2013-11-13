@@ -1,0 +1,287 @@
+<div id="cajaamonestacion" style="display:none;" title="Parte">
+    <div id='foto' width="20%" style="float:left;padding-right:15px;">
+        <img src='' class='ui-corner-all' style='background-color:#bbb;width:80px;border:solid 1px;padding:5px;'>
+    </div>
+    <div id="avisoamonestacion" width="80%">
+    </div>
+</div>
+
+<div id="contenedorestadisticaspartes" class='centerGrid'>       
+            <table id='avisosresponsable' style='width: 100%'></table>
+            <div id='pageravisosresponsable'></div>
+</div>
+<div id="dialog-alert-avisos" title="Atención" style="display:none;">
+            <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Para operar sobre un registro debe seleccionarlo previamente.</p>
+</div>
+
+<script type="text/javascript">
+
+jQuery(document).ready(function(){ 
+
+  var getColumnIndexByName = function(grid, columnName) {
+        var cm = grid.jqGrid('getGridParam', 'colModel'), i, l;
+        for (i = 0, l = cm.length; i < l; i += 1) {
+            if (cm[i].name === columnName) {
+                return i; // return the index
+            }
+        }
+        return -1;
+  }; 
+
+  jQuery("#avisosresponsable").jqGrid({
+    url:'{{=URL(c="services_responsables",f="call",args=["json","getAllWarnings"])}}',
+    data: "{}",
+    datatype: 'json',
+    mtype: 'GET',
+    contentType: "application/json; charset=utf-8",
+    complete: function(jsondata, stat) {
+        if (stat == "success") {
+            var thegrid = jQuery("#avisosresponsable")[0];
+            thegrid.addJSONData(JSON.parse(jsondata.responseText).d);
+        }
+    },
+    colNames:['Id','Fecha','Grupo','Profesor/a','Alumno/a','Parte','Comunicada','Cerrada','idgrupoalumno','iddepartamentoprofesor'],
+    colModel :[ 
+      {name:'idavisos',index:'id',width:40,fixed:true,align:'right',sortype:'int',search:false,editable:false}, 
+      {name:'fechaavisos', index:'fecha',width:80,fixed:true,align:'center',sortype:'date',search:true,stype:'text',editable:false,
+          searchoptions:{dataInit: function (elem) { $(elem).datepicker({dateFormat: 'yy-mm-dd'}).change(function(){$('#avisosresponsable')[0].triggerToolbar();})      }}},
+      {name:'grupoavisos', index:'grupo',width:50,fixed:true,sortable:true,stype:'text',editable:false,align:'center'},                  
+      {name:'profesoravisos', index:'profesor',sortable:true,stype:'text',editable:false},         
+      {name:'alumnoavisos', index:'alumno',sortable:true,stype:'text',editable:false}, 
+      {name:'parteavisos', index:'parte',width:50,fixed:true,align:'center',sortable:false,formatter:'checkbox',formatoptions:{disabled:false},
+          search:false,editable:true,edittype:'checkbox'},
+      {name:'comunicadaavisos', index:'comunicada',width:80,fixed:true,align:'center',sortable:false,formatter:'checkbox',formatoptions:{disabled:false},
+          search:true,editable:true,edittype:'checkbox',stype:'select', editoptions:{value:':Todas;comunicadas:Comunicadas;nocomunicadas:No Comunicadas'}},
+      {name:'cerradaavisos', index:'cerrada',width:65,fixed:true,align:'center',sortable:false,formatter:'checkbox',formatoptions:{disabled:false},
+          search:false,editable:true,edittype:'checkbox'},
+      {name:'idgrupoalumnoavisos', index:'id_grupo_alumno',hidden:true,viewable:false},
+      {name:'iddepartamentoprofesoravisos', index:'id_departamento_profesor',hidden:true,viewable:false}      
+    ],
+    autowidth: true,
+    height: '100%',
+    pagerpos: 'center',
+    shrinkToFit: true,
+    pager: '#pageravisosresponsable',
+    rowNum:10,
+    rowList:[10,20,30],
+    sortname: 'fecha',
+    sortorder: 'desc',
+    viewrecords: true,
+    caption: '{{=T('Partes y Seguimientos')}}',
+    ondblClickRow: function(rowid) {
+        jQuery.getJSON("{{=URL(c='services_responsables',f='call',args=['json','getWarning'])}}", { id: rowid }, function(result) {
+            jQuery("#avisoamonestacion").html('<p><strong>'+result.response[0].amonestacion.amonestacion+'</strong></p>');
+            jQuery("#avisoamonestacion").append('<p><strong>Seguimientos efectuados por responsables</strong></p>');                    
+            jQuery("#avisoamonestacion").append('<table></table>');
+            jQuery("#avisoamonestacion table").append('<tr id="cabecera"></tr>');
+            jQuery("#avisoamonestacion table tr#cabecera").append('<td>Id</td><td>Fecha</td><td>Seguimiento</td>');                        
+            var i=0;
+            for (i=0;i<result.response.length;i++) {
+            	if (result.response[i].seguimiento.id != null) {
+                	jQuery("#avisoamonestacion table").append('<tr id=linea'+i+'></tr>');                               
+                    jQuery("#avisoamonestacion table tr#linea"+i).append('<td>'+result.response[i].seguimiento.id+'</td');
+                    jQuery("#avisoamonestacion table tr#linea"+i).append('<td>'+result.response[i].seguimiento.fecha+'</td');                        
+                    jQuery("#avisoamonestacion table tr#linea"+i).append('<td>'+result.response[i].seguimiento.seguimiento+'</td>');
+            	}    
+            }                    
+            //jQuery("#avisoamonestacion").text(result.response.amonestacion.amonestacion);
+            $('#foto img').hide().attr('src','');                                                                         
+            $.getJSON("{{=URL(c='services',f='call',args=['json','getPhotoStudent'])}}", {"alumno": result.response[0].amonestacion.id_grupo_alumno}, function(foto){
+                    if (foto.foto.foto != null) {
+                        fotog = "/gesiesweb/default/download/"+foto.foto.foto
+                        $("#foto img").attr('src',fotog).show();                   
+                    }
+                    else
+                        $('#foto img').hide().attr('src','');                                                             
+            });
+            jQuery("#cajaamonestacion").dialog("open")
+        });    
+    },
+    loadComplete: function () {
+        var iCol = getColumnIndexByName ($(this), 'comunicadaavisos'), rows = this.rows, i,
+            c = rows.length;
+        for (i = 0; i < c; i += 1) {
+            $(rows[i].cells[iCol]).click(function (e) {
+                var id = $(e.target).closest('tr')[0].id, isChecked = $(e.target).is(':checked');
+                jQuery.ajax( { url: '{{=URL(c="services",f="call",args=["json","updateComunicated"])}}', 
+                                type: 'POST',
+                                data: {id:id,isChecked:isChecked }});
+            });           
+        }    
+        var iCol = getColumnIndexByName ($(this), 'parteavisos'), rows = this.rows, i,
+            c = rows.length;
+        for (i = 0; i < c; i += 1) {
+            $(rows[i].cells[iCol]).click(function (e) {
+                var id = $(e.target).closest('tr')[0].id, isChecked = $(e.target).is(':checked');
+                jQuery.ajax( { url: '{{=URL(c="services_responsables",f="call",args=["json","updateReported"])}}', 
+                                type: 'POST',
+                                data: {id:id,isChecked:isChecked }});
+            });           
+        }           
+        var iCol = getColumnIndexByName ($(this), 'cerradaavisos'), rows = this.rows, i,
+            c = rows.length;
+        for (i = 0; i < c; i += 1) {
+            $(rows[i].cells[iCol]).click(function (e) {
+                var id = $(e.target).closest('tr')[0].id, isChecked = $(e.target).is(':checked');
+                jQuery.ajax( { url: '{{=URL(c="services_responsables",f="call",args=["json","updateClosed"])}}', 
+                                type: 'POST',
+                                data: {id:id,isChecked:isChecked }});
+            });           
+        }
+    },
+    
+    
+    multiselect: false,
+    subGrid: true,
+    subGridRowExpanded: function(subgrid_id, row_id) {
+        // we pass two parameters
+        // subgrid_id is a id of the div tag created whitin a table data
+        // the id of this elemenet is a combination of the "sg_" + id of the row 
+        // the row_id is the id of the row 
+        // If we wan to pass additinal parameters to the url we can use 
+        // a method getRowData(row_id) - which returns associative array in type name-value 
+        // here we can easy construct the flowing 
+        var subgrid_table_id, pager_id; 
+        subgrid_table_id = subgrid_id+"_t"; 
+        pager_id = "p_"+subgrid_table_id; 
+        $("#"+subgrid_id).html("<table id='"+subgrid_table_id+"' class='scroll'></table><div id='"+pager_id+"' class='scroll'></div>"); 
+        jQuery("#"+subgrid_table_id).jqGrid({ 
+            url:"/gesiesweb/services_responsables/call/json/getSeguimientos?id="+row_id, 
+            datatype: 'json',
+            mtype: 'GET',
+            colNames: ['Fecha','Responsable','Seguimiento'], 
+            colModel: [ {name:"fecha",index:"fecha",width:80,sortable:true,editable:true,edittype:"text",align:"center",
+                            editoptions: {
+                                size: 12, 
+                                maxlengh: 10,
+                                dataInit: function(element) {
+                                    $(element).datepicker({dateFormat: 'yy-mm-dd'})
+                                },
+                                defaultValue: function(){ 
+                                    var currentTime = new Date(); 
+                                    var month = parseInt(currentTime.getMonth() + 1); 
+                                    month = month <= 9 ? "0"+month : month; 
+                                    var day = currentTime.getDate(); 
+                                    day = day <= 9 ? "0"+day : day; 
+                                    var year = currentTime.getFullYear(); 
+                                    return year+"-"+month + "-"+day; },
+                                editrules:{required:true}                                                                    
+                            },
+                            formoptions:{ rowpos:2 }
+                        },
+                        {name:"responsable",index:"responsable",width:220,sortable:true,editable:false,formoptions:{ rowpos:3 }}, 
+                        {name:"seguimiento",index:"seguimiento",width:450,sortable:false,editable:true,edittype:"textarea",editoptions:{size:50,rows:"12",cols:"90"},
+                            //formatter: function(cellvalue, options, rowObject) {
+                            //    return cellvalue.replace(/\t/g,'\\t').replace(/\r\n/g,'\\r\\n').replace(/\r/g,'\\r').replace(/\n/g,'\\n');},
+                            //unformat: function (cellvalue, options, cellobject) {
+                            //    return cellvalue;},
+                                
+                            formoptions:{ rowpos:1 },editrules:{required:true}} ], 
+                        
+            rowNum:5, 
+            pager: pager_id, 
+            sortname: 'fecha', 
+            sortorder: "desc", 
+            height: '100%',
+    		autowidth: true,
+		    shrinkToFit: true,            
+            editurl:"/gesiesweb/services_responsables/call/json/addSeguimiento", 
+            ondblClickRow: function(row_id) {
+            }
+        }); 
+        
+        jQuery("#"+subgrid_table_id).jqGrid('navGrid',"#"+pager_id,
+            {view:false,search:false}, //options
+            {top:screen.heigth/2-160,left:screen.width/2-350,width:700,height:320,reloadAfterSubmit:true,
+                jqModal:true,closeOnEscape:true,closeAfterEdit:true}, // edit options
+            {top:screen.height/2-160,left:screen.width/2-350,width:700,height:320,reloadAfterSubmit:true,
+                jqModal:true,closeOnEscape:true, closeAfterAdd:true,editData:{id_aviso:row_id}}, // add options
+            {width:300,height:100,reloadAfterSubmit:true, modal:true,closeOnEscape:true}, // del options
+            {closeOnEscape:true}, // search options 
+            {height:250,jqModal:false,closeOnEscape:true} // view options            
+        );
+        
+        //jQuery("#"+subgrid_table_id).jqGrid('filterToolbar')
+
+        }, 
+        
+    subGridRowColapsed: function(subgrid_id, row_id) { 
+            // this function is called before removing the data 
+            var subgrid_table_id; 
+            subgrid_table_id = subgrid_id+"_t"; 
+            jQuery("#"+subgrid_table_id).remove(); 
+    }
+        
+  });       
+
+  jQuery("#avisosresponsable").jqGrid('navGrid','#pageravisosresponsable',{add:false,edit:false,del:false,view:false,search:false});
+  jQuery("#avisosresponsable").jqGrid('filterToolbar');
+  var gwdth = jQuery("#contenedorestadisticaspartes").width();
+  jQuery("#avisosresponsable").jqGrid().setGridWidth(gwdth);  
+
+  jQuery("#avisosresponsable").jqGrid('navButtonAdd','#pageravisosresponsable',{
+      caption: "Alumn@",
+      buttonicon :'ui-icon-print',
+      title: "Informe de alumn@",
+      onClickButton : function (){ 
+          informeAlumnoAvisos();
+      } 
+  }); 
+  jQuery("#avisosresponsable").jqGrid('navButtonAdd','#pageravisosresponsable',{
+      caption: "Profesor/a",
+      buttonicon :'ui-icon-print',
+      title: "Informe de profesor/a",      
+      onClickButton : function (){ 
+          informeProfesorAvisos();
+      } 
+  }); 
+  
+  jQuery("#cajaamonestacion" ).dialog({ autoOpen: false,
+                                         width: 500,
+                                         height: 300,
+                                         show: 'slide',
+                                         hide: 'slide',
+                                         modal: true });
+                                         
+                                         
+                                         
+                                         
+}); 
+
+
+function rowSelectedAvisos(){
+    var id = jQuery("#avisosresponsable").jqGrid('getGridParam','selrow'); 
+    if( id == null ){
+        jQuery( "#dialog-alert-avisos" ).dialog({
+            resizable: false,
+            height:150,
+            width:290,
+            modal: true,
+            buttons: { "Aceptar": function() { $( this ).dialog( "close" ); }}
+        }).dialog('open');
+        jQuery(".ui-button-text").css("padding-top", "0px");        
+        return false;
+    }
+    return id;
+};           
+
+function informeAlumnoAvisos(){
+    var id = rowSelectedAvisos();
+    if(id==false) return false;
+    var ret = jQuery("#avisosresponsable").jqGrid('getRowData',id);
+    //alert("idgrupoalumnoavisos="+ret.idgrupoalumnoavisos);
+    //window.location.replace("{{=URL(c='reports', f='warningsStudent', args="+ret.idgrupoalumnoavisos+")}}");
+    window.open("/gesiesweb/reportspyfpdf/warningsStudent/"+ret.idgrupoalumnoavisos);
+};
+
+function informeProfesorAvisos(){
+    var id = rowSelectedAvisos();
+    if(id==false) return false;
+    var ret = jQuery("#avisosresponsable").jqGrid('getRowData',id);
+    //alert("iddepartamentoprofesor="+ret.iddepartamentoprofesoravisos);    
+    //window.location.replace("{{=URL(c='reports',f='warningsTeacher')}}");
+    window.open("/gesiesweb/reportspyfpdf/warningsTeacher/"+ret.iddepartamentoprofesoravisos);    
+};
+
+
+</script>

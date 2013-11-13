@@ -1,0 +1,26 @@
+{{extend 'layout.html'}}
+{{=H3(T('Grupos'))}}
+{{if grupos:}}
+<table class="tablasgestion">
+    <tr class="cabtablasgestion">
+        <th>{{=T('Grupos')+': '+str(len(grupos))}}</th>
+    </tr>
+    <tr>
+        <td>
+            {{if len(grupos) > 0:}}
+            <ul>
+            {{for grupo in grupos:}}
+            {{=LI(A(grupo.grupo.grupo, _href=URL('show_group', args=grupo.curso_academico_grupo.id)),
+            ' (' if grupo.curso_academico_grupo.id_tutor else ' (Sin asignar tutoría)',
+            A(db.profesor(grupo.curso_academico_grupo.id_tutor).apellidos+', '+db.profesor(grupo.curso_academico_grupo.id_tutor).nombre,
+             _href=URL('show_teacher', args=grupo.curso_academico_grupo.id_tutor)) if grupo.curso_academico_grupo.id_tutor else '',
+            ')' if grupo.curso_academico_grupo.id_tutor else '')}}
+            {{pass}}
+            </ul>
+            {{pass}}        
+        </td>
+    </tr>
+</table>
+{{else:}}
+{{=H5(T('No hay grupos'))}}
+{{pass}}

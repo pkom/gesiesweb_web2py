@@ -1,0 +1,12 @@
+*.py[co]
+*.bak
+errors
+private
+progress.log
+sessions
+uploads
+compiled
+
+.project
+.pydevproject
+.settings

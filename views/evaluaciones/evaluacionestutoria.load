@@ -1,0 +1,177 @@
+<div id="dialog-form-evaluacion">
+</div>
+
+<div id="contenedorevaluacionestutoria" class='centerGrid'>       
+            <table id='evaluacionestutoria' style='width: 100%'></table>
+            <div id='pagerevaluacionestutoria'></div>
+</div>
+
+<div id="dialog-alert-avisos" title="Atención" style="display:none;">
+            <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Para operar sobre un registro debe seleccionarlo previamente.</p>
+</div>
+
+<script type="text/javascript">
+
+jQuery(document).ready(function(){ 
+  
+  jQuery("#evaluacionestutoria").jqGrid({
+    url:'{{=URL(c="services",f="call",args=["json","getEvaluaciones"])}}',
+    data: "{}",
+    datatype: 'json',
+    mtype: 'GET',
+    contentType: "application/json; charset=utf-8",
+    complete: function(jsondata, stat) {
+        if (stat == "success") {
+            var thegrid = jQuery("#evaluacionestutoria")[0];
+            thegrid.addJSONData(JSON.parse(jsondata.responseText).d);
+        }
+    },
+    colNames:['Evaluación','Bloqueada'],
+    colModel :[ 
+      {name:'evaluacion', index:'evaluacion',fixed:false,sortable:false,align:'left',editable:false},                  
+      {name:'bloqueada', index:'bloqueada',width:100,fixed:true,sortable:false,editable:false,formatter:'checkbox',align:'center'}
+    ],
+    autowidth: true,
+    height: '100%',
+    pagerpos: 'center',
+    shrinkToFit: true,
+    pager: '#pagerevaluacionestutoria',
+    rowNum:10,
+    rowList:[10,20,30],
+    sortname: 'evaluacion',
+    sortorder: 'asc',
+    viewrecords: true,
+  	caption: '{{=T('Evaluaciones Tutoría %s', session.profesor.tutor.curso)}}',    
+    multiselect: false,
+    subGrid: true,
+    subGridRowExpanded: function(subgrid_id, row_id) {
+        // we pass two parameters
+        // subgrid_id is a id of the div tag created whitin a table data
+        // the id of this elemenet is a combination of the "sg_" + id of the row 
+        // the row_id is the id of the row 
+        // If we wan to pass additinal parameters to the url we can use 
+        // a method getRowData(row_id) - which returns associative array in type name-value 
+        // here we can easy construct the flowing 
+        var subgrid_table_id, pager_id; 
+		var filaevaluacion = jQuery('#evaluacionestutoria').jqGrid('getRowData', row_id);   
+        subgrid_table_id = subgrid_id+"_t"; 
+        pager_id = "p_"+subgrid_table_id; 
+        $("#"+subgrid_id).html("<table id='"+subgrid_table_id+"' class='scroll'></table><div id='"+pager_id+"' class='scroll'></div>"); 
+        jQuery("#"+subgrid_table_id).jqGrid({ 
+      url:'{{=URL(c="services",f="call",args=["json","getEvaluacionesTutoria"])}}?idevaluacion='+row_id+'&idcursoacademicogrupotutoria='+{{=session.profesor.tutor.id_curso_academico_grupo}},
+            datatype: 'json',
+            mtype: 'GET',
+            colNames: ['Asignatura','Profesor'], 
+            colModel: [ 
+      			{name:"asignatura",index:"asignatura",sortable:false,editable:false,align:'left'},
+            	{name:"profesor",index:"profesor",sortable:false,editable:false,align:'left'}     
+			], 
+            rowNum:10, 
+            pager: pager_id, 
+    		rowList:[10,20,30],
+    		sortname: 'asignatura',
+    		sortorder: 'asc',
+    		viewrecords: true,
+    		multiselect: false,
+        	height: '100%',
+    		autowidth: true,
+		    shrinkToFit: true,            
+		    ondblClickRow: function(rowid) {
+				var filagrupoprofesorasignatura = jQuery("#"+subgrid_table_id).jqGrid('getRowData', rowid);  
+                titulo = "Evaluación de alumnos: "+filaevaluacion.evaluacion+" Asignatura: "+filagrupoprofesorasignatura.asignatura+" Profesor: "+filagrupoprofesorasignatura.profesor;
+      			window.datos = {idgrupoprofesorasignatura: rowid,
+                                idevaluacion: row_id,
+                                bloqueada: 'Yes'};
+				jQuery("#dialog-form-evaluacion").load("form_evaluacion.html", function() {
+      				x = (jQuery(window).width()-1000)/2;
+      				y = (jQuery(window).height()-700)/2;
+      				jQuery("#dialog-form-evaluacion").dialog({
+      	    			resizable: false,
+      	    			position: top,
+      		   			modal: false,
+      		   			width: 1000,                     
+      					height: 500,
+      					title: titulo,
+                        position: [x, y], 
+      				});
+                        //.dialog('option', 'position', [x, y]);  
+                    //jQuery('#dialog-form-evaluacion').dialog('open');
+                  //jQuery(".ui-button-text").css("padding-top", "0px");         
+      			});
+        	},
+        });
+        jQuery("#"+subgrid_table_id).jqGrid('navGrid',"#"+pager_id,
+            {add:false,edit:false,del:false,view:false,search:false} //options
+        );
+    }    
+  });     
+  jQuery("#evaluacionestutoria").jqGrid('navGrid','#pagerevaluacionestutoria',{add:false,edit:false,del:false,view:false,search:false});
+    //jQuery("#evaluacionestutoria").jqGrid('filterToolbar');
+  var gwdth = jQuery("#contenedorevaluacionestutoria").width();
+  jQuery("#evaluacionestutoria").jqGrid().setGridWidth(gwdth);
+
+    
+  jQuery("#evaluacionestutoria").jqGrid('navButtonAdd','#pagerevaluacionestutoria',{
+      caption: "Alumn@s",
+      buttonicon :'ui-icon-print',
+      title: "Hojas de evaluación individualizadas",
+      onClickButton : function (){ 
+          informeHojasEvaluacion();
+      } 
+  }); 
+  jQuery("#evaluacionestutoria").jqGrid('navButtonAdd','#pagerevaluacionestutoria',{
+      caption: "Evaluación",
+      buttonicon :'ui-icon-print',
+      title: "Resumen de la evaluación",      
+      onClickButton : function (){ 
+          informeEvaluacion();
+      } 
+  });         
+  jQuery("#evaluacionestutoria").jqGrid('navButtonAdd','#pagerevaluacionestutoria',{
+      caption: "Curso",
+      buttonicon :'ui-icon-print',
+      title: "Resumen del curso",      
+      onClickButton : function (){ 
+          informeCurso();
+      } 
+  });         
+          
+});
+
+function rowSelectedEvaluacion(){
+    var id = jQuery("#evaluacionestutoria").jqGrid('getGridParam','selrow'); 
+    if( id == null ){
+        jQuery( "#dialog-alert-avisos" ).dialog({
+            resizable: false,
+            height:150,
+            width:290,
+            modal: true,
+            buttons: { "Aceptar": function() { $( this ).dialog( "close" ); }}
+        }).dialog('open');
+        jQuery(".ui-button-text").css("padding-top", "0px");        
+        return false;
+    }
+    return id;
+};           
+
+function informeHojasEvaluacion(){
+    var id = rowSelectedEvaluacion();
+    if(id==false) return false;
+    var ret = jQuery("#evaluacionestutoria").jqGrid('getRowData',id);
+    window.open("/gesiesweb/reportspyfpdf/hojasevaluacion/"+id+"/"+{{=session.profesor.tutor.id_curso_academico_grupo}});
+};
+
+function informeEvaluacion(){
+    var id = rowSelectedEvaluacion();
+    if(id==false) return false;
+    var ret = jQuery("#evaluacionestutoria").jqGrid('getRowData',id);
+    window.open("/gesiesweb/reportspyfpdf/informeevaluacion/"+id+"/"+{{=session.profesor.tutor.id_curso_academico_grupo}});
+};
+
+function informeCurso(){
+    var id = rowSelectedEvaluacion();
+    if(id==false) return false;
+    var ret = jQuery("#evaluacionestutoria").jqGrid('getRowData',id);
+    window.open("/gesiesweb/reportspyfpdf/informecurso/"+{{=session.profesor.tutor.id_curso_academico_grupo}});
+};
+</script>

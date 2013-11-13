@@ -1,0 +1,230 @@
+<div id="contenedormisretrasos" class='centerGrid'>
+        <table id='misretrasos' style='width: 100%'></table>
+        <div id='pagermisretrasos'></div>
+</div>        
+<div id="dialog-form"></div>
+
+<div id="dialog-confirm" title="¿Borrar el registro seleccionado?" style="display:none;">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Este elemento quedará permanentemente eliminado. ¿Está seguro?</p>
+</div>
+
+<div id="dialog-alert" title="Atención" style="display:none;">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Para operar sobre un registro debe seleccionarlo previamente.</p>
+</div>
+
+<script type="text/javascript">
+jQuery(document).ready(function(){ 
+  
+  var getColumnIndexByName = function(grid, columnName) {
+        var cm = grid.jqGrid('getGridParam', 'colModel'), i, l;
+        for (i = 0, l = cm.length; i < l; i += 1) {
+            if (cm[i].name === columnName) {
+                return i; // return the index
+            }
+        }
+        return -1;
+  };
+ 
+  jQuery("#misretrasos").jqGrid({
+    url:"{{=URL(c='services',f='call',args=['json','getMyDelays'])}}",
+    data: "{}",
+    datatype: 'json',
+    mtype: 'GET',
+    contentType: "application/json; charset=utf-8",
+    complete: function(jsondata, stat) {
+        if (stat == "success") {
+            var thegrid = jQuery("#misretrasos")[0];
+            thegrid.addJSONData(JSON.parse(jsondata.responseText).d);
+        }
+    },
+    colNames:['Id','Fecha','Grupo','Alumno/a','Hora','Amonestado'],
+    colModel :[ 
+      {name:'idretrasos',index:'id',width:50,fixed:true,align:'right',sortype:'int',search:false,editable:false}, 
+      {name:'fecharetrasos', index:'fecha',width:90,fixed:true,align:'center',sortype:'date',search:true,stype:'text',editable:false,
+          searchoptions:{dataInit: function (elem) { $(elem).datepicker({dateFormat: 'yy-mm-dd'}).change(function(){$('#misretrasos')[0].triggerToolbar();})      }}},
+      {name:'gruporetrasos', index:'grupo',sortable:true,width:85,fixed:true,search:true,edittype:'select',stype:'text',editable:false,align:'center'},
+      {name:'alumnoretrasos', index:'alumno',sortable:true,stype:'text',editable:false}, 
+      {name:'horaretrasos', index:'hora',width:50,fixed:true,editable:false,sortable:false,search:false,align:'center'},
+      {name:'amonestadoretrasos', index:'amonestado',width:100,fixed:true,align:'center',sortable:false,formatter:'checkbox',formatoptions:{disabled:true},
+          search:false}
+    ],
+    autowidth: true,
+    height: '100%',
+    pagerpos: 'center',
+    shrinkToFit: true,
+    pager: '#pagermisretrasos',
+    rowNum:10,
+    rowList:[10,20,30],
+    sortname: 'fecha',
+    sortorder: 'desc',
+    viewrecords: true,
+    caption: '{{=T('Mis Retrasos')}}',
+    ondblClickRow: function(rowid) {
+        modifyRetraso();
+    },
+//    loadComplete: function () {
+//        var iCol = getColumnIndexByName ($(this), 'justificado'), rows = this.rows, i,
+//            c = rows.length;
+//        for (i = 0; i < c; i += 1) {
+//            $(rows[i].cells[iCol]).click(function (e) {
+//                var id = $(e.target).closest('tr')[0].id, isChecked = $(e.target).is(':checked');
+//                jQuery.ajax( { url: '{{=URL(c="services",f="call",args=["json","updateDelayJustify"])}}', 
+//                                type: 'POST',
+//                                data: {id:id,isChecked:isChecked }});
+//                jQuery("#misretrasostutoria").trigger("reloadGrid");                                
+//            });           
+//        }
+//    }
+
+  }); 
+  
+  jQuery("#misretrasos").jqGrid('navGrid','#pagermisretrasos',{add:false,edit:false,del:false,view:false,search:false});
+  jQuery("#misretrasos").jqGrid('filterToolbar');
+  var gwdthmisretrasos = $("#contenedormisretrasos").width();
+  jQuery("#misretrasos").jqGrid().setGridWidth(gwdthmisretrasos);  
+  
+  jQuery("#misretrasos").jqGrid('navButtonAdd','#pagermisretrasos',{
+                caption: "Añadir",
+                buttonicon :'ui-icon-plus',
+                onClickButton : function (){ 
+                    addRetraso();
+                } 
+  }); 
+  jQuery("#misretrasos").jqGrid('navButtonAdd','#pagermisretrasos',{
+                caption: "Editar",
+                buttonicon :'ui-icon-pencil',
+                onClickButton : function (){ 
+                    modifyRetraso();
+                } 
+  }); 
+
+  jQuery("#misretrasos").jqGrid('navButtonAdd','#pagermisretrasos',{
+                caption: "Borrar",
+                buttonicon :'ui-icon-trash',
+                onClickButton : function (){ 
+                    deleteRetraso();
+                } 
+  }); 
+     
+  jQuery("#cajaretrasos" ).dialog({ autoOpen: false,
+                                         width: 500,
+                                         height: 300,
+                                         show: 'slide',
+                                         hide: 'slide',
+                                         modal: true });
+
+}); 
+
+function rowSelected(){
+        var id = jQuery("#misretrasos").jqGrid('getGridParam','selrow'); 
+    
+        if( id == null ){
+            jQuery( "#dialog-alert" ).dialog({
+                resizable: false,
+                height:150,
+                width:290,
+                modal: true,
+                buttons: { "Aceptar": function() { $( this ).dialog( "close" ); }}
+            }).dialog('open');
+            return false;
+        };
+        return id;
+}           
+
+function addRetraso(){
+    jQuery("#dialog-form").html("");
+    jQuery("#dialog-form").load("form.html", function() {
+        jQuery("#form_data #action").val("add");
+        jQuery("#form_data #messageForm").html("Todos los campos son obligatorios");                                     
+    
+        x = (jQuery(window).width()-700)/2;
+        y = (jQuery(window).height()-400)/2;
+    
+        jQuery("#dialog-form").dialog({
+            resizable: false,
+            position: top,
+            modal: true,
+            width: 700,                     
+            title: "Añadir Retraso"
+        }).dialog('option', 'position', [x, y]);  
+        jQuery(".ui-button-text").css("padding-top", "0px");         
+    });
+}
+
+function modifyRetraso(){
+    var id = rowSelected();
+    if(id==false) return false;
+    jQuery("#dialog-form").html("").css("display","none");
+    jQuery("#dialog-form").load("form.html", function() {
+        jQuery("#form_data #action").val("modify");
+        jQuery.getJSON("{{=URL(c='services',f='call',args=['json','getDelay'])}}",{ id: id }, function(result) {
+                $.getJSON("{{=URL(c='services',f='call',args=['json','getStudentsGroup'])}}", {"grupo": result.response.curso_academico_grupo.id }, function(options){
+
+                    jQuery("#gruporetraso [value='0']").remove();
+                    jQuery("#gruporetraso").val(result.response.curso_academico_grupo.id);
+                    
+                    var opciones = '';    
+                    for (var i = 0; i < options.options.length; i++) {
+                        //if (i == 0) { continue };
+                        opciones += '<option value="' + options.options[i].valor + '">' + options.options[i].alumno + '</option>';
+                    }
+                    jQuery("#alumnoretraso").html(opciones);
+                    jQuery("#alumnoretraso").val(result.response.retraso.id_grupo_alumno);      
+                    jQuery("#alumnoretraso").change();                
+                    jQuery("#alumnoretraso").attr('disabled',false);                                                        
+
+                    jQuery("#fecharetraso").val(result.response.retraso.fecha);
+                    if (result.response.retraso.justificado) jQuery("#justificadoretraso").click();
+                    jQuery("#horaretraso").val(result.response.retraso.hora);
+                    jQuery("#idretraso").val(result.response.retraso.id);
+
+
+                });
+                
+                //jQuery("#fecharetraso").val(result.response.retraso.fecha);
+                //if (result.response.retraso.justificado) jQuery("#justificadoretraso").click();
+                //jQuery("#horaretraso").val(result.response.retraso.hora);
+                //jQuery("#idretraso").val(result.response.retraso.id);
+                
+                x = (jQuery(window).width()-700)/2;
+                y = (jQuery(window).height()-400)/2;
+                
+              
+                jQuery("#dialog-form").dialog({
+                    resizable: false,
+                    modal: true,
+                    width: 700,
+                    title: "Modificar Retraso"
+                }).dialog('option', 'position', [x, y]);        
+        		jQuery(".ui-button-text").css("padding-top", "0px");                
+        });    
+    });
+}
+
+function deleteRetraso(){
+    
+        var id = rowSelected();
+        if(id==false)
+            return false;
+    
+        jQuery( "#dialog-confirm" ).dialog({
+            resizable: false,
+            height:160,
+            width:350,
+            modal: true,
+            buttons: {
+                "Borrar": function() {
+                    jQuery.post("{{=URL(c='services',f='call',args=['json','deleteDelay'])}}",{idretraso : id}, function(data){
+                        jQuery("#dialog-confirm").dialog( "close" );
+                        jQuery("#misretrasos").trigger("reloadGrid");
+                    });
+                },
+                "Cancelar": function() {
+                    $(this).dialog( "close" );
+                }
+            }
+        }).dialog('open');
+        jQuery(".ui-button-text").css("padding-top", "0px");
+}
+
+</script>

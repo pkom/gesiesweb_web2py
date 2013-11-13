@@ -1,0 +1,233 @@
+<div id="contenedorgrupoprofesorasignaturas" class='centerGrid'>
+        <table id='grupoprofesorasignaturas' style='width: 100%'></table>
+        <div id='pagergrupoprofesorasignaturas'></div>
+</div>        
+<div id="dialog-form"></div>
+
+<div id="dialog-confirm" title="¿Borrar el registro seleccionado?" style="display:none;">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Este elemento quedará permanentemente eliminado. ¿Está seguro?</p>
+</div>
+
+<div id="dialog-alert" title="Atención" style="display:none;">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Para operar sobre un registro debe seleccionarlo previamente.</p>
+</div>
+
+<script type="text/javascript">
+jQuery(document).ready(function(){ 
+  
+  var getColumnIndexByName = function(grid, columnName) {
+        var cm = grid.jqGrid('getGridParam', 'colModel'), i, l;
+        for (i = 0, l = cm.length; i < l; i += 1) {
+            if (cm[i].name === columnName) {
+                return i; // return the index
+            }
+        }
+        return -1;
+  };
+ 
+  jQuery("#grupoprofesorasignaturas").jqGrid({
+    url:"{{=URL(c='services_evaluacion',f='call',args=['json','getGrupoProfesorAsignaturas'])}}",
+    data: "{}",
+    datatype: 'json',
+    mtype: 'GET',
+    contentType: "application/json; charset=utf-8",
+    complete: function(jsondata, stat) {
+        if (stat == "success") {
+            var thegrid = jQuery("#grupoprofesorasignaturas")[0];
+            thegrid.addJSONData(JSON.parse(jsondata.responseText).d);
+        }
+    },
+    colNames:['Grupo','Profesor','Asignatura'],
+    colModel :[ 
+      {name:'grupo', index:'grupo',sortable:true,fixed:true,width:100,align:'center'},
+      {name:'profesor', index:'profesor',sortable:true}, 
+      {name:'asignatura', index:'asignatura', sortable:true}
+    ],
+    autowidth: true,
+    height: '100%',
+    pagerpos: 'center',
+    shrinkToFit: true,
+    pager: '#pagergrupoprofesorasignaturas',
+    rowNum:10,
+    rowList:[10,20,30],
+    sortname: 'grupo',
+    sortorder: 'asc',
+    viewrecords: true,
+    caption: '{{=T('Asignaciones Grupo->Profesor->Asignatura->Alumnos')}}',
+    multiselect: false,
+    subGrid: true,
+    subGridRowExpanded: function(subgrid_id, row_id) {
+        // we pass two parameters
+        // subgrid_id is a id of the div tag created whitin a table data
+        // the id of this elemenet is a combination of the "sg_" + id of the row 
+        // the row_id is the id of the row 
+        // If we wan to pass additinal parameters to the url we can use 
+        // a method getRowData(row_id) - which returns associative array in type name-value 
+        // here we can easy construct the flowing 
+        var subgrid_table_id, pager_id; 
+        subgrid_table_id = subgrid_id+"_t"; 
+        pager_id = "p_"+subgrid_table_id; 
+        $("#"+subgrid_id).html("<table id='"+subgrid_table_id+"' class='scroll'></table><div id='"+pager_id+"' class='scroll'></div>"); 
+        jQuery("#"+subgrid_table_id).jqGrid({ 
+            url:"/gesiesweb/services_evaluacion/call/json/getAlumnos?id="+row_id, 
+            datatype: 'json',
+            mtype: 'GET',
+            colNames: ['Alumnos'], 
+            colModel: [ {name:"alumno",index:"alumno", sortable:false} ],
+            pager: pager_id, 
+            height: '100%',
+    		autowidth: true,
+		    shrinkToFit: true,            
+        }); 
+        
+        jQuery("#"+subgrid_table_id).jqGrid('navGrid',"#"+pager_id,
+           		{view:false,search:false,edit:false,add:false,del:false} //options
+        );
+		jQuery("#"+subgrid_table_id).jqGrid('navButtonAdd',"#"+pager_id,{
+                caption: "Borrar",
+                title: "Borra la asignación del alumno a este profesor y asignatura",
+                buttonicon :'ui-icon-trash',
+                onClickButton : function (){ 
+        			id = jQuery("#"+subgrid_table_id).jqGrid('getGridParam','selrow'); 
+					if( id == null ){
+            			jQuery( "#dialog-alert" ).dialog({
+                			resizable: false,
+                			height:150,
+                			width:290,
+                			modal: true,
+                			buttons: { "Aceptar": function() { $( this ).dialog( "close" ); }}
+            				}).dialog('open');
+        					jQuery(".ui-button-text").css("padding-top", "0px");            
+            				return false;
+        			};                  	
+			        jQuery.post("{{=URL(c='services_evaluacion',f='call',args=['json','deleteAlumno'])}}",{idalumno : id}, function(data){
+                    	jQuery("#"+subgrid_table_id).trigger("reloadGrid");
+                	});	 
+        		}
+     	}); 
+        
+        
+    },     
+    
+    
+
+  }); 
+  
+  jQuery("#grupoprofesorasignaturas").jqGrid('navGrid','#pagergrupoprofesorasignaturas',{add:false,edit:false,del:false,view:false,search:false});
+  jQuery("#grupoprofesorasignaturas").jqGrid('filterToolbar');
+  var gwdthgrupoprofesorasignaturas = $("#contenedorgrupoprofesorasignaturas").width();
+  jQuery("#grupoprofesorasignaturas").jqGrid().setGridWidth(gwdthgrupoprofesorasignaturas);  
+  
+  jQuery("#grupoprofesorasignaturas").jqGrid('navButtonAdd','#pagergrupoprofesorasignaturas',{
+                caption: "Añadir",
+                buttonicon :'ui-icon-plus',
+      			title: "Añadir Grupo->Profesor->Asignatura",
+                onClickButton : function (){ 
+                    addGrupoProfesorAsignaturas();
+                } 
+  }); 
+
+  jQuery("#grupoprofesorasignaturas").jqGrid('navButtonAdd','#pagergrupoprofesorasignaturas',{
+                caption: "Borrar",
+                buttonicon :'ui-icon-trash',
+      			title: "Borrar Grupo->Profesor->Asignatura",
+                onClickButton : function (){ 
+                    deleteGrupoProfesorAsignaturas();
+                } 
+  }); 
+
+  jQuery("#grupoprofesorasignaturas").jqGrid('navButtonAdd','#pagergrupoprofesorasignaturas',{
+                caption: "Asignar alumnos",
+                buttonicon :'ui-icon-person',
+      			title: "Asigna alumnos pendientes del grupo a este profesor y asignatura",
+                onClickButton : function (){ 
+                    asignaAlumnosProfesorAsignatura();
+                } 
+  }); 
+          
+     
+  jQuery("#cajagrupoprofesorasignaturas" ).dialog({ autoOpen: false,
+                                         width: 500,
+                                         height: 300,
+                                         show: 'slide',
+                                         hide: 'slide',
+                                         modal: true });
+
+}); 
+
+function rowSelected(){
+        var id = jQuery("#grupoprofesorasignaturas").jqGrid('getGridParam','selrow'); 
+    
+        if( id == null ){
+            jQuery( "#dialog-alert" ).dialog({
+                resizable: false,
+                height:150,
+                width:290,
+                modal: true,
+                buttons: { "Aceptar": function() { $( this ).dialog( "close" ); }}
+            }).dialog('open');
+        	jQuery(".ui-button-text").css("padding-top", "0px");            
+            return false;
+        };
+        return id;
+}           
+
+function addGrupoProfesorAsignaturas(){
+    jQuery("#dialog-form").html("");
+    jQuery("#dialog-form").load("form.html", function() {
+        jQuery("#form_data #action").val("add");
+        jQuery("#form_data #messageForm").html("Todos los campos son obligatorios");                                     
+    
+        x = (jQuery(window).width()-750)/2;
+        y = (jQuery(window).height()-400)/2;
+    
+        jQuery("#dialog-form").dialog({
+            resizable: false,
+            position: top,
+            modal: true,
+            width: 750,                     
+            title: "Añadir Grupo-Profesor-Asignatura"
+        }).dialog('option', 'position', [x, y]);  
+        jQuery(".ui-button-text").css("padding-top", "0px");         
+    });
+}
+
+function deleteGrupoProfesorAsignaturas(){
+    
+        var id = rowSelected();
+        if(id==false)
+            return false;
+    
+        jQuery( "#dialog-confirm" ).dialog({
+            resizable: false,
+            height:160,
+            width:350,
+            modal: true,
+            buttons: {
+                "Borrar": function() {
+                    jQuery.post("{{=URL(c='services_evaluacion',f='call',args=['json','deleteAsignacion'])}}",{idasignacion : id}, function(data){
+                        jQuery("#dialog-confirm").dialog( "close" );
+                        jQuery("#grupoprofesorasignaturas").trigger("reloadGrid");
+                    });
+                },
+                "Cancelar": function() {
+                    $(this).dialog( "close" );
+                }
+            }
+        }).dialog('open');
+        jQuery(".ui-button-text").css("padding-top", "0px");
+}
+
+function asignaAlumnosProfesorAsignatura(){
+    
+        var id = rowSelected();
+        if(id==false)
+            return false;
+        jQuery.post("{{=URL(c='services_evaluacion',f='call',args=['json','asignaAlumnos'])}}",{idasignacion : id}, function(data){
+			jQuery("#grupoprofesorasignaturas").trigger("reloadGrid");
+        });
+}
+
+
+
+</script>
