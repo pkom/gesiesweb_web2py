@@ -9,7 +9,7 @@ if request.env.web2py_runtime_gae:
     db = DAL('gae')                           
     session.connect(request, response, db = db)
 else:                                         
-    db = DAL(settings.db_uri, migrate=not settings.produccion, migrate_enabled=not settings.produccion, pool_size=10)
+    db = DAL(settings.db_uri, migrate=settings.migrate, migrate_enabled=settings.migrate, pool_size=10)
 
 mail = Mail()                                  # mailer
 auth = Auth(globals(),db)                      # authentication/authorization
@@ -71,6 +71,12 @@ db.define_table("curso_academico",
       Field("fin_trimestre_2", "date", notnull=True, required=True),
       Field("inicio_trimestre_3", "date", notnull=True, required=True),
       Field("fin_trimestre_3", "date", notnull=True, required=True),
+      Field("peso_1", "decimal(4,2)", notnull=True, required=True),
+      Field("peso_2", "decimal(4,2)", notnull=True, required=True),
+      Field("peso_3", "decimal(4,2)", notnull=True, required=True),
+      Field("peso_4", "decimal(4,2)", notnull=True, required=True),
+      Field("peso_5", "decimal(4,2)", notnull=True, required=True),
+      Field("peso_6", "decimal(4,2)", notnull=True, required=True),      
       migrate='curso_academico.table',    
       format='%(curso)s')
       
@@ -110,6 +116,13 @@ db.define_table("grupo",
 
 db.define_table("departamento",
       Field("departamento", length=60, unique=True, required=True, notnull=True),
+      Field("usar_criterios_departamento", "boolean", notnull=True, required=True),
+      Field("peso_1", "decimal(4,2)", notnull=True, required=True),
+      Field("peso_2", "decimal(4,2)", notnull=True, required=True),
+      Field("peso_3", "decimal(4,2)", notnull=True, required=True),
+      Field("peso_4", "decimal(4,2)", notnull=True, required=True),
+      Field("peso_5", "decimal(4,2)", notnull=True, required=True),
+      Field("peso_6", "decimal(4,2)", notnull=True, required=True),       
       migrate='departamento.table',      
       format='%(departamento)s')
       
@@ -198,6 +211,16 @@ db.define_table("amonestacion_absentismo",
 db.define_table("asignatura",
       Field("abreviatura", 'string', length=10, required=True, notnull=True),
       Field("asignatura", length=50, required=True, notnull=True),
+      Field("usar_criterios_asignatura", "boolean", notnull=True, required=True),
+      Field("peso_1", "decimal(4,2)", notnull=True, required=True),
+      Field("peso_2", "decimal(4,2)", notnull=True, required=True),
+      Field("peso_3", "decimal(4,2)", notnull=True, required=True),
+      Field("peso_4", "decimal(4,2)", notnull=True, required=True),
+      Field("peso_5", "decimal(4,2)", notnull=True, required=True),
+      Field("peso_6", "decimal(4,2)", notnull=True, required=True),       
+      
+      
+      Field("id_departamento", db.departamento),
       migrate='asignatura.table',      
       format='%(asignatura)s')
       
@@ -245,6 +268,18 @@ db.curso_academico.inicio_trimestre_2.required = True
 db.curso_academico.fin_trimestre_2.required = True
 db.curso_academico.inicio_trimestre_3.required = True
 db.curso_academico.fin_trimestre_3.required = True
+db.curso_academico.peso_1.default = 75
+db.curso_academico.peso_1.label = T('Prueba de nivel')
+db.curso_academico.peso_2.default = 7.5
+db.curso_academico.peso_2.label = T('Trabajo en clase')
+db.curso_academico.peso_3.default = 7.5
+db.curso_academico.peso_3.label = T('Trabajo en casa')
+db.curso_academico.peso_4.default = 5
+db.curso_academico.peso_4.label = T('Interés')
+db.curso_academico.peso_5.default = 5
+db.curso_academico.peso_5.label = T('Participa')
+db.curso_academico.peso_6.default = 0
+db.curso_academico.peso_6.label = T('Comportamiento')
 
 db.config.codigo_centro.required = True
 db.config.codigo_centro.requires = [IS_NOT_EMPTY(error_message=T('Value required')), IS_NOT_IN_DB(db, 'config.codigo_centro',error_message=T('Value duplicated'))]
@@ -278,11 +313,39 @@ db.grupo.grupo.requires = [IS_NOT_EMPTY(error_message=T('Value required')), IS_N
 
 db.departamento.departamento.required = True
 db.departamento.departamento.requires = [IS_NOT_EMPTY(error_message=T('Value required')), IS_NOT_IN_DB(db, 'departamento.departamento',error_message=T('Value duplicated'))]
+db.departamento.usar_criterios_departamento.default = True
+db.departamento.peso_1.default = 75
+db.departamento.peso_2.default = 7.5
+db.departamento.peso_3.default = 7.5
+db.departamento.peso_4.default = 5
+db.departamento.peso_5.default = 5
+db.departamento.peso_6.default = 0
+db.departamento.peso_1.label = T('Prueba de nivel')
+db.departamento.peso_2.label = T('Trabajo en clase')
+db.departamento.peso_3.label = T('Trabajo en casa')
+db.departamento.peso_4.label = T('Interés')
+db.departamento.peso_5.label = T('Participa')
+db.departamento.peso_6.label = T('Comportamiento')
 
 db.asignatura.abreviatura.required = True
 db.asignatura.abreviatura.requires = [IS_NOT_EMPTY(error_message=T('Value required')), IS_NOT_IN_DB(db, 'asignatura.abreviatura',error_message=T('Value duplicated'))]
 db.asignatura.asignatura.required = True
 db.asignatura.asignatura.requires = [IS_NOT_EMPTY(error_message=T('Value required')), IS_NOT_IN_DB(db, 'asignatura.asignatura',error_message=T('Value duplicated'))]
+db.asignatura.usar_criterios_asignatura.default = False
+db.asignatura.id_departamento.label = T('Departamento')
+db.asignatura.peso_1.default = 75
+db.asignatura.peso_2.default = 7.5
+db.asignatura.peso_3.default = 7.5
+db.asignatura.peso_4.default = 5
+db.asignatura.peso_5.default = 5
+db.asignatura.peso_6.default = 0
+db.asignatura.peso_1.label = T('Prueba de nivel')
+db.asignatura.peso_2.label = T('Trabajo en clase')
+db.asignatura.peso_3.label = T('Trabajo en casa')
+db.asignatura.peso_4.label = T('Interés')
+db.asignatura.peso_5.label = T('Participa')
+db.asignatura.peso_6.label = T('Comportamiento')
+
 
 db.curso_academico_evaluacion.id_curso_academico.readable =  db.curso_academico_evaluacion.id_curso_academico.writable = False
 db.curso_academico_evaluacion.evaluacion.required = True

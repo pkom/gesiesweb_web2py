@@ -7,7 +7,7 @@ def index(): return dict(message="hello from services.py")
 @auth.requires_login()
 @auth.requires(auth.has_membership(role='Responsables') or auth.has_membership(role="Administrativos") or auth.has_membership(role='Profesores'))
 def call():
-    session.forget()
+#    session.forget()
     return service()
 
 @service.json
@@ -723,6 +723,31 @@ def getMisEvaluaciones():
 @service.json
 def getMiEvaluacion():
     id_grupo_profesor_asignatura = int(request.vars.idgrupoprofesorasignatura)
+    # vamos a ver que porcentajes usaremos en la evaluación de esta asignatura
+    if db.grupo_profesor_asignatura(id_grupo_profesor_asignatura).id_asignatura.usar_criterios_asignatura:
+        # tenemos que usar los criterios específicos de esa asignatura
+        session.peso_1 = float(db.grupo_profesor_asignatura(id_grupo_profesor_asignatura).id_asignatura.peso_1) * 0.06
+        session.peso_2 = float(db.grupo_profesor_asignatura(id_grupo_profesor_asignatura).id_asignatura.peso_2) * 0.06
+        session.peso_3 = float(db.grupo_profesor_asignatura(id_grupo_profesor_asignatura).id_asignatura.peso_3) * 0.06
+        session.peso_4 = float(db.grupo_profesor_asignatura(id_grupo_profesor_asignatura).id_asignatura.peso_4) * 0.06
+        session.peso_5 = float(db.grupo_profesor_asignatura(id_grupo_profesor_asignatura).id_asignatura.peso_5) * 0.06
+        session.peso_6 = float(db.grupo_profesor_asignatura(id_grupo_profesor_asignatura).id_asignatura.peso_6) * 0.06
+    elif db.grupo_profesor_asignatura(id_grupo_profesor_asignatura).id_asignatura.id_departamento.usar_criterios_departamento:
+        # tenemos que usar los criterios específicos del departamento
+        session.peso_1 = float(db.grupo_profesor_asignatura(id_grupo_profesor_asignatura).id_asignatura.id_departamento.peso_1) * 0.06
+        session.peso_2 = float(db.grupo_profesor_asignatura(id_grupo_profesor_asignatura).id_asignatura.id_departamento.peso_2) * 0.06
+        session.peso_3 = float(db.grupo_profesor_asignatura(id_grupo_profesor_asignatura).id_asignatura.id_departamento.peso_3) * 0.06
+        session.peso_4 = float(db.grupo_profesor_asignatura(id_grupo_profesor_asignatura).id_asignatura.id_departamento.peso_4) * 0.06
+        session.peso_5 = float(db.grupo_profesor_asignatura(id_grupo_profesor_asignatura).id_asignatura.id_departamento.peso_5) * 0.06
+        session.peso_6 = float(db.grupo_profesor_asignatura(id_grupo_profesor_asignatura).id_asignatura.id_departamento.peso_6) * 0.06
+    else:
+        # usaremos los del curso académico
+        session.peso_1 = float(db.curso_academico(session.curso_academico_id).peso_1) * 0.06
+        session.peso_2 = float(db.curso_academico(session.curso_academico_id).peso_2) * 0.06
+        session.peso_3 = float(db.curso_academico(session.curso_academico_id).peso_3) * 0.06
+        session.peso_4 = float(db.curso_academico(session.curso_academico_id).peso_4) * 0.06
+        session.peso_5 = float(db.curso_academico(session.curso_academico_id).peso_5) * 0.06
+        session.peso_6 = float(db.curso_academico(session.curso_academico_id).peso_6) * 0.06
     id_evaluacion = int(request.vars.idevaluacion)
     fields = ['alumno','nivel','trabajo_clase','trabajo_casa','interes','participa','comportamiento','evaluacion','observaciones']  
     rows = []
@@ -788,6 +813,22 @@ def modificaEvaluacion():
     # estamos editando evaluaciones
     if request.vars.oper == 'edit':
         idevaluacionalumno = int(request.vars.id)
+
+        peso1 = float(session.peso_1)
+        peso2 = float(session.peso_2)
+        peso3 = float(session.peso_3)
+        peso4 = float(session.peso_4)
+        peso5 = float(session.peso_5)
+        peso6 = float(session.peso_6)
+                
+                
+        #peso1 = float(request.vars.peso1 or 4.5)
+        #peso2 = float(request.vars.peso2 or 0.45)
+        #peso3 = float(request.vars.peso3 or 0.45)
+        #peso4 = float(request.vars.peso4 or 0.3)
+        #peso5 = float(request.vars.peso5 or 0.3)
+        #peso6 = float(request.vars.peso6 or 0)
+        
         if request.vars.nivel:
             nivel = int(request.vars.nivel)
             db.evaluacion_alumno[idevaluacionalumno] = dict(nivel = nivel)        
@@ -811,12 +852,8 @@ def modificaEvaluacion():
         
         # procesemos el global    
         filaevaluacion = db(db.evaluacion_alumno.id == idevaluacionalumno).select().first()
-        # método de cálculo inicial, media aritmética
-        #filaevaluacion.evaluacion = ((filaevaluacion.nivel + filaevaluacion.trabajo_clase + filaevaluacion.trabajo_casa +
-        #    filaevaluacion.interes + filaevaluacion.participa + filaevaluacion.comportamiento)/float(6))/float(10)
-        # método de cálculo de prueba, ponderando el nivel a un 70 por ciento
-        filaevaluacion.evaluacion = ((filaevaluacion.nivel*4.2 + filaevaluacion.trabajo_clase*0.45 + filaevaluacion.trabajo_casa*0.45 +
-            filaevaluacion.interes*0.3 + filaevaluacion.participa*0.3 + filaevaluacion.comportamiento*0.3)/float(6))/float(10)
+        filaevaluacion.evaluacion = ((filaevaluacion.nivel*peso1 + filaevaluacion.trabajo_clase*peso2 + filaevaluacion.trabajo_casa*peso3 +
+            filaevaluacion.interes*peso4 + filaevaluacion.participa*peso5 + filaevaluacion.comportamiento*peso6)/float(6))/float(10)
                         
                         
         filaevaluacion.update_record()    

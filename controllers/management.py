@@ -39,8 +39,13 @@ def show_course():
 @auth.requires_membership(role='Responsables')
 def show_courses():
     grid = SQLFORM.grid(db.curso_academico, paginate=10, ui='jquery-ui', maxtextlength={'curso_academico.curso':50}, 
-            deletable=False, csv=False, fields=[db.curso_academico.id, db.curso_academico.curso])
+            deletable=False, csv=False, fields=[db.curso_academico.id, db.curso_academico.curso], onvalidation=valida_pesos)
     return dict(grid = grid)
+
+def valida_pesos(form):
+    suma = form.vars.peso_1 + form.vars.peso_2 + form.vars.peso_3 + form.vars.peso_4 + form.vars.peso_5 + form.vars.peso_6
+    if suma <> 100:
+        form.errors.peso_6 = T('La suma de los porcentajes debe ser igual a 100')
 
 @auth.requires_membership(role='Responsables')
 def show_courses_old():
@@ -117,16 +122,26 @@ def show_groups():
 def show_departament():
     departamento = request.args(0) or redirect(URL('show_departaments'))
     nombredpto = db.curso_academico_departamento(departamento).id_departamento.departamento
+    pesos = {}
+    pesos["peso_1"] = db.curso_academico_departamento(departamento).id_departamento.peso_1
+    pesos["peso_2"] = db.curso_academico_departamento(departamento).id_departamento.peso_2
+    pesos["peso_3"] = db.curso_academico_departamento(departamento).id_departamento.peso_3
+    pesos["peso_4"] = db.curso_academico_departamento(departamento).id_departamento.peso_4
+    pesos["peso_5"] = db.curso_academico_departamento(departamento).id_departamento.peso_5
+    pesos["peso_6"] = db.curso_academico_departamento(departamento).id_departamento.peso_6
+    usar = db.curso_academico_departamento(departamento).id_departamento.usar_criterios_departamento
+                                                                                                    
     jefe = db.curso_academico_departamento(departamento).id_jefe
     oprofesor = obies.Profesor(db, session)
     profesoresdpto = oprofesor.dame_profesores_departamento(departamento)
+    asignaturas = db(db.asignatura.id_departamento==db.curso_academico_departamento(departamento).id_departamento.id).select(db.asignatura.ALL,orderby=db.asignatura.asignatura)
     profesoresselect = SELECT(OPTION('Sin asignar', _value = -1),_id='selectjefe')
     for profe in profesoresdpto:
         if jefe and jefe.id == profe.profesor.id:
             profesoresselect.append(OPTION(profe.profesor.apellidos+', '+profe.profesor.nombre, _value=profe.profesor.id, _selected='selected'))
         else:
             profesoresselect.append(OPTION(profe.profesor.apellidos+', '+profe.profesor.nombre, _value=profe.profesor.id))            
-    return dict(departamentoid=departamento, departamentonombre=nombredpto, jefe = profesoresselect, profesores = profesoresdpto)
+    return dict(departamentoid=departamento, nombredpto=nombredpto, pesos=pesos, usar=usar, jefe = profesoresselect, profesores = profesoresdpto, asignaturas=asignaturas)
 
 @auth.requires(auth.has_membership(role='Responsables') or auth.has_membership(role="Administrativos"))
 def show_departaments():
@@ -181,3 +196,27 @@ def show_responsibles():
             session.flash = T('new responsible inserted')
         redirect(URL('show_responsibles'))                        
     return dict(form=form, responsables=responsables)
+
+@auth.requires_membership(role='Profesores')
+def departamento():
+    if not session.profesor.esJefe:
+        redirect(URL('default', 'index'))
+    departamento = db.departamento(session.profesor.id_departamento)
+    form = crud.update(db.departamento, departamento, deletable = False, create=False, next = URL('departamento'), message = T('Departamento actualizado'), onvalidation=valida_pesos)    
+    return dict(form=form)
+
+@auth.requires_membership(role='Profesores')
+def asignaturas():
+    if not session.profesor.esJefe:
+        redirect(URL('default', 'index'))
+    db.asignatura.id.readable=False
+    db.asignatura.id_departamento.writable=False       
+    grid = SQLFORM.grid(db.asignatura.id_departamento == session.profesor.id_departamento, paginate=10, ui='jquery-ui', maxtextlengths={'asignatura.abreviatura':10,'asignatura.asignatura':50}, csv=False, deletable=False, create=False, 
+                        fields=[db.asignatura.id, db.asignatura.abreviatura, db.asignatura.asignatura], onvalidation=valida_pesos)
+    return dict(grid = grid)
+
+def valida_pesos(form):
+    if form.vars.usar_criterios_departamento or form.vars.usar_criterios_asignatura:
+        suma = form.vars.peso_1 + form.vars.peso_2 + form.vars.peso_3 + form.vars.peso_4 + form.vars.peso_5 + form.vars.peso_6
+        if suma <> 100:
+            form.errors.peso_6 = T('La suma de los porcentajes debe ser igual a 100')

@@ -5,12 +5,14 @@ from gluon.storage import Storage
 from gluon.contrib.login_methods.ldap_auth import ldap_auth
 from gluon.custom_import import track_changes
 
+T.force('es-es')
+
 settings = Storage()
 
 settings.produccion = True
 
 if settings.produccion == True:
-    settings.expiracion = 5 * 60  # logout after 5 minutes of inactivity
+    settings.expiracion = 60 * 60  # logout after 5 minutes of inactivity
 else:
     settings.expiracion = 60 * 60
 

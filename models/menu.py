@@ -71,7 +71,13 @@ if session.esResponsable:
             (T('Informes Evaluaciones'), False, URL('informes', 'evaluaciones'), [])                                                                    
         ]
     )]
-    
+
+if session.profesor.esJefe:
+    response.menu += [(T('Criterios Eval.'), False, None, [
+        (T('Departamento'), False,  URL('management','departamento'), []),
+        (T('Asignaturas'), False, URL('management','asignaturas'), [])
+        ])]
+        
 #para Responsables
 if session.esResponsable or session.esAdministrativo:
     response.menu+=[

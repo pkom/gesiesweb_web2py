@@ -7,8 +7,15 @@ def index(): return dict(message="hello from evaluaciones.py")
 @auth.requires_login()
 @auth.requires(auth.has_membership(role='Responsables') or auth.has_membership(role="Administrativos"))
 def show_asignaturas():
-    grid = SQLFORM.grid(db.asignatura, paginate=10, ui='jquery-ui', maxtextlengths={'asignatura.abreviatura':10,'asignatura.asignatura':50}, csv=False)
+    grid = SQLFORM.grid(db.asignatura, paginate=10, ui='jquery-ui', maxtextlengths={'asignatura.abreviatura':10,'asignatura.asignatura':50}, csv=False,
+                        fields=[db.asignatura.id, db.asignatura.abreviatura, db.asignatura.asignatura], onvalidation=valida_pesos)
     return dict(grid = grid)
+
+def valida_pesos(form):
+    if form.vars.usar_criterios_asignatura:
+        suma = form.vars.peso_1 + form.vars.peso_2 + form.vars.peso_3 + form.vars.peso_4 + form.vars.peso_5 + form.vars.peso_6
+        if suma <> 100:
+            form.errors.peso_6 = T('La suma de los porcentajes debe ser igual a 100')
 
 @auth.requires_login()     
 @auth.requires_membership(role='Responsables')

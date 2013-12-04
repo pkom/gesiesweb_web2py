@@ -25,7 +25,11 @@ class Departamento(Comun):
                        .select(self.db.curso_academico_departamento.ALL,
                                self.db.departamento.ALL,
                                orderby=self.db.departamento.departamento)
-   
+
+    def dame_asignaturas_departamento(self, iddepartamento):
+        return self.db(self.db.asignatura.id_departamento == iddepartamento) \
+        .select(self.db.asignatura.ALL,orderby=self.db.asignatura.asignatura)
+         
 class Alumno(Comun):
     def dame_alumnos(self):
         return self.db().select(self.db.alumno.ALL,orderby=self.db.alumno.apellidos|self.alumno.nombre)

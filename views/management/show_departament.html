@@ -1,9 +1,9 @@
 {{extend 'layout.html'}}
-{{=H3(T('Datos del Departamento')+': '+departamentonombre)}}
+{{=H3(T('Datos del Departamento')+': '+nombredpto)}}
 <table class="tablasgestion">
     <tr class="cabtablasgestion">
         <th>{{=T('Profesorado')+': '+str(len(profesores))}}</th>
-        <th>{{=T('Jefatura del Departamento')}}</th>        
+        <th>{{=T('Jefatura')}}</th>        
         <th>{{=jefe}}</th>            
     </tr>
     <tr>
@@ -22,7 +22,53 @@
         <td></td>        
     </tr>
 </table>    
-
+<table class="tablasgestion">
+    <tr class="cabtablasgestion">
+        <th>{{=(T('SI') if usar else T('NO'))+T(' se usan Criterios de Evaluación del departamento')}}</th>        
+        <th>{{=T('Prueba de nivel')}}</th>               
+        <th>{{=T('Trabajo en Clase')}}</th>
+        <th>{{=T('Trabajo en Casa')}}</th>
+        <th>{{=T('Interés')}}</th>
+        <th>{{=T('Participación')}}</th>
+        <th>{{=T('Comportamiento')}}</th>        
+    </tr>
+    <tr>
+        <td>{{=T('Porcentajes')}}</td>
+        <td>{{=CENTER("%5.2f %%" % (pesos["peso_1"]))}}</td>
+        <td>{{=CENTER("%5.2f %%" % (pesos["peso_2"]))}}</td>        
+        <td>{{=CENTER("%5.2f %%" % (pesos["peso_3"]))}}</td>
+        <td>{{=CENTER("%5.2f %%" % (pesos["peso_4"]))}}</td>
+        <td>{{=CENTER("%5.2f %%" % (pesos["peso_5"]))}}</td>
+        <td>{{=CENTER("%5.2f %%" % (pesos["peso_6"]))}}</td>
+    </tr>
+</table>    
+<table class="tablasgestion">
+    <tr class="cabtablasgestion">
+        <th>{{=T('Asignaturas')+': '+str(len(asignaturas))}}</th>        
+        <th>{{=T('Usar criterios de asignatura')}}</th>
+        <th>{{=T('Prueba de nivel')}}</th>               
+        <th>{{=T('Trabajo en Clase')}}</th>
+        <th>{{=T('Trabajo en Casa')}}</th>
+        <th>{{=T('Interés')}}</th>
+        <th>{{=T('Participación')}}</th>
+        <th>{{=T('Comportamiento')}}</th>                
+    </tr>
+    {{if asignaturas:}}
+        {{for asignatura in asignaturas:}}
+            {{=TR(TD(asignatura.asignatura+' ('+asignatura.abreviatura+')'),
+                  TD(CENTER(T('SI') if asignatura.usar_criterios_asignatura else T('NO'))),
+                  TD(CENTER("%5.2f %%" % (asignatura.peso_1))),
+                  TD(CENTER("%5.2f %%" % (asignatura.peso_2))),
+                  TD(CENTER("%5.2f %%" % (asignatura.peso_3))),
+                  TD(CENTER("%5.2f %%" % (asignatura.peso_4))),
+                  TD(CENTER("%5.2f %%" % (asignatura.peso_5))),
+                  TD(CENTER("%5.2f %%" % (asignatura.peso_6)))                  
+            )}}
+        {{pass}}
+    {{else:}}
+        {{=TR(TD(T('Sin asignaturas asignadas')))}}
+    {{pass}}
+</table>    
 <script type="text/javascript">
 $(document).ready(function(){
 	//debemos asignar el evento onchange del select para cuando cambiemos el jefe del departamento

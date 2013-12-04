@@ -278,3 +278,160 @@ CREATE TABLE evaluacion_alumno(
     PRIMARY KEY(id)
 ) ENGINE=InnoDB CHARACTER SET utf8;
 success!
+timestamp: 2013-11-29T13:24:27.502938
+ALTER TABLE asignatura ADD departamento INT, ADD INDEX departamento__idx (departamento), ADD FOREIGN KEY (departamento) REFERENCES departamento (id) ON DELETE CASCADE;
+success!
+timestamp: 2013-11-29T14:03:00.569780
+ALTER TABLE curso_academico ADD peso_4 INT NOT NULL;
+success!
+timestamp: 2013-11-29T14:03:00.641174
+ALTER TABLE curso_academico ADD peso_6 INT NOT NULL;
+success!
+timestamp: 2013-11-29T14:03:00.700631
+ALTER TABLE curso_academico ADD peso_1 INT NOT NULL;
+success!
+timestamp: 2013-11-29T14:03:00.760645
+ALTER TABLE curso_academico ADD peso_2 INT NOT NULL;
+success!
+timestamp: 2013-11-29T14:03:00.820763
+ALTER TABLE curso_academico ADD peso_3 INT NOT NULL;
+success!
+timestamp: 2013-11-29T14:03:00.882471
+ALTER TABLE curso_academico ADD peso_5 INT NOT NULL;
+success!
+timestamp: 2013-11-29T14:06:46.527900
+ALTER TABLE curso_academico ADD peso_4__tmp NUMERIC(4,2) NOT NULL;
+success!
+UPDATE curso_academico SET peso_4__tmp=peso_4;
+success!
+ALTER TABLE curso_academico DROP COLUMN peso_4;
+success!
+ALTER TABLE curso_academico ADD peso_4 NUMERIC(4,2) NOT NULL;
+success!
+UPDATE curso_academico SET peso_4=peso_4__tmp;
+success!
+ALTER TABLE curso_academico DROP COLUMN peso_4__tmp;
+success!
+timestamp: 2013-11-29T14:06:46.855655
+ALTER TABLE curso_academico ADD peso_6__tmp NUMERIC(4,2) NOT NULL;
+success!
+UPDATE curso_academico SET peso_6__tmp=peso_6;
+success!
+ALTER TABLE curso_academico DROP COLUMN peso_6;
+success!
+ALTER TABLE curso_academico ADD peso_6 NUMERIC(4,2) NOT NULL;
+success!
+UPDATE curso_academico SET peso_6=peso_6__tmp;
+success!
+ALTER TABLE curso_academico DROP COLUMN peso_6__tmp;
+success!
+timestamp: 2013-11-29T14:06:47.175278
+ALTER TABLE curso_academico ADD peso_1__tmp NUMERIC(4,2) NOT NULL;
+success!
+UPDATE curso_academico SET peso_1__tmp=peso_1;
+success!
+ALTER TABLE curso_academico DROP COLUMN peso_1;
+success!
+ALTER TABLE curso_academico ADD peso_1 NUMERIC(4,2) NOT NULL;
+success!
+UPDATE curso_academico SET peso_1=peso_1__tmp;
+success!
+ALTER TABLE curso_academico DROP COLUMN peso_1__tmp;
+success!
+timestamp: 2013-11-29T14:06:47.427390
+ALTER TABLE curso_academico ADD peso_2__tmp NUMERIC(4,2) NOT NULL;
+success!
+UPDATE curso_academico SET peso_2__tmp=peso_2;
+success!
+ALTER TABLE curso_academico DROP COLUMN peso_2;
+success!
+ALTER TABLE curso_academico ADD peso_2 NUMERIC(4,2) NOT NULL;
+success!
+UPDATE curso_academico SET peso_2=peso_2__tmp;
+success!
+ALTER TABLE curso_academico DROP COLUMN peso_2__tmp;
+success!
+timestamp: 2013-11-29T14:06:47.671522
+ALTER TABLE curso_academico ADD peso_3__tmp NUMERIC(4,2) NOT NULL;
+success!
+UPDATE curso_academico SET peso_3__tmp=peso_3;
+success!
+ALTER TABLE curso_academico DROP COLUMN peso_3;
+success!
+ALTER TABLE curso_academico ADD peso_3 NUMERIC(4,2) NOT NULL;
+success!
+UPDATE curso_academico SET peso_3=peso_3__tmp;
+success!
+ALTER TABLE curso_academico DROP COLUMN peso_3__tmp;
+success!
+timestamp: 2013-11-29T14:06:47.917549
+ALTER TABLE curso_academico ADD peso_5__tmp NUMERIC(4,2) NOT NULL;
+success!
+UPDATE curso_academico SET peso_5__tmp=peso_5;
+success!
+ALTER TABLE curso_academico DROP COLUMN peso_5;
+success!
+ALTER TABLE curso_academico ADD peso_5 NUMERIC(4,2) NOT NULL;
+success!
+UPDATE curso_academico SET peso_5=peso_5__tmp;
+success!
+ALTER TABLE curso_academico DROP COLUMN peso_5__tmp;
+success!
+timestamp: 2013-11-29T20:10:21.895567
+ALTER TABLE asignatura ADD id_departamento INT, ADD INDEX id_departamento__idx (id_departamento), ADD FOREIGN KEY (id_departamento) REFERENCES departamento (id) ON DELETE CASCADE;
+success!
+timestamp: 2013-11-29T20:10:21.971809
+ALTER TABLE asignatura DROP COLUMN departamento;
+timestamp: 2013-11-29T20:10:25.487295
+ALTER TABLE asignatura DROP COLUMN departamento;
+timestamp: 2013-11-29T20:20:19.091537
+ALTER TABLE asignatura DROP COLUMN departamento;
+timestamp: 2013-11-29T20:35:35.907233
+ALTER TABLE asignatura DROP COLUMN departamento;
+timestamp: 2013-11-29T21:32:26.435215
+ALTER TABLE asignatura DROP COLUMN departamento;
+timestamp: 2013-11-29T21:34:36.560432
+ALTER TABLE asignatura DROP COLUMN departamento;
+success!
+timestamp: 2013-12-02T09:02:48.748853
+ALTER TABLE departamento ADD peso_4 NUMERIC(4,2) NOT NULL;
+success!
+timestamp: 2013-12-02T09:02:48.923525
+ALTER TABLE departamento ADD peso_5 NUMERIC(4,2) NOT NULL;
+success!
+timestamp: 2013-12-02T09:02:48.983397
+ALTER TABLE departamento ADD peso_6 NUMERIC(4,2) NOT NULL;
+success!
+timestamp: 2013-12-02T09:02:49.075428
+ALTER TABLE departamento ADD peso_1 NUMERIC(4,2) NOT NULL;
+success!
+timestamp: 2013-12-02T09:02:49.127467
+ALTER TABLE departamento ADD peso_2 NUMERIC(4,2) NOT NULL;
+success!
+timestamp: 2013-12-02T09:02:49.183575
+ALTER TABLE departamento ADD peso_3 NUMERIC(4,2) NOT NULL;
+success!
+timestamp: 2013-12-02T09:02:49.258225
+ALTER TABLE departamento ADD usar_criterios_departamento CHAR(1) NOT NULL;
+success!
+timestamp: 2013-12-02T09:02:49.442574
+ALTER TABLE asignatura ADD peso_4 NUMERIC(4,2) NOT NULL;
+success!
+timestamp: 2013-12-02T09:02:49.502609
+ALTER TABLE asignatura ADD peso_5 NUMERIC(4,2) NOT NULL;
+success!
+timestamp: 2013-12-02T09:02:49.562589
+ALTER TABLE asignatura ADD peso_6 NUMERIC(4,2) NOT NULL;
+success!
+timestamp: 2013-12-02T09:02:49.627104
+ALTER TABLE asignatura ADD peso_1 NUMERIC(4,2) NOT NULL;
+success!
+timestamp: 2013-12-02T09:02:49.698798
+ALTER TABLE asignatura ADD peso_2 NUMERIC(4,2) NOT NULL;
+success!
+timestamp: 2013-12-02T09:02:49.758869
+ALTER TABLE asignatura ADD usar_criterios_asignatura CHAR(1) NOT NULL;
+success!
+timestamp: 2013-12-02T09:02:49.823067
+ALTER TABLE asignatura ADD peso_3 NUMERIC(4,2) NOT NULL;
+success!
