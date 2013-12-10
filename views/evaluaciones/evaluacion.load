@@ -68,7 +68,8 @@ jQuery(document).ready(function(){
             height: '100%',
     		autowidth: true,
 		    shrinkToFit: true,            
-		    ondblClickRow: function(rowid) {
+                //ondblClickRow: function(rowid) {
+                onSelectRow: function(rowid) {               
 				var filaevaluacion = jQuery("#"+subgrid_table_id).jqGrid('getRowData', rowid);  
                 titulo = "Evaluación de alumnos: "+filaevaluacion.evaluacion+" Grupo: "+filagrupoasignatura.grupo+" Asignatura: "+filagrupoasignatura.asignatura;
       			window.datos = {idgrupoprofesorasignatura: row_id,
@@ -92,14 +93,20 @@ jQuery(document).ready(function(){
       			});
         	},
         });
+        
+       
+        
         jQuery("#"+subgrid_table_id).jqGrid('navGrid',"#"+pager_id,
             {add:false,edit:false,del:false,view:false,search:false} //options
         );
+        
     }    
   });     
   jQuery("#misevaluaciones").jqGrid('navGrid','#pagermisevaluaciones',{add:false,edit:false,del:false,view:false,search:false});
   jQuery("#misevaluaciones").jqGrid('filterToolbar');
   var gwdth = jQuery("#contenedormisevaluaciones").width();
   jQuery("#misevaluaciones").jqGrid().setGridWidth(gwdth);  
+  
 });
+
 </script>
