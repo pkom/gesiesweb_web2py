@@ -204,6 +204,7 @@
 'Importar grupos-tutores desde Rayuela...': 'Importar grupos-tutores desde Rayuela...',
 'Importar profesorado desde Rayuela': 'Importar profesorado desde Rayuela',
 'in': 'in',
+'Incluir todos los alumnos en la asignatura': 'Incluir todos los alumnos en la asignatura',
 'Informes de evaluaciones': 'Informes de evaluaciones',
 'Informes Evaluaciones': 'Informes Evaluaciones',
 'Informático/a': 'Informático/a',

@@ -137,14 +137,23 @@ jQuery(document).ready(function(){
   }); 
 
   jQuery("#grupoprofesorasignaturas").jqGrid('navButtonAdd','#pagergrupoprofesorasignaturas',{
-                caption: "Asignar alumnos",
+                caption: "Asigna alumnos",
                 buttonicon :'ui-icon-person',
       			title: "Asigna alumnos pendientes del grupo a este profesor y asignatura",
                 onClickButton : function (){ 
                     asignaAlumnosProfesorAsignatura();
                 } 
   }); 
-          
+
+  jQuery("#grupoprofesorasignaturas").jqGrid('navButtonAdd','#pagergrupoprofesorasignaturas',{
+                caption: "R",
+                buttonicon :'ui-icon-person',
+      			title: "Asignación de alumnos del grupo a asignaturas modo rápido",
+                onClickButton : function (){ 
+                    asignaAlumnosAsignatura();
+                } 
+  });           
+                              
      
   jQuery("#cajagrupoprofesorasignaturas" ).dialog({ autoOpen: false,
                                          width: 500,
@@ -228,6 +237,28 @@ function asignaAlumnosProfesorAsignatura(){
         });
 }
 
+function asignaAlumnosAsignatura(){
+    var id = rowSelected();
+    if(id==false)
+         return false;
+    jQuery("#dialog-form").html("");
+    jQuery("#dialog-form").load("form_alumnos_asignaturas.html", function() {
+        jQuery("#form_data #action").val("add");
+        jQuery("#form_data #messageForm").html("Todos los campos son obligatorios");                                     
+    
+        x = (jQuery(window).width()-750)/2;
+        y = (jQuery(window).height()-400)/2;
+    
+        jQuery("#dialog-form").dialog({
+            resizable: false,
+            position: top,
+            modal: true,
+            width: 750,                     
+            title: "Asignar alumnos a asignaturas"
+        }).dialog('option', 'position', [x, y]);  
+        jQuery(".ui-button-text").css("padding-top", "0px");         
+    });
+}
 
 
 </script>

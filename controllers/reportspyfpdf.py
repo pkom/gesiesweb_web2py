@@ -1431,12 +1431,26 @@ def informeevaluacion():
 
     for asignatura in datos.keys():
         datos[asignatura]["evaluacion"] = float(datos[asignatura]["evaluacion"])/nevaluaciones
-        datos[asignatura]["aspectos"]["NIV"] = (float(datos[asignatura]["aspectos"]["NIV"])/nevaluaciones)/float(10)
-        datos[asignatura]["aspectos"]["TCL"] = (float(datos[asignatura]["aspectos"]["TCL"])/nevaluaciones)/float(10)
-        datos[asignatura]["aspectos"]["TCA"] = (float(datos[asignatura]["aspectos"]["TCA"])/nevaluaciones)/float(10)
-        datos[asignatura]["aspectos"]["INT"] = (float(datos[asignatura]["aspectos"]["INT"])/nevaluaciones)/float(10)
-        datos[asignatura]["aspectos"]["PART"] = (float(datos[asignatura]["aspectos"]["PART"])/nevaluaciones)/float(10)
-        datos[asignatura]["aspectos"]["COMP"] = (float(datos[asignatura]["aspectos"]["COMP"])/nevaluaciones)/float(10)
+        #datos[asignatura]["aspectos"]["NIV"] = (float(datos[asignatura]["aspectos"]["NIV"])/nevaluaciones)/float(10)
+        #datos[asignatura]["aspectos"]["TCL"] = (float(datos[asignatura]["aspectos"]["TCL"])/nevaluaciones)/float(10)
+        #datos[asignatura]["aspectos"]["TCA"] = (float(datos[asignatura]["aspectos"]["TCA"])/nevaluaciones)/float(10)
+        #datos[asignatura]["aspectos"]["INT"] = (float(datos[asignatura]["aspectos"]["INT"])/nevaluaciones)/float(10)
+        #datos[asignatura]["aspectos"]["PART"] = (float(datos[asignatura]["aspectos"]["PART"])/nevaluaciones)/float(10)
+        #datos[asignatura]["aspectos"]["COMP"] = (float(datos[asignatura]["aspectos"]["COMP"])/nevaluaciones)/float(10)
+
+        datos[asignatura]["aspectos"]["NIV"] = (float(datos[asignatura]["aspectos"]["NIV"])/nevaluaciones)
+        datos[asignatura]["aspectos"]["TCL"] = (float(datos[asignatura]["aspectos"]["TCL"])/nevaluaciones)
+        datos[asignatura]["aspectos"]["TCA"] = (float(datos[asignatura]["aspectos"]["TCA"])/nevaluaciones)
+        datos[asignatura]["aspectos"]["INT"] = (float(datos[asignatura]["aspectos"]["INT"])/nevaluaciones)
+        datos[asignatura]["aspectos"]["PART"] = (float(datos[asignatura]["aspectos"]["PART"])/nevaluaciones)
+        datos[asignatura]["aspectos"]["COMP"] = (float(datos[asignatura]["aspectos"]["COMP"])/nevaluaciones)
+
+        datos[asignatura]["evaluacion"] = (datos[asignatura]["aspectos"]["NIV"] +
+                                          datos[asignatura]["aspectos"]["TCL"] +
+                                          datos[asignatura]["aspectos"]["TCA"] +
+                                          datos[asignatura]["aspectos"]["INT"] +
+                                          datos[asignatura]["aspectos"]["PART"] +
+                                          datos[asignatura]["aspectos"]["COMP"]) / float(6)
 
     linea = 1
     for asignatura in sorted(datos.iterkeys()):
@@ -1630,7 +1644,7 @@ def informecurso():
                                      "PART":evaluacion.evaluacion_alumno.participa,
                                      "COMP":evaluacion.evaluacion_alumno.comportamiento} }
         else:
-            datos[evaluacion.asignatura.abreviatura]["evaluacion"] +=  evaluacion.evaluacion_alumno.evaluacion
+#            datos[evaluacion.asignatura.abreviatura]["evaluacion"] +=  evaluacion.evaluacion_alumno.evaluacion
             datos[evaluacion.asignatura.abreviatura]["aspectos"]["NIV"] += evaluacion.evaluacion_alumno.nivel
             datos[evaluacion.asignatura.abreviatura]["aspectos"]["TCL"] += evaluacion.evaluacion_alumno.trabajo_clase
             datos[evaluacion.asignatura.abreviatura]["aspectos"]["TCA"] += evaluacion.evaluacion_alumno.trabajo_casa
@@ -1640,13 +1654,27 @@ def informecurso():
 
     for asignatura in datos.keys():
         datos[asignatura]["evaluacion"] = float(datos[asignatura]["evaluacion"])/nevaluaciones
-        datos[asignatura]["aspectos"]["NIV"] = (float(datos[asignatura]["aspectos"]["NIV"])/nevaluaciones)/float(10)
-        datos[asignatura]["aspectos"]["TCL"] = (float(datos[asignatura]["aspectos"]["TCL"])/nevaluaciones)/float(10)
-        datos[asignatura]["aspectos"]["TCA"] = (float(datos[asignatura]["aspectos"]["TCA"])/nevaluaciones)/float(10)
-        datos[asignatura]["aspectos"]["INT"] = (float(datos[asignatura]["aspectos"]["INT"])/nevaluaciones)/float(10)
-        datos[asignatura]["aspectos"]["PART"] = (float(datos[asignatura]["aspectos"]["PART"])/nevaluaciones)/float(10)
-        datos[asignatura]["aspectos"]["COMP"] = (float(datos[asignatura]["aspectos"]["COMP"])/nevaluaciones)/float(10)
+        #datos[asignatura]["aspectos"]["NIV"] = (float(datos[asignatura]["aspectos"]["NIV"])/nevaluaciones)/float(10)
+        #datos[asignatura]["aspectos"]["TCL"] = (float(datos[asignatura]["aspectos"]["TCL"])/nevaluaciones)/float(10)
+        #datos[asignatura]["aspectos"]["TCA"] = (float(datos[asignatura]["aspectos"]["TCA"])/nevaluaciones)/float(10)
+        #datos[asignatura]["aspectos"]["INT"] = (float(datos[asignatura]["aspectos"]["INT"])/nevaluaciones)/float(10)
+        #datos[asignatura]["aspectos"]["PART"] = (float(datos[asignatura]["aspectos"]["PART"])/nevaluaciones)/float(10)
+        #datos[asignatura]["aspectos"]["COMP"] = (float(datos[asignatura]["aspectos"]["COMP"])/nevaluaciones)/float(10)
 
+        datos[asignatura]["aspectos"]["NIV"] = (float(datos[asignatura]["aspectos"]["NIV"])/nevaluaciones)
+        datos[asignatura]["aspectos"]["TCL"] = (float(datos[asignatura]["aspectos"]["TCL"])/nevaluaciones)
+        datos[asignatura]["aspectos"]["TCA"] = (float(datos[asignatura]["aspectos"]["TCA"])/nevaluaciones)
+        datos[asignatura]["aspectos"]["INT"] = (float(datos[asignatura]["aspectos"]["INT"])/nevaluaciones)
+        datos[asignatura]["aspectos"]["PART"] = (float(datos[asignatura]["aspectos"]["PART"])/nevaluaciones)
+        datos[asignatura]["aspectos"]["COMP"] = (float(datos[asignatura]["aspectos"]["COMP"])/nevaluaciones)
+    
+        datos[asignatura]["evaluacion"] = (datos[asignatura]["aspectos"]["NIV"] +
+                                          datos[asignatura]["aspectos"]["TCL"] +
+                                          datos[asignatura]["aspectos"]["TCA"] +
+                                          datos[asignatura]["aspectos"]["INT"] +
+                                          datos[asignatura]["aspectos"]["PART"] +
+                                          datos[asignatura]["aspectos"]["COMP"]) / float(6)
+        
     linea = 1
     for asignatura in sorted(datos.iterkeys()):
         # imprime resumen de asignatura

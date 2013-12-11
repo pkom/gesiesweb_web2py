@@ -71,6 +71,13 @@ def form():
     return dict(message="hello from form")
 
 @auth.requires_login()        
+@auth.requires_membership(role='Responsables')    
+def form_alumnos_asignaturas(): 
+    form=FORM(DIV(TABLE(),
+                  _id="contenedor",_style="width:75%;float:left;"),_id="form_data_alumnos_asignaturas")
+    return dict(form=form)
+
+@auth.requires_login()        
 @auth.requires_membership(role='Profesores')    
 def form_evaluacion(): 
     return dict(message="hello from form_evaluacion")
