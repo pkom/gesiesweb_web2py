@@ -1412,14 +1412,15 @@ def informeevaluacion():
     for evaluacion in evaluaciones:
         if evaluacion.asignatura.abreviatura not in datos.keys():
             datos[evaluacion.asignatura.abreviatura] = {"evaluacion":evaluacion.evaluacion_alumno.evaluacion,
-#                        "asignatura":evaluacion.asignatura.asignatura+" ("+evaluacion.asignatura.abreviatura+")",
                         "asignatura":evaluacion.asignatura.asignatura[:46-len(evaluacion.asignatura.abreviatura)]+" ("+evaluacion.asignatura.abreviatura+")",
                         "aspectos": {"NIV":evaluacion.evaluacion_alumno.nivel,
                                      "TCL":evaluacion.evaluacion_alumno.trabajo_clase,
                                      "TCA":evaluacion.evaluacion_alumno.trabajo_casa,
                                      "INT":evaluacion.evaluacion_alumno.interes,
                                      "PART":evaluacion.evaluacion_alumno.participa,
-                                     "COMP":evaluacion.evaluacion_alumno.comportamiento} }
+                                     "COMP":evaluacion.evaluacion_alumno.comportamiento},
+                        "nalumnos":1}
+                                     
         else:
             datos[evaluacion.asignatura.abreviatura]["evaluacion"] +=  evaluacion.evaluacion_alumno.evaluacion
             datos[evaluacion.asignatura.abreviatura]["aspectos"]["NIV"] += evaluacion.evaluacion_alumno.nivel
@@ -1428,30 +1429,44 @@ def informeevaluacion():
             datos[evaluacion.asignatura.abreviatura]["aspectos"]["INT"] += evaluacion.evaluacion_alumno.interes
             datos[evaluacion.asignatura.abreviatura]["aspectos"]["PART"] += evaluacion.evaluacion_alumno.participa
             datos[evaluacion.asignatura.abreviatura]["aspectos"]["COMP"] += evaluacion.evaluacion_alumno.comportamiento
-
+            datos[evaluacion.asignatura.abreviatura]["nalumnos"] += 1
+    
     for asignatura in datos.keys():
-        datos[asignatura]["evaluacion"] = float(datos[asignatura]["evaluacion"])/nevaluaciones
-        #datos[asignatura]["aspectos"]["NIV"] = (float(datos[asignatura]["aspectos"]["NIV"])/nevaluaciones)/float(10)
-        #datos[asignatura]["aspectos"]["TCL"] = (float(datos[asignatura]["aspectos"]["TCL"])/nevaluaciones)/float(10)
-        #datos[asignatura]["aspectos"]["TCA"] = (float(datos[asignatura]["aspectos"]["TCA"])/nevaluaciones)/float(10)
-        #datos[asignatura]["aspectos"]["INT"] = (float(datos[asignatura]["aspectos"]["INT"])/nevaluaciones)/float(10)
-        #datos[asignatura]["aspectos"]["PART"] = (float(datos[asignatura]["aspectos"]["PART"])/nevaluaciones)/float(10)
-        #datos[asignatura]["aspectos"]["COMP"] = (float(datos[asignatura]["aspectos"]["COMP"])/nevaluaciones)/float(10)
-
-        datos[asignatura]["aspectos"]["NIV"] = (float(datos[asignatura]["aspectos"]["NIV"])/nevaluaciones)
-        datos[asignatura]["aspectos"]["TCL"] = (float(datos[asignatura]["aspectos"]["TCL"])/nevaluaciones)
-        datos[asignatura]["aspectos"]["TCA"] = (float(datos[asignatura]["aspectos"]["TCA"])/nevaluaciones)
-        datos[asignatura]["aspectos"]["INT"] = (float(datos[asignatura]["aspectos"]["INT"])/nevaluaciones)
-        datos[asignatura]["aspectos"]["PART"] = (float(datos[asignatura]["aspectos"]["PART"])/nevaluaciones)
-        datos[asignatura]["aspectos"]["COMP"] = (float(datos[asignatura]["aspectos"]["COMP"])/nevaluaciones)
-
-        datos[asignatura]["evaluacion"] = (datos[asignatura]["aspectos"]["NIV"] +
-                                          datos[asignatura]["aspectos"]["TCL"] +
-                                          datos[asignatura]["aspectos"]["TCA"] +
-                                          datos[asignatura]["aspectos"]["INT"] +
-                                          datos[asignatura]["aspectos"]["PART"] +
-                                          datos[asignatura]["aspectos"]["COMP"]) / float(6)
-
+        datos[asignatura]["evaluacion"] = float(datos[asignatura]["evaluacion"])/datos[asignatura]["nalumnos"]
+        datos[asignatura]["aspectos"]["NIV"] = (float(datos[asignatura]["aspectos"]["NIV"])/datos[asignatura]["nalumnos"])/10
+        datos[asignatura]["aspectos"]["TCL"] = (float(datos[asignatura]["aspectos"]["TCL"])/datos[asignatura]["nalumnos"])/10
+        datos[asignatura]["aspectos"]["TCA"] = (float(datos[asignatura]["aspectos"]["TCA"])/datos[asignatura]["nalumnos"])/10
+        datos[asignatura]["aspectos"]["INT"] = (float(datos[asignatura]["aspectos"]["INT"])/datos[asignatura]["nalumnos"])/10
+        datos[asignatura]["aspectos"]["PART"] = (float(datos[asignatura]["aspectos"]["PART"])/datos[asignatura]["nalumnos"])/10
+        datos[asignatura]["aspectos"]["COMP"] = (float(datos[asignatura]["aspectos"]["COMP"])/datos[asignatura]["nalumnos"])/10
+       
+        
+        #esto no es correcto, debemos tener en cuenta criterios de evaluación de asignatura->departamento->centro
+        #miremos en la tabla de asignaturas si esa asignatura usa criterios
+        (peso1,peso2,peso3,peso4,peso5,peso6) = (0.0,0.0,0.0,0.0,0.0,0.0)
+        asignaturarow = db(db.asignatura.abreviatura==asignatura).select().first()
+        if asignaturarow.usar_criterios_asignatura:
+            (peso1,peso2,peso3,peso4,peso5,peso6) = (asignaturarow.peso_1,asignaturarow.peso_2,asignaturarow.peso_3,
+                                                   asignaturarow.peso_4,asignaturarow.peso_5,asignaturarow.peso_6)            
+        elif asignaturarow.id_departamento.usar_criterios_departamento:
+            (peso1,peso2,peso3,peso4,peso5,peso6) = (asignaturarow.id_departamento.peso_1,asignaturarow.id_departamento.peso_2,
+                                                   asignaturarow.id_departamento.peso_3,asignaturarow.id_departamento.peso_4,
+                                                   asignaturarow.id_departamento.peso_5,asignaturarow.id_departamento.peso_6)
+        else:                                                   
+            (peso1,peso2,peso3,peso4,peso5,peso6) = (evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_1,
+                                                   evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_2,
+                                                   evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_3,
+                                                   evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_4,
+                                                   evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_5,
+                                                   evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_6)                                                   
+            
+        datos[asignatura]["evaluacion"] = (datos[asignatura]["aspectos"]["NIV"]*float(peso1) +
+                                           datos[asignatura]["aspectos"]["TCL"]*float(peso2) +
+                                           datos[asignatura]["aspectos"]["TCA"]*float(peso3) +
+                                           datos[asignatura]["aspectos"]["INT"]*float(peso4) +
+                                           datos[asignatura]["aspectos"]["PART"]*float(peso5) +
+                                           datos[asignatura]["aspectos"]["COMP"]*float(peso6))/100
+           
     linea = 1
     for asignatura in sorted(datos.iterkeys()):
         # imprime resumen de asignatura
@@ -1635,39 +1650,35 @@ def informecurso():
     for evaluacion in evaluaciones:
         if evaluacion.asignatura.abreviatura not in datos.keys():
             datos[evaluacion.asignatura.abreviatura] = {"evaluacion":evaluacion.evaluacion_alumno.evaluacion,
-#                        "asignatura":evaluacion.asignatura.asignatura+" ("+evaluacion.asignatura.abreviatura+")",
                         "asignatura":evaluacion.asignatura.asignatura[:46-len(evaluacion.asignatura.abreviatura)]+" ("+evaluacion.asignatura.abreviatura+")",                        
                         "aspectos": {"NIV":evaluacion.evaluacion_alumno.nivel,
                                      "TCL":evaluacion.evaluacion_alumno.trabajo_clase,
                                      "TCA":evaluacion.evaluacion_alumno.trabajo_casa,
                                      "INT":evaluacion.evaluacion_alumno.interes,
                                      "PART":evaluacion.evaluacion_alumno.participa,
-                                     "COMP":evaluacion.evaluacion_alumno.comportamiento} }
+                                     "COMP":evaluacion.evaluacion_alumno.comportamiento},
+                        "nalumnos": 1 }
         else:
-#            datos[evaluacion.asignatura.abreviatura]["evaluacion"] +=  evaluacion.evaluacion_alumno.evaluacion
+            datos[evaluacion.asignatura.abreviatura]["evaluacion"] +=  evaluacion.evaluacion_alumno.evaluacion
             datos[evaluacion.asignatura.abreviatura]["aspectos"]["NIV"] += evaluacion.evaluacion_alumno.nivel
             datos[evaluacion.asignatura.abreviatura]["aspectos"]["TCL"] += evaluacion.evaluacion_alumno.trabajo_clase
             datos[evaluacion.asignatura.abreviatura]["aspectos"]["TCA"] += evaluacion.evaluacion_alumno.trabajo_casa
             datos[evaluacion.asignatura.abreviatura]["aspectos"]["INT"] += evaluacion.evaluacion_alumno.interes
             datos[evaluacion.asignatura.abreviatura]["aspectos"]["PART"] += evaluacion.evaluacion_alumno.participa
             datos[evaluacion.asignatura.abreviatura]["aspectos"]["COMP"] += evaluacion.evaluacion_alumno.comportamiento
+            datos[evaluacion.asignatura.abreviatura]["nalumnos"] += 1
 
     for asignatura in datos.keys():
-        datos[asignatura]["evaluacion"] = float(datos[asignatura]["evaluacion"])/nevaluaciones
-        #datos[asignatura]["aspectos"]["NIV"] = (float(datos[asignatura]["aspectos"]["NIV"])/nevaluaciones)/float(10)
-        #datos[asignatura]["aspectos"]["TCL"] = (float(datos[asignatura]["aspectos"]["TCL"])/nevaluaciones)/float(10)
-        #datos[asignatura]["aspectos"]["TCA"] = (float(datos[asignatura]["aspectos"]["TCA"])/nevaluaciones)/float(10)
-        #datos[asignatura]["aspectos"]["INT"] = (float(datos[asignatura]["aspectos"]["INT"])/nevaluaciones)/float(10)
-        #datos[asignatura]["aspectos"]["PART"] = (float(datos[asignatura]["aspectos"]["PART"])/nevaluaciones)/float(10)
-        #datos[asignatura]["aspectos"]["COMP"] = (float(datos[asignatura]["aspectos"]["COMP"])/nevaluaciones)/float(10)
-
-        datos[asignatura]["aspectos"]["NIV"] = (float(datos[asignatura]["aspectos"]["NIV"])/nevaluaciones)
-        datos[asignatura]["aspectos"]["TCL"] = (float(datos[asignatura]["aspectos"]["TCL"])/nevaluaciones)
-        datos[asignatura]["aspectos"]["TCA"] = (float(datos[asignatura]["aspectos"]["TCA"])/nevaluaciones)
-        datos[asignatura]["aspectos"]["INT"] = (float(datos[asignatura]["aspectos"]["INT"])/nevaluaciones)
-        datos[asignatura]["aspectos"]["PART"] = (float(datos[asignatura]["aspectos"]["PART"])/nevaluaciones)
-        datos[asignatura]["aspectos"]["COMP"] = (float(datos[asignatura]["aspectos"]["COMP"])/nevaluaciones)
-    
+        datos[asignatura]["evaluacion"] = (float(datos[asignatura]["evaluacion"])/datos[asignatura]["nalumnos"])/10
+        datos[asignatura]["aspectos"]["NIV"] = (float(datos[asignatura]["aspectos"]["NIV"])/datos[asignatura]["nalumnos"])/10
+        datos[asignatura]["aspectos"]["TCL"] = (float(datos[asignatura]["aspectos"]["TCL"])/datos[asignatura]["nalumnos"])/10
+        datos[asignatura]["aspectos"]["TCA"] = (float(datos[asignatura]["aspectos"]["TCA"])/datos[asignatura]["nalumnos"])/10
+        datos[asignatura]["aspectos"]["INT"] = (float(datos[asignatura]["aspectos"]["INT"])/datos[asignatura]["nalumnos"])/10
+        datos[asignatura]["aspectos"]["PART"] = (float(datos[asignatura]["aspectos"]["PART"])/datos[asignatura]["nalumnos"])/10
+        datos[asignatura]["aspectos"]["COMP"] = (float(datos[asignatura]["aspectos"]["COMP"])/datos[asignatura]["nalumnos"])/10
+        
+          
+              
         datos[asignatura]["evaluacion"] = (datos[asignatura]["aspectos"]["NIV"] +
                                           datos[asignatura]["aspectos"]["TCL"] +
                                           datos[asignatura]["aspectos"]["TCA"] +

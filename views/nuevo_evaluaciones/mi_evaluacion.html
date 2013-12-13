@@ -1,0 +1,4 @@
+{{extend 'layout.html'}}
+{{=H5(evaluacion.evaluacion+' ('+(T('Bloqueada') if evaluacion.bloqueada else T('Abierta'))+') '+
+T('del grupo')+': '+grupo+' '+T('de la asignatura')+': '+asignatura)}}
+{{=grid}}
