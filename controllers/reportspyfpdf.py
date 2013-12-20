@@ -1677,15 +1677,32 @@ def informecurso():
         datos[asignatura]["aspectos"]["PART"] = (float(datos[asignatura]["aspectos"]["PART"])/datos[asignatura]["nalumnos"])/10
         datos[asignatura]["aspectos"]["COMP"] = (float(datos[asignatura]["aspectos"]["COMP"])/datos[asignatura]["nalumnos"])/10
         
-          
-              
-        datos[asignatura]["evaluacion"] = (datos[asignatura]["aspectos"]["NIV"] +
-                                          datos[asignatura]["aspectos"]["TCL"] +
-                                          datos[asignatura]["aspectos"]["TCA"] +
-                                          datos[asignatura]["aspectos"]["INT"] +
-                                          datos[asignatura]["aspectos"]["PART"] +
-                                          datos[asignatura]["aspectos"]["COMP"]) / float(6)
-        
+        #esto no es correcto, debemos tener en cuenta criterios de evaluación de asignatura->departamento->centro
+        #miremos en la tabla de asignaturas si esa asignatura usa criterios
+        (peso1,peso2,peso3,peso4,peso5,peso6) = (0.0,0.0,0.0,0.0,0.0,0.0)
+        asignaturarow = db(db.asignatura.abreviatura==asignatura).select().first()
+        if asignaturarow.usar_criterios_asignatura:
+            (peso1,peso2,peso3,peso4,peso5,peso6) = (asignaturarow.peso_1,asignaturarow.peso_2,asignaturarow.peso_3,
+                                                   asignaturarow.peso_4,asignaturarow.peso_5,asignaturarow.peso_6)            
+        elif asignaturarow.id_departamento.usar_criterios_departamento:
+            (peso1,peso2,peso3,peso4,peso5,peso6) = (asignaturarow.id_departamento.peso_1,asignaturarow.id_departamento.peso_2,
+                                                   asignaturarow.id_departamento.peso_3,asignaturarow.id_departamento.peso_4,
+                                                   asignaturarow.id_departamento.peso_5,asignaturarow.id_departamento.peso_6)
+        else:                                                   
+            (peso1,peso2,peso3,peso4,peso5,peso6) = (evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_1,
+                                                   evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_2,
+                                                   evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_3,
+                                                   evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_4,
+                                                   evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_5,
+                                                   evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_6)                                                   
+            
+        datos[asignatura]["evaluacion"] = (datos[asignatura]["aspectos"]["NIV"]*float(peso1) +
+                                           datos[asignatura]["aspectos"]["TCL"]*float(peso2) +
+                                           datos[asignatura]["aspectos"]["TCA"]*float(peso3) +
+                                           datos[asignatura]["aspectos"]["INT"]*float(peso4) +
+                                           datos[asignatura]["aspectos"]["PART"]*float(peso5) +
+                                           datos[asignatura]["aspectos"]["COMP"]*float(peso6))/100          
+                      
     linea = 1
     for asignatura in sorted(datos.iterkeys()):
         # imprime resumen de asignatura
