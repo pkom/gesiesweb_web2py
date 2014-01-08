@@ -11,7 +11,7 @@
 		var idgrupoprofesorasignatura = window.datos.idgrupoprofesorasignatura;
         var idevaluacion = window.datos.idevaluacion;
   		var bloqueada = window.datos.bloqueada;
-  		  		
+  		  		  		  			  		  		
   		jQuery("#mievaluacion").jqGrid({
             url:'{{=URL(c="services",f="call",args=["json","getMiEvaluacion"])}}?idgrupoprofesorasignatura='+idgrupoprofesorasignatura+'&idevaluacion='+idevaluacion,
       		data: "{}",
@@ -35,8 +35,7 @@
     		colModel :[ 
                 {name:'alumno', index:'alumno',fixed:false,sortable:true,editable:false,align:'left'},                  
                 {name:'nivel', index:'nivel',fixed:true,width:100,sortable:true,editable:true,align:'center',formatter:'select',
-                 edittype:'select', editoptions:{value:"0:Abandono;10:Insuficiente 1;20:Insuficiente 2;30:Insuficiente 3;40:Insuficiente 4;\
-                                                 50:Suficiente;60:Bien;70:Notable 7;80:Notable 8;90:Sobresaliente 9;100:Sobresaliente 10"}},
+                 edittype:'select', editoptions:{value:"0:Abandono;10:Insuficiente 1;20:Insuficiente 2;30:Insuficiente 3;40:Insuficiente 4;50:Suficiente;60:Bien;70:Notable 7;80:Notable 8;90:Sobresaliente 9;100:Sobresaliente 10"}},
       			{name:'trclase',index:'trclase',fixed:true,width:110,sortable:false,align:'center',editable:true,formatter:'select',
                                        edittype:'select', editoptions:{value:"0:Nunca;50:Casi nunca;75:A veces;100:Habitualmente"}},     
       			{name:'trcasa',index:'trcasa',fixed:true,width:110,sortable:false,align:'center',editable:true,formatter:'select',
@@ -77,5 +76,8 @@
            
     
     });
-            
+
+    // ajustemos el estilo del select para que sean más pequeños
+    //jQuery("ui-widget select").css("font-size", ".7em");  		              
+                                    
 </script>
