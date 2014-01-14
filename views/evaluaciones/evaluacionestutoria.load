@@ -76,7 +76,7 @@ jQuery(document).ready(function(){
         	height: '100%',
     		autowidth: true,
 		    shrinkToFit: true,            
-		    ondblClickRow: function(rowid) {
+		    onSelectRow: function(rowid) {
 				var filagrupoprofesorasignatura = jQuery("#"+subgrid_table_id).jqGrid('getRowData', rowid);  
                 titulo = "Evaluación de alumnos: "+filaevaluacion.evaluacion+" Asignatura: "+filagrupoprofesorasignatura.asignatura+" Profesor: "+filagrupoprofesorasignatura.profesor;
       			window.datos = {idgrupoprofesorasignatura: rowid,

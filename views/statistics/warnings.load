@@ -68,7 +68,7 @@ jQuery(document).ready(function(){
     sortorder: 'desc',
     viewrecords: true,
     caption: '{{=T('Partes y Seguimientos')}}',
-    ondblClickRow: function(rowid) {
+    onSelectRow: function(rowid) {
         jQuery.getJSON("{{=URL(c='services_responsables',f='call',args=['json','getWarning'])}}", { id: rowid }, function(result) {
             jQuery("#avisoamonestacion").html('<p><strong>'+result.response[0].amonestacion.amonestacion+'</strong></p>');
             jQuery("#avisoamonestacion").append('<p><strong>Seguimientos efectuados por responsables</strong></p>');                    

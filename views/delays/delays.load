@@ -59,7 +59,7 @@ jQuery(document).ready(function(){
     sortorder: 'desc',
     viewrecords: true,
     caption: '{{=T('Mis Retrasos')}}',
-    ondblClickRow: function(rowid) {
+    onSelectRow: function(rowid) {
         modifyRetraso();
     },
 //    loadComplete: function () {

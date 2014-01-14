@@ -59,8 +59,8 @@ jQuery(document).ready(function(){
     sortname: 'fecha',
     sortorder: 'desc',
     viewrecords: true,
-      caption: '{{=T('Avisos Tutoría %s', session.profesor.tutor.curso)}}',
-    ondblClickRow: function(rowid) {
+    caption: '{{=T('Avisos Tutoría %s', session.profesor.tutor.curso)}}',
+    onSelectRow: function(rowid) {
         jQuery.getJSON("{{=URL(c='services',f='call',args=['json','getWarning'])}}", { id: rowid }, function(result) {
             jQuery("#avisoamonestacion").text(result.response.amonestacion.amonestacion);
             $('#foto img').hide().attr('src','');                                                                         

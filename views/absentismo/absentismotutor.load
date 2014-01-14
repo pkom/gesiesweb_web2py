@@ -57,8 +57,8 @@ jQuery(document).ready(function(){
     sortname: 'fecha',
     sortorder: 'desc',
     viewrecords: true,
-      caption: '{{=T('Absentismo Pasivo Tutoría %s', session.profesor.tutor.curso)}}',
-    ondblClickRow: function(rowid) {
+    caption: '{{=T('Absentismo Pasivo Tutoría %s', session.profesor.tutor.curso)}}',
+    onSelectRow: function(rowid) {
         jQuery.getJSON("{{=URL(c='services_absentismo',f='call',args=['json','getAbsentismo'])}}", { id: rowid }, function(result) {
             jQuery("#avisoamonestacion").text(result.response.amonestacion_absentismo.absentismo);
             $('#foto img').hide().attr('src','');                                                                         

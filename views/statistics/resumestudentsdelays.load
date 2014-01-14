@@ -91,7 +91,7 @@ jQuery(document).ready(function(){
             sortorder: "desc", 
             height: '100%',
 
-            ondblClickRow: function(rowid) {
+            onSelectRow: function(rowid) {
                 jQuery.getJSON("{{=URL(c='services',f='call',args=['json','getDelaysFromWarning'])}}", { id: rowid }, function(result) {
                     
                     jQuery("#avisoamonestacion").html('<p><strong>Retrasos acumulados en el parte '+rowid+'</strong></p>');

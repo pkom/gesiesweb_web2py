@@ -67,7 +67,7 @@ jQuery(document).ready(function(){
     sortorder: 'desc',
     viewrecords: true,
     caption: '{{=T('Absentismo Pasivo')}}',
-    ondblClickRow: function(rowid) {
+    onSelectRow: function(rowid) {
         jQuery.getJSON("{{=URL(c='services_absentismo',f='call',args=['json','getAbsentismo'])}}", { id: rowid }, function(result) {
             jQuery("#avisoabsentismo").text(result.response.amonestacion_absentismo.absentismo);            
             $('#foto img').hide().attr('src','');                                                                         

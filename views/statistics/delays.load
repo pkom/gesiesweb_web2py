@@ -60,7 +60,7 @@ jQuery(document).ready(function(){
     sortorder: 'desc',
     viewrecords: true,
     caption: '{{=T('Partes por retrasos')}}',
-    ondblClickRow: function(rowid) {
+    onSelectRow: function(rowid) {
         jQuery.getJSON("{{=URL(c='services',f='call',args=['json','getDelaysFromWarning'])}}", { id: rowid }, function(result) {
             jQuery("#listaretrasos").html('<p>Lista de retrasos para amonestacion <strong>'+rowid+'</strong></p>');
             jQuery("#listaretrasos").append('<table></table>');
