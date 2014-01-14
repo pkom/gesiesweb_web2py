@@ -9,7 +9,7 @@ if request.env.web2py_runtime_gae:
     db = DAL('gae')                           
     session.connect(request, response, db = db)
 else:                                         
-    db = DAL(settings.db_uri, migrate=settings.migrate, migrate_enabled=settings.migrate, pool_size=10)
+    db = DAL(settings.db_uri, migrate=settings.migrate, migrate_enabled=settings.migrate, check_reserved=['mysql'],pool_size=10)
 
 mail = Mail()                                  # mailer
 auth = Auth(globals(),db)                      # authentication/authorization

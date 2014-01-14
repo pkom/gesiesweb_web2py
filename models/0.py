@@ -18,15 +18,13 @@ else:
 
 if settings.produccion:
     settings.db_uri = 'mysql://amonies:quemalosson@mysql/datosies'   
-    settings.migrate = False
-    settings.log_level = logging.ERROR
-    
-    track_changes(False)
+    settings.migrate = not settings.produccion
+    settings.log_level = logging.ERROR   
+    track_changes(not settings.production)
 else:
     settings.db_uri = 'mysql://amonies:quemalosson@mysql/datosiesdev'
-    settings.migrate = True
+    settings.migrate = settings.produccion
     settings.log_level = logging.DEBUG
-
     track_changes(True)
     
 
