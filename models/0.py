@@ -25,7 +25,7 @@ else:
     settings.db_uri = 'mysql://amonies:quemalosson@mysql/datosiesdev'
     settings.migrate = settings.produccion
     settings.log_level = logging.DEBUG
-    track_changes(True)
+    track_changes(settings.produccion)
     
 
 #
