@@ -435,3 +435,35 @@ success!
 timestamp: 2013-12-02T09:02:49.823067
 ALTER TABLE asignatura ADD peso_3 NUMERIC(4,2) NOT NULL;
 success!
+timestamp: 2014-01-16T11:44:43.128826
+CREATE TABLE auth_user(
+    id INT AUTO_INCREMENT NOT NULL,
+    first_name VARCHAR(128),
+    last_name VARCHAR(128),
+    email VARCHAR(255),
+    username VARCHAR(128),
+    password VARCHAR(255),
+    registration_key VARCHAR(255),
+    reset_password_key VARCHAR(255),
+    registration_id VARCHAR(255),
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+timestamp: 2014-01-16T11:49:13.935007
+CREATE TABLE auth_user(
+    id INT AUTO_INCREMENT NOT NULL,
+    first_name VARCHAR(128),
+    last_name VARCHAR(128),
+    email VARCHAR(255),
+    username VARCHAR(128),
+    password VARCHAR(255),
+    registration_key VARCHAR(255),
+    reset_password_key VARCHAR(255),
+    registration_id VARCHAR(255),
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+timestamp: 2014-01-16T14:49:47.716334
+ALTER TABLE amonestacion_retraso ADD cerrada CHAR(1) NOT NULL DEFAULT 'F';
+success!
+timestamp: 2014-01-16T14:49:48.185166
+ALTER TABLE amonestacion_retraso ADD comunicada CHAR(1) NOT NULL DEFAULT 'F';
+success!

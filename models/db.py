@@ -26,7 +26,7 @@ mail.settings.sender = settings.email_sender   # your email
 mail.settings.login = settings.email_login    # your credentials or None
 
 auth.settings.hmac_key = 'sha512:9882e830-d3b9-4e91-80c3-b043a11f505c'   # before define_tables()
-auth.define_tables(username=True, migrate=not settings.produccion)                           # creates all needed tables
+auth.define_tables(username=True, migrate=False)                         # creates all needed tables
 auth.settings.mailer = mail                    # for user email verification
 auth.settings.registration_requires_verification = False
 auth.settings.registration_requires_approval = False
@@ -181,6 +181,8 @@ db.define_table("amonestacion_retraso",
       Field("fecha", "date", required=True, notnull=True, default=datetime.date.today()),
       Field("id_grupo_alumno", db.grupo_alumno),
       Field("id_departamento_profesor", db.departamento_profesor),
+      Field("comunicada", "boolean", required=True, notnull=True, default = False),
+      Field("cerrada", "boolean", required=True, notnull=True, default = False),          
       migrate='amonestacion_retraso.table',      
       format='%(id)s')
 

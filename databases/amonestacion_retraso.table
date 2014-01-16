@@ -1,5 +1,5 @@
 (dp1
-S'fecha'
+S'cerrada'
 p2
 (dp3
 S'length'
@@ -10,66 +10,106 @@ p5
 I00
 sS'sortable'
 p6
-I2
+I6
 sS'sql'
 p7
-S'DATE NOT NULL'
+S'CHAR(1) NOT NULL'
 p8
 sS'notnull'
 p9
 I01
 sS'type'
 p10
-S'date'
+S'boolean'
 p11
-ssS'id_departamento_profesor'
+ssS'fecha'
 p12
 (dp13
-g4
-I255
-sg5
-I00
-sg6
-I4
-sg7
-S'INT, INDEX id_departamento_profesor__idx (id_departamento_profesor), FOREIGN KEY (id_departamento_profesor) REFERENCES departamento_profesor (id) ON DELETE CASCADE'
+S'sortable'
 p14
-sg9
-I00
-sg10
-S'reference departamento_profesor'
+I2
+sS'sql'
 p15
-ssS'id'
+S'DATE NOT NULL'
 p16
-(dp17
-g4
+sS'length'
+p17
 I255
-sg5
-I00
-sg6
-I1
-sg7
-S'INT AUTO_INCREMENT NOT NULL'
+sS'notnull'
 p18
-sg9
-I00
-sg10
-g16
-ssS'id_grupo_alumno'
+I01
+sS'unique'
 p19
-(dp20
+I00
+sS'type'
+p20
+S'date'
+p21
+ssS'id_departamento_profesor'
+p22
+(dp23
+g14
+I4
+sg15
+S'INT, INDEX id_departamento_profesor__idx (id_departamento_profesor), FOREIGN KEY (id_departamento_profesor) REFERENCES departamento_profesor (id) ON DELETE CASCADE'
+p24
+sg17
+I255
+sg18
+I00
+sg19
+I00
+sg20
+S'reference departamento_profesor'
+p25
+ssS'id_grupo_alumno'
+p26
+(dp27
+g14
+I3
+sg15
+S'INT, INDEX id_grupo_alumno__idx (id_grupo_alumno), FOREIGN KEY (id_grupo_alumno) REFERENCES grupo_alumno (id) ON DELETE CASCADE'
+p28
+sg17
+I255
+sg18
+I00
+sg19
+I00
+sg20
+S'reference grupo_alumno'
+p29
+ssS'comunicada'
+p30
+(dp31
 g4
 I255
 sg5
 I00
 sg6
-I3
+I5
 sg7
-S'INT, INDEX id_grupo_alumno__idx (id_grupo_alumno), FOREIGN KEY (id_grupo_alumno) REFERENCES grupo_alumno (id) ON DELETE CASCADE'
-p21
+S'CHAR(1) NOT NULL'
+p32
 sg9
-I00
+I01
 sg10
-S'reference grupo_alumno'
-p22
+g11
+ssS'id'
+p33
+(dp34
+g14
+I1
+sg15
+S'INT AUTO_INCREMENT NOT NULL'
+p35
+sg17
+I255
+sg18
+I00
+sg19
+I00
+sg20
+S'id'
+p36
 ss.
