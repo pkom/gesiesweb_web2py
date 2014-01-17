@@ -40,13 +40,17 @@ jQuery(document).ready(function(){
             thegrid.addJSONData(JSON.parse(jsondata.responseText).d);
         }
     },
-    colNames:['Id','Fecha','Grupo','Alumno/a','id_grupo_alumno'],
+    colNames:['Id','Fecha','Grupo','Alumno/a','Comunicado','Cerrado','id_grupo_alumno'],
     colModel :[ 
       {name:'idavisosretraso',index:'id',width:40,fixed:true,align:'right',sortype:'int',search:false,editable:false}, 
       {name:'fechaavisosretraso', index:'fecha',width:80,fixed:true,align:'center',sortype:'date',search:true,stype:'text',editable:false,
           searchoptions:{dataInit: function (elem) { $(elem).datepicker({dateFormat: 'yy-mm-dd'}).change(function(){$('#retrasosresponsable')[0].triggerToolbar();})      }}},
       {name:'grupoavisosretraso', index:'grupo',width:50,fixed:true,sortable:true,stype:'text',editable:false,align:'center'},                  
-      {name:'alumnoavisosretraso', index:'alumno',sortable:true,stype:'text',editable:false}, 
+      {name:'alumnoavisosretraso', index:'alumno',sortable:true,stype:'text',editable:false},
+      {name:'comunicadoretrasos', index:'comunicado',width:80,fixed:true,align:'center',sortable:false,formatter:'checkbox',formatoptions:{disabled:false},
+          search:true,editable:true,edittype:'checkbox',stype:'select', editoptions:{value:':Todos;comunicados:Comunicados;nocomunicados:No Comunicados'}},
+      {name:'cerradoretrasos', index:'cerrado',width:65,fixed:true,align:'center',sortable:false,formatter:'checkbox',formatoptions:{disabled:false},
+          search:true,editable:true,edittype:'checkbox',stype:'select', editoptions:{value:':Todos;cerrados:Cerrados;nocerrados:No Cerrados'}},
       {name:'idgrupoalumnoavisosretraso', index:'id_grupo_alumno',hidden:true,viewable:false}
     ],
     autowidth: true,
@@ -85,6 +89,30 @@ jQuery(document).ready(function(){
             //jQuery("#cajaretrasos").dialog("open")
         });    
     },   
+
+    loadComplete: function () {
+        var iCol = getColumnIndexByName ($(this), 'comunicadoretrasos'), rows = this.rows, i,
+            c = rows.length;
+        for (i = 0; i < c; i += 1) {
+            $(rows[i].cells[iCol]).click(function (e) {
+                var id = $(e.target).closest('tr')[0].id, isChecked = $(e.target).is(':checked');
+                jQuery.ajax( { url: '{{=URL(c="services_responsables",f="call",args=["json","updateDelayComunicated"])}}', 
+                                type: 'POST',
+                                data: {id:id,isChecked:isChecked }});
+            });           
+        }    
+        var iCol = getColumnIndexByName ($(this), 'cerradoretrasos'), rows = this.rows, i,
+            c = rows.length;
+        for (i = 0; i < c; i += 1) {
+            $(rows[i].cells[iCol]).click(function (e) {
+                var id = $(e.target).closest('tr')[0].id, isChecked = $(e.target).is(':checked');
+                jQuery.ajax( { url: '{{=URL(c="services_responsables",f="call",args=["json","updateDelayClosed"])}}', 
+                                type: 'POST',
+                                data: {id:id,isChecked:isChecked }});
+            });           
+        }
+    },
+
     multiselect: false,
     subGrid: true,
     subGridRowExpanded: function(subgrid_id, row_id) {

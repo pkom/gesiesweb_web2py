@@ -337,7 +337,17 @@ def warningsDelaysStudent():
     cad = ".".join(cad)
     foto = os.path.join(request.folder,"uploads",subpath,cad)
     total = len(avisosretraso)
-    resumen = "Total de partes por retrasos: "+str(total)   
+
+    comunicadas = 0
+    cerradas = 0
+    for aviso in avisosretraso:
+        if aviso.amonestacion_retraso.comunicada:
+            comunicadas+=1
+        if aviso.amonestacion_retraso.cerrada:
+            cerradas+=1        
+    resumen = "Total de partes: "+str(total)+", comunicados: "+str(comunicadas)+" cerrados: "+str(cerradas)
+
+    #resumen = "Total de partes por retrasos: "+str(total)   
     titulo = "Partes por Retrasos de Alumno/a: "+nombreAlumno
     tnombre = "Alumno/a:"
     tnie = "N.I.E.:"
@@ -408,12 +418,12 @@ def warningsDelaysStudent():
             self.cell(w=10,h=11,txt=parsestr("Fecha"))
             #self.cell(10)            
             #self.cell(w=10,h=11,txt=parsestr("Profesor/a"))
-            #self.cell(80)            
-            #self.cell(w=10,h=11,txt=parsestr("Cerrada"))
+            self.cell(120)            
+            self.cell(w=10,h=11,txt=parsestr("Comunicado"))
             #self.cell(12)            
             #self.cell(w=10,h=11,txt=parsestr("Parte"))
-            #self.cell(10)           
-            #self.cell(w=10,h=11,txt=parsestr("Comunicada"))
+            self.cell(10)           
+            self.cell(w=10,h=11,txt=parsestr("Cerrado"))
             self.line(5,53,205,53)
             #Salto de línea
             self.ln(10)           
@@ -442,12 +452,12 @@ def warningsDelaysStudent():
         pdf.cell(w=10,h=5,txt=aviso.amonestacion_retraso.fecha.isoformat())
         #pdf.cell(10)
         #pdf.cell(w=10,h=5,txt=parsestr(aviso.profesor.apellidos+', '+aviso.profesor.nombre))
-        #pdf.cell(85)            
-        #pdf.cell(w=10,h=5,txt=parsestr("Sí" if aviso.amonestacion.cerrada else "No"))
+        pdf.cell(130)            
+        pdf.cell(w=10,h=5,txt=parsestr("Sí" if aviso.amonestacion_retraso.comunicada else "No"))
         #pdf.cell(10)            
         #pdf.cell(w=10,h=5,txt=parsestr("Sí" if aviso.amonestacion.parte else "No"))
-        #pdf.cell(15)           
-        #pdf.cell(w=10,h=5,txt=parsestr("Sí" if aviso.amonestacion.comunicada else "No"),ln=1)
+        pdf.cell(7)           
+        pdf.cell(w=10,h=5,txt=parsestr("Sí" if aviso.amonestacion_retraso.cerrada else "No"),ln=1)
         pdf.cell(19)
         pdf.multi_cell(w=0,h=5,txt=parsestr("Parte por retrasos acumulados"),border=0,align="J",fill=1)
         retrasos = oaviso.dame_retrasos(aviso.amonestacion_retraso.id)

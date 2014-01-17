@@ -646,6 +646,31 @@ def updateClosed():
         return False
 
 @service.json
+def updateDelayClosed():
+    if request.vars.id:
+        if request.vars.isChecked == 'true':
+            db.amonestacion_retraso[request.vars.id] = dict(cerrada = True)
+        else:
+            db.amonestacion_retraso[request.vars.id] = dict(cerrada = False)
+        db.commit()        
+        return True
+    else:
+        return False
+
+@service.json
+def updateDelayComunicated():
+    if request.vars.id:
+        if request.vars.isChecked == 'true':
+            db.amonestacion_retraso[request.vars.id] = dict(comunicada = True)
+        else:
+            db.amonestacion_retraso[request.vars.id] = dict(comunicada = False)
+        db.commit()        
+        return True
+    else:
+        return False
+
+
+@service.json
 def updateHeadDepartament():
     idjefe = int(request.vars.idjefe)
     idcursoacademicodepartamento = int(request.vars.idcursoacademicodepartamento)
@@ -763,7 +788,7 @@ def addSeguimiento():
 
 @service.json
 def getAllWarningsDelays():
-    fields = ['id','fecha','grupo','alumno','id_grupo_alumno']  
+    fields = ['id','fecha','grupo','alumno','comunicada','cerrada','id_grupo_alumno']  
     rows = []
     if request.vars._search == 'true':
         searching = True
@@ -799,6 +824,21 @@ def getAllWarningsDelays():
     queries.append(db.curso_academico_grupo.id_grupo == db.grupo.id)   
     queries.append(db.curso_academico_grupo.id_curso_academico == session.curso_academico_id)           
     queries.append(db.grupo_alumno.id_alumno == db.alumno.id)
+
+
+    if request.vars.comunicado:
+        if request.vars.comunicado == 'comunicados':
+            queries.append(db.amonestacion_retraso.comunicada == True)           
+        else:
+            queries.append(db.amonestacion_retraso.comunicada == False)    
+
+    if request.vars.cerrado:
+        if request.vars.cerrado == 'cerrados':
+            queries.append(db.amonestacion_retraso.cerrada == True)           
+        else:
+            queries.append(db.amonestacion_retraso.cerrada == False)    
+    
+
           
     if searching:
         if request.vars.fecha:
