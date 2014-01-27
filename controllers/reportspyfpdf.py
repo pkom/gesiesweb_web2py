@@ -942,11 +942,22 @@ def absentismosTeacher():
 @auth.requires_login()
 @auth.requires_membership(role='Profesores')
 def hojasevaluacion():
-    db.evaluacion_alumno.nivel.represent = lambda nivel:{100:"Sobresaliente 10",90:"Sobresaliente 9",
-                                                     80:"Notable 8",70:"Notable 7",60:"Bien",
-                                                     50:"Suficiente",40:"Insuficiente 4",
-                                                     30:"Insuficiente 3",20:"Insuficiente 2",
-                                                     10:"Insuficiente 1",0:"Abandono"}[nivel]
+    idevaluacion = int(request.args[-2]) or redirect('default', 'index')
+    idgrupoprofesortutoria = int(request.args[-1]) or redirect('default', 'index')
+    # comprobemos que somos reponsables o tutor del grupo
+    if not session.esResponsable:
+        if not session.profesor.esTutor or idgrupoprofesortutoria <> session.profesor.tutor.id_curso_academico_grupo:
+            redirect(URL("default","index"))
+
+    oevaluacion = Evaluacion(db, session)
+    evaluaciones = oevaluacion.dame_evaluacion_alumnos_tutoria(idevaluacion, idgrupoprofesortutoria)
+    if len(evaluaciones) == 0:
+        return "No hay datos"
+    #db.evaluacion_alumno.nivel.represent = lambda nivel:{100:"Sobresaliente 10",90:"Sobresaliente 9",
+    #                                                 80:"Notable 8",70:"Notable 7",60:"Bien",
+    #                                                 50:"Suficiente",40:"Insuficiente 4",
+    #                                                 30:"Insuficiente 3",20:"Insuficiente 2",
+    #                                                 10:"Insuficiente 1",0:"Abandono"}[nivel]
     db.evaluacion_alumno.trabajo_clase.represent = lambda trabajo_clase:{100:"Habitualmente",75:"A veces",
                                                      50:"Casi nunca",0:"Nunca"}[trabajo_clase]                                                     
     db.evaluacion_alumno.trabajo_casa.represent = lambda trabajo_casa:{100:"Habitualmente",75:"A veces",
@@ -957,12 +968,7 @@ def hojasevaluacion():
                                                      50:"Poco",0:"Nada"}[participa]
     db.evaluacion_alumno.comportamiento.represent = lambda comportamiento:{100:"Muy bueno",75:"Bueno",
                                                      50:"Puede mejorar",0:"Disruptivo"}[comportamiento]      
-    idevaluacion = int(request.args[-2]) or redirect('default', 'index')
-    idgrupoprofesortutoria = int(request.args[-1]) or redirect('default', 'index')
-    oevaluacion = Evaluacion(db, session)
-    evaluaciones = oevaluacion.dame_evaluacion_alumnos_tutoria(idevaluacion, idgrupoprofesortutoria)
-    if len(evaluaciones) == 0:
-        return "No hay datos"
+
     logo = os.path.join(request.env.web2py_path,"applications",request.application,"uploads", session.logo_centro)      
     titulo = "Hoja de evaluación individualizada ("+evaluaciones[0].curso_academico_evaluacion.evaluacion+")"
     tnombre = "Alumno/a:"
@@ -1109,11 +1115,24 @@ def hojasevaluacion():
         asignatura = evaluacion.asignatura.asignatura[:46-len(evaluacion.asignatura.abreviatura)]+" ("+evaluacion.asignatura.abreviatura+")"
         pdf.cell(w=50,h=5,txt=parsestr(str(asignatura)),border=0,ln=0,align="L",fill=fill)
         pdf.cell(10,h=5,fill=fill)
-        rep = db.evaluacion_alumno["nivel"].represent
-        if rep:
-            nivel = rep(evaluacion.evaluacion_alumno.nivel)
+        if evaluacion.evaluacion_alumno.nivel < 5.0:
+            nivel = T('Insuficiente')
+        elif evaluacion.evaluacion_alumno.nivel >= 5 and evaluacion.evaluacion_alumno.nivel < 6.0:
+            nivel = T('Suficiente')
+        elif evaluacion.evaluacion_alumno.nivel >= 6 and evaluacion.evaluacion_alumno.nivel < 7.0:
+            nivel = T('Bien')
+        elif evaluacion.evaluacion_alumno.nivel >= 7 and evaluacion.evaluacion_alumno.nivel < 9.0:
+            nivel = T('Notable')
+        elif evaluacion.evaluacion_alumno.nivel >= 9 and evaluacion.evaluacion_alumno.nivel <= 10.0:
+            nivel = T('Sobresaliente')
         else:
-            nivel = evaluacion.evaluacion_alumno.nivel
+            nivel = T('No relación')
+        #rep = db.evaluacion_alumno["nivel"].represent
+        #if rep:
+        #    nivel = rep(evaluacion.evaluacion_alumno.nivel)
+        #else:
+        #    nivel = evaluacion.evaluacion_alumno.nivel
+        nivel += ' ('+str(evaluacion.evaluacion_alumno.nivel)+')'    
         pdf.cell(w=30,h=5,txt=parsestr(str(nivel)),align="C",fill=fill)
         rep = db.evaluacion_alumno["trabajo_clase"].represent
         if rep:
@@ -1303,7 +1322,7 @@ def imprime_estadistica_alumno(pdf,nl,sumanivel,sumatrclase,sumatrcasa,sumainter
     pdf.set_font('','B',9)                        
     pdf.cell(w=50,h=5,txt=parsestr(str("Estadísticas del alumno/a")),border="LTB",ln=0,align="L",fill=1)
     pdf.cell(10,h=5,border="TB",fill=1)
-    nivel = (sumanivel/float(nl-1))/float(10)
+    nivel = float(sumanivel)/float(nl-1)
     pdf.cell(w=30,h=5,txt=parsestr(str('%.02f' % nivel)),border="TB",align="C",fill=1)
     trabajo_clase = (sumatrclase/float(nl-1))/float(10)       
     pdf.cell(w=25,h=5,txt=parsestr(str('%.02f' % trabajo_clase)),border="TB",align="C",fill=1)
@@ -1338,6 +1357,10 @@ def imprime_estadistica_alumno(pdf,nl,sumanivel,sumatrclase,sumatrcasa,sumainter
 def informeevaluacion():
     idevaluacion = int(request.args[-2]) or redirect('default', 'index')    
     idgrupoprofesortutoria = int(request.args[-1]) or redirect('default', 'index')
+    # comprobemos que somos reponsables o tutor del grupo
+    if not session.esResponsable:
+        if not session.profesor.esTutor or idgrupoprofesortutoria <> session.profesor.tutor.id_curso_academico_grupo:
+            redirect(URL("default","index"))    
     oevaluacion = Evaluacion(db, session)
     evaluaciones = oevaluacion.dame_evaluacion_alumnos_tutoria(idevaluacion, idgrupoprofesortutoria)
     if len(evaluaciones) == 0:
@@ -1443,7 +1466,7 @@ def informeevaluacion():
     
     for asignatura in datos.keys():
         datos[asignatura]["evaluacion"] = float(datos[asignatura]["evaluacion"])/datos[asignatura]["nalumnos"]
-        datos[asignatura]["aspectos"]["NIV"] = (float(datos[asignatura]["aspectos"]["NIV"])/datos[asignatura]["nalumnos"])/10
+        datos[asignatura]["aspectos"]["NIV"] = (float(datos[asignatura]["aspectos"]["NIV"])/datos[asignatura]["nalumnos"])
         datos[asignatura]["aspectos"]["TCL"] = (float(datos[asignatura]["aspectos"]["TCL"])/datos[asignatura]["nalumnos"])/10
         datos[asignatura]["aspectos"]["TCA"] = (float(datos[asignatura]["aspectos"]["TCA"])/datos[asignatura]["nalumnos"])/10
         datos[asignatura]["aspectos"]["INT"] = (float(datos[asignatura]["aspectos"]["INT"])/datos[asignatura]["nalumnos"])/10
@@ -1577,6 +1600,10 @@ def informeevaluacion():
 def informecurso():
     idgrupoprofesortutoria = int(request.args[-1]) or redirect('default', 'index')
     oevaluacion = Evaluacion(db, session)
+    # comprobemos que somos reponsables o tutor del grupo
+    if not session.esResponsable:
+        if not session.profesor.esTutor or idgrupoprofesortutoria <> session.profesor.tutor.id_curso_academico_grupo:
+            redirect(URL("default","index"))    
     evaluaciones = oevaluacion.dame_evaluacion_alumnos_tutoria(0, idgrupoprofesortutoria)
     if len(evaluaciones) == 0:
         return "No hay datos"
@@ -1680,7 +1707,7 @@ def informecurso():
 
     for asignatura in datos.keys():
         datos[asignatura]["evaluacion"] = (float(datos[asignatura]["evaluacion"])/datos[asignatura]["nalumnos"])/10
-        datos[asignatura]["aspectos"]["NIV"] = (float(datos[asignatura]["aspectos"]["NIV"])/datos[asignatura]["nalumnos"])/10
+        datos[asignatura]["aspectos"]["NIV"] = float(datos[asignatura]["aspectos"]["NIV"])/datos[asignatura]["nalumnos"]
         datos[asignatura]["aspectos"]["TCL"] = (float(datos[asignatura]["aspectos"]["TCL"])/datos[asignatura]["nalumnos"])/10
         datos[asignatura]["aspectos"]["TCA"] = (float(datos[asignatura]["aspectos"]["TCA"])/datos[asignatura]["nalumnos"])/10
         datos[asignatura]["aspectos"]["INT"] = (float(datos[asignatura]["aspectos"]["INT"])/datos[asignatura]["nalumnos"])/10

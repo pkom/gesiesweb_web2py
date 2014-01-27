@@ -1,0 +1,37 @@
+{{extend 'layout.html'}}
+
+<script>
+jQuery(document).ready(function(){
+    jQuery('.nivel').css('text-align', 'right');	
+    jQuery('.nivel').editable("{{=URL('dogs', 'upd_dog_name')}}",{                  
+        tooltip: "Click para editar",
+ 		indicator : 'actualizando...',
+ 		style   : 'inherit',
+ 		width   : 40,
+ 		onblur : 'submit'
+ 	});
+    jQuery('.trabajo_clase').editable("{{=URL('dogs', 'upd_dog_name')}}",{                  
+        data   : "{100:'Habitualm.',75:'A veces',50:'Casi nunca',0:'Nunca'}",
+        type   : 'select',
+        style   : 'inherit',
+        tooltip: "Click para editar",
+ 		indicator : 'actualizando...',
+ 		onblur : 'submit'
+ 	});
+
+    jQuery('.observaciones').editable("{{=URL('dogs', 'upd_dog_name')}}",{                  
+    	type      : 'textarea',
+        rows	  : 10,
+        cols      : 5,
+        style   : 'inherit',
+        tooltip: "Click para editar",
+ 		indicator : 'actualizando...',
+ 		onblur : 'submit'		
+ 	});
+}); 	
+</script>
+
+
+{{=H5(evaluacion.evaluacion+' ('+(T('Bloqueada') if evaluacion.bloqueada else T('Abierta'))+') '+
+T('del grupo')+': '+grupo+' '+T('de la asignatura')+': '+asignatura)}}
+{{=grid}}

@@ -61,32 +61,33 @@ jQuery(document).ready(function(){
             colNames: ['Evaluación','Bloqueada'], 
             colModel: [ 
       			{name:"evaluacion",index:"evaluacion",sortable:false,editable:false,align:'left'},
-            	{name:"bloqueada",index:"bloqueada",fixed:true,width:100,formatter:'checkbox',sortable:false,editable:false,align:'center'}     
-			], 
+            {name:"bloqueada",index:"bloqueada",fixed:true,width:100,formatter:'checkbox',sortable:false,editable:false,align:'center'}     
+			      ], 
             rowNum:5, 
             pager: pager_id, 
             height: '100%',
-    		autowidth: true,
-		    shrinkToFit: true,            
-                //ondblClickRow: function(rowid) {
-                onSelectRow: function(rowid) {               
-				var filaevaluacion = jQuery("#"+subgrid_table_id).jqGrid('getRowData', rowid);  
-                titulo = "Evaluación de alumnos: "+filaevaluacion.evaluacion+" Grupo: "+filagrupoasignatura.grupo+" Asignatura: "+filagrupoasignatura.asignatura;
-      			window.datos = {idgrupoprofesorasignatura: row_id,
+    		    autowidth: true,
+		        shrinkToFit: true,            
+            //ondblClickRow: function(rowid) {
+            onSelectRow: function(rowid) {               
+				      var filaevaluacion = jQuery("#"+subgrid_table_id).jqGrid('getRowData', rowid);  
+              titulo = "Evaluación de alumnos: "+filaevaluacion.evaluacion+" Grupo: "+filagrupoasignatura.grupo+" Asignatura: "+filagrupoasignatura.asignatura;
+      	      window.datos = {idgrupoprofesorasignatura: row_id,
                                 idevaluacion: rowid,
                                 bloqueada: filaevaluacion.bloqueada};
-				jQuery("#dialog-form-evaluacion").load("form_evaluacion.html", function() {
-      				x = (jQuery(window).width()-1000)/2;
-      				y = (jQuery(window).height()-700)/2;
-      				jQuery("#dialog-form-evaluacion").dialog({
+				      jQuery("#dialog-form-evaluacion").load("form_evaluacion.html", function() {
+      				  x = (jQuery(window).width()-1000)/2;
+      				  y = (jQuery(window).height()-700)/2;
+      				  jQuery("#dialog-form-evaluacion").dialog({
       	    			resizable: false,
       	    			position: top,
       		   			modal: false,
       		   			width: 1000,                     
-      					height: 500,
-      					title: titulo,
-                        position: [x, y], 
-      				});
+      					  height: 500,
+      					  title: titulo,
+                  position: [x, y],
+                  zIndex:950
+      				  });
                         //.dialog('option', 'position', [x, y]);  
                     //jQuery('#dialog-form-evaluacion').dialog('open');
                   //jQuery(".ui-button-text").css("padding-top", "0px");         

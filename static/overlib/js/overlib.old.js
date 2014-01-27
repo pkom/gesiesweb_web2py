@@ -1,5 +1,5 @@
 //\/////
-//\  overLIB 4.21 - You may not remove or change this notice.
+//\  overLIB 4.22 - You may not remove or change this notice.
 //\  Copyright Erik Bosrup 1998-2004. All rights reserved.
 //\
 //\  Contributors are listed on the homepage.
@@ -22,7 +22,7 @@
 // PRE-INIT
 // Ignore these lines, configuration is below.
 ////////
-var olLoaded = 0;var pmStart = 10000000; var pmUpper = 10001000; var pmCount = pmStart+1; var pmt=''; var pms = new Array(); var olInfo = new Info('4.21', 1);
+var olLoaded = 0;var pmStart = 10000000; var pmUpper = 10001000; var pmCount = pmStart+1; var pmt=''; var pms = new Array(); var olInfo = new Info('4.22', 0);
 var FREPLACE = 0; var FBEFORE = 1; var FAFTER = 2; var FALTERNATE = 3; var FCHAIN=4;
 var olHideForm=0;  // parameter for hiding SELECT and ActiveX elements in IE5.5+ 
 var olHautoFlag = 0;  // flags for over-riding VAUTO and HAUTO if corresponding
@@ -252,7 +252,7 @@ function overlib() {
 	}
 
 	// Load defaults to runtime.
-  olHideDelay=0;
+	olHideDelay=0;
 	o3_text=ol_text;
 	o3_cap=ol_cap;
 	o3_sticky=ol_sticky;
@@ -322,7 +322,7 @@ function overlib() {
 	if(!(over=createDivContainer())) return false;
 
 	parseTokens('o3_', overlib.arguments);
-	if (!postParseChecks()) return false;
+	if (!postParseChecks('o3_',overlib.arguments)) return false;
 
 	if (o3_delay == 0) {
 		return runHook("olMain", FREPLACE);
@@ -341,7 +341,7 @@ function nd(time) {
 		
 		if (o3_showingsticky == 0) {
 			o3_allowmove = 0;
-			if (over != null && o3_timerid == 0) runHook("hideObject", FREPLACE, over);
+			if (over != null && (o3_compatmode ? 1 : o3_timerid == 0)) runHook("hideObject", FREPLACE, over);
 		} else {
 			o3_removecounter++;
 		}
@@ -421,12 +421,13 @@ function olMain() {
 
 	// Created a separate routine to generate the popup to make it easier
 	// to implement a plugin capability
-	if (!runHook("createPopup", FREPLACE, layerhtml)) return false;
+	if (!runHook("olCreatePopup", FREPLACE, layerhtml)) return false;
 
 	// Prepare status bar
 	if (o3_autostatus > 0) {
 		o3_status = o3_text;
 		if (o3_autostatus > 1) o3_status = o3_cap;
+		if (o3_wrap) o3_status = o3_status.replace(/&nbsp;/g,' ');
 	}
 
 	// When placing the layer the first time, even stickies may be moved.
@@ -483,6 +484,7 @@ function ol_content_caption(text,title,close) {
 
 // Sets the background picture,padding and lots more. :)
 function ol_content_background(text,picture,hasfullhtml) {
+	var txt;
 	if (hasfullhtml) {
 		txt=text;
 	} else {
@@ -518,7 +520,7 @@ var olShowId=-1;
 
 // Displays the popup
 function disp(statustext) {
-	runHook("disp", FBEFORE);
+	runHook("disp", FBEFORE, statustext);
 	
 	if (o3_allowmove == 0) {
 		runHook("placeLayer", FREPLACE);
@@ -526,14 +528,14 @@ function disp(statustext) {
 		o3_allowmove = (o3_sticky || o3_followmouse==0) ? 0 : 1;
 	}
 	
-	runHook("disp", FAFTER);
+	runHook("disp", FAFTER, statustext);
 
 	if (statustext != "") self.status = statustext;
 }
 
 // Creates the actual popup structure
-function createPopup(lyrContent){
-	runHook("createPopup", FBEFORE);
+function olCreatePopup(lyrContent){
+	runHook("olCreatePopup", FBEFORE, lyrContent);
 	
 	if (o3_wrap) {
 		var wd,ww,theObj = (olNs4 ? over : over.style);
@@ -552,7 +554,7 @@ function createPopup(lyrContent){
 	// Have to set o3_width for placeLayer() routine if o3_wrap is turned on
 	if (o3_wrap) o3_width=(olNs4 ? over.clip.width : over.offsetWidth);
 	
-	runHook("createPopup", FAFTER, lyrContent);
+	runHook("olCreatePopup", FAFTER, lyrContent);
 
 	return true;
 }
@@ -790,17 +792,17 @@ function layerWrite(txt) {
 
 // Make an object visible
 function showObject(obj) {
-	runHook("showObject", FBEFORE);
+	runHook("showObject", FBEFORE, obj);
 
 	var theObj=(olNs4 ? obj : obj.style);
 	theObj.visibility = 'visible';
 
-	runHook("showObject", FAFTER);
+	runHook("showObject", FAFTER, obj);
 }
 
 // Hides an object
 function hideObject(obj) {
-	runHook("hideObject", FBEFORE);
+	runHook("hideObject", FBEFORE, obj);
 
 	var theObj=(olNs4 ? obj : obj.style);
 	if (olNs6 && olShowId>0) { clearTimeout(olShowId); olShowId=0; }
@@ -819,7 +821,7 @@ function hideObject(obj) {
 		obj.onmouseout = obj.onmouseover = null;
 	}
 
-	runHook("hideObject", FAFTER);
+	runHook("hideObject", FAFTER, obj);
 }
 
 // Move a layer
@@ -1009,9 +1011,9 @@ function horizontalPlacement(browserWidth, horizontalScrollAmount, widthFix) {
 	} else {  
 		// If HAUTO, decide what to use.
 		if (o3_hauto == 1) {
-			if ((o3_x - winoffset) > (iwidth / 2)) {
+			if ((o3_x - winoffset) > (iwidth / 2) && o3_hpos == RIGHT && ((o3_x - winoffset) - (parsedWidth + o3_offsetx - iwidth > (iwidth - widthFix)))) {
 				o3_hpos = LEFT;
-			} else {
+			} else if (o3_hpos == LEFT && ((o3_x - o3_offsetx - parsedWidth) < winoffset)) {
 				o3_hpos = RIGHT;
 			}
 		}  		

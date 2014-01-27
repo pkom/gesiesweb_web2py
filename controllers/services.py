@@ -830,7 +830,7 @@ def modificaEvaluacion():
         #peso6 = float(request.vars.peso6 or 0)
         
         if request.vars.nivel:
-            nivel = int(request.vars.nivel)
+            nivel = request.vars.nivel
             db.evaluacion_alumno[idevaluacionalumno] = dict(nivel = nivel)        
         if request.vars.trclase:
             trabajo_clase = int(request.vars.trclase)
@@ -847,12 +847,12 @@ def modificaEvaluacion():
         if request.vars.comportamiento:
             comportamiento = int(request.vars.comportamiento)
             db.evaluacion_alumno[idevaluacionalumno] = dict(comportamiento = comportamiento)
-        if request.vars.observaciones:
+        if request.vars.observaciones or request.vars.observaciones == "":
             db.evaluacion_alumno[idevaluacionalumno] = dict(observaciones = request.vars.observaciones)
         
         # procesemos el global    
         filaevaluacion = db(db.evaluacion_alumno.id == idevaluacionalumno).select().first()
-        filaevaluacion.evaluacion = ((filaevaluacion.nivel*peso1 + filaevaluacion.trabajo_clase*peso2 + filaevaluacion.trabajo_casa*peso3 +
+        filaevaluacion.evaluacion = ((float(filaevaluacion.nivel)*peso1*10.0 + filaevaluacion.trabajo_clase*peso2 + filaevaluacion.trabajo_casa*peso3 +
             filaevaluacion.interes*peso4 + filaevaluacion.participa*peso5 + filaevaluacion.comportamiento*peso6)/float(6))/float(10)
                         
                         

@@ -20,3 +20,19 @@ def evaluaciones():
             _id="selectevaluacionesinformes"), _id="fieldsetescogeevaluacion")
     form = FORM([grup, tipos, evaluas, INPUT(_value="Generar informe", _type="submit", _id="pideinforme")], _id="forminformesevaluaciones")
     return dict(form=form)
+
+@auth.requires_login()
+@auth.requires_membership(role='Profesores')    
+def evaluaciones_tutor():
+    # comprobemos que somos tutores, sino nada
+    if not session.profesor.esTutor:
+        redirect(URL("default","index"))
+    # primero rellenaremos los grupos activos en el curso actual y las evaluaciones existentes
+    tipos = FIELDSET("Escoge tipo: ", SELECT([OPTION("Individualizado", _value=0), OPTION("Resumen Evaluación", _value=1), OPTION("Resumen Curso", _value=2)],
+            _id="selecttiposinformes"), _id="fieldsetescogetipo")
+    oevaluaciones = obies.Evaluacion(db, session)
+    evaluaciones = oevaluaciones.dame_evaluaciones()
+    evaluas = FIELDSET("Escoge evaluación: ", SELECT(*[OPTION(evaluacion.evaluacion, _value=evaluacion.id) for evaluacion in evaluaciones], 
+            _id="selectevaluacionesinformes"), _id="fieldsetescogeevaluacion")
+    form = FORM([tipos, evaluas, INPUT(_value="Generar informe", _type="submit", _id="pideinforme")], _id="forminformesevaluaciones")
+    return dict(form=form)
