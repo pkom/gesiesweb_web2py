@@ -8,7 +8,7 @@
 <script>
 	jQuery(document).ready(function(){
 		jQuery("#selecttiposinformes").change(function(){
-			if (jQuery("#selecttiposinformes").val() == 2)
+			if (jQuery("#selecttiposinformes").val() == 2 || jQuery("#selecttiposinformes").val() == 3)
 				jQuery("#fieldsetescogeevaluacion").hide();
 			else
 				jQuery("#fieldsetescogeevaluacion").show();
@@ -23,6 +23,8 @@
 			    window.open("/gesiesweb/reportspyfpdf/informeevaluacion/"+jQuery("#selectevaluacionesinformes").val()+"/"+jQuery("#selectgruposinformes").val());
 			else if (jQuery("#selecttiposinformes").val() == 2)
 			    window.open("/gesiesweb/reportspyfpdf/informecurso/"+jQuery("#selectgruposinformes").val());
+			else if (jQuery("#selecttiposinformes").val() == 3)
+			    window.open("/gesiesweb/reportspyfpdf/informefichas/"+jQuery("#selectgruposinformes").val());				
 			return false;
 		});		
 	})

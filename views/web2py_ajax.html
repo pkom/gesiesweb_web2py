@@ -32,7 +32,6 @@ response.files.insert(12,URL('static','form/jquery.form.js'))
 #jeditable
 response.files.insert(13,URL('static','jeditable/jquery.jeditable.mini.js'))
 
-
 for _item in response.meta or []:}}
      <meta name="{{=_item}}" content="{{=response.meta[_item]}}" />{{
 pass

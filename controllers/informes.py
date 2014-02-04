@@ -12,8 +12,8 @@ def evaluaciones():
     grup = FIELDSET("Escoge grupo: ", SELECT(*[OPTION(grupo.grupo.grupo+" ("+grupo.curso_academico_grupo.id_tutor.apellidos+", "+
              grupo.curso_academico_grupo.id_tutor.nombre+")", _value=grupo.curso_academico_grupo.id) for grupo in grupos],
             _id="selectgruposinformes"), _id="fieldsetescogegrupo")
-    tipos = FIELDSET("Escoge tipo: ", SELECT([OPTION("Individualizado", _value=0), OPTION("Resumen Evaluación", _value=1), OPTION("Resumen Curso", _value=2)],
-            _id="selecttiposinformes"), _id="fieldsetescogetipo")
+    tipos = FIELDSET("Escoge tipo: ", SELECT([OPTION("Individualizado", _value=0), OPTION("Resumen Evaluación", _value=1), OPTION("Resumen Curso", _value=2),
+        OPTION("Fichas-Registro", _value=3)], _id="selecttiposinformes"), _id="fieldsetescogetipo")
     oevaluaciones = obies.Evaluacion(db, session)
     evaluaciones = oevaluaciones.dame_evaluaciones()
     evaluas = FIELDSET("Escoge evaluación: ", SELECT(*[OPTION(evaluacion.evaluacion, _value=evaluacion.id) for evaluacion in evaluaciones], 
@@ -28,7 +28,8 @@ def evaluaciones_tutor():
     if not session.profesor.esTutor:
         redirect(URL("default","index"))
     # primero rellenaremos los grupos activos en el curso actual y las evaluaciones existentes
-    tipos = FIELDSET("Escoge tipo: ", SELECT([OPTION("Individualizado", _value=0), OPTION("Resumen Evaluación", _value=1), OPTION("Resumen Curso", _value=2)],
+    tipos = FIELDSET("Escoge tipo: ", SELECT([OPTION("Individualizado", _value=0), OPTION("Resumen Evaluación", _value=1), OPTION("Resumen Curso", _value=2),
+                                            OPTION("Fichas-Registro", _value=3)],
             _id="selecttiposinformes"), _id="fieldsetescogetipo")
     oevaluaciones = obies.Evaluacion(db, session)
     evaluaciones = oevaluaciones.dame_evaluaciones()

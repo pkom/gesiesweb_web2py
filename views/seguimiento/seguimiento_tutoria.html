@@ -1,0 +1,222 @@
+{{extend 'layout.html'}}
+
+{{=H3(T('Fichas - Registro alumnado de mi tutoría')+' '+T('Grupo: ')+session.profesor.tutor.curso)}}
+
+{{=grid}}
+
+<script type="text/javascript">
+	jQuery(document).ready(function(){
+
+		// modelamos la evaluación inicial el especificar otras...
+		if (jQuery('#seguimiento_alumno_inicial_ev_otras').attr('checked')) 
+				jQuery('#seguimiento_alumno_inicial_ev_otras_especificar__row').show();
+		else
+				jQuery('#seguimiento_alumno_inicial_ev_otras_especificar__row').hide();
+
+		jQuery('#seguimiento_alumno_inicial_ev_otras').change(function(){
+			if (jQuery('#seguimiento_alumno_inicial_ev_otras').attr('checked'))
+				jQuery('#seguimiento_alumno_inicial_ev_otras_especificar__row').show();
+			else
+				jQuery('#seguimiento_alumno_inicial_ev_otras_especificar__row').hide();
+		});
+
+
+		// modelamos adaptaciones curriculares
+		if (jQuery('#seguimiento_alumno_ord_extra_ev_adaptaciones').attr('checked')) 
+				jQuery('#seguimiento_alumno_ord_extra_ev_adaptaciones_especificar__row').show();
+		else
+				jQuery('#seguimiento_alumno_ord_extra_ev_adaptaciones_especificar__row').hide();
+
+		jQuery('#seguimiento_alumno_ord_extra_ev_adaptaciones').change(function(){
+			if (jQuery('#seguimiento_alumno_ord_extra_ev_adaptaciones').attr('checked'))
+				jQuery('#seguimiento_alumno_ord_extra_ev_adaptaciones_especificar__row').show();
+			else
+				jQuery('#seguimiento_alumno_ord_extra_ev_adaptaciones_especificar__row').hide();
+		});
+		// modelamos otras medidas propuestas
+		if (jQuery('#seguimiento_alumno_ord_extra_ev_otras').attr('checked')) 
+				jQuery('#seguimiento_alumno_ord_extra_ev_otras_especificar__row').show();
+		else
+				jQuery('#seguimiento_alumno_ord_extra_ev_otras_especificar__row').hide();
+
+		jQuery('#seguimiento_alumno_ord_extra_ev_otras').change(function(){
+			if (jQuery('#seguimiento_alumno_ord_extra_ev_otras').attr('checked'))
+				jQuery('#seguimiento_alumno_ord_extra_ev_otras_especificar__row').show();
+			else
+				jQuery('#seguimiento_alumno_ord_extra_ev_otras_especificar__row').hide();
+		});
+		// modelamos la decisión adoptada en la evaluación ordinaria-extraordinaria
+		jQuery('#seguimiento_alumno_ord_extra_ev_promocion').change(function(){
+			if (jQuery('#seguimiento_alumno_ord_extra_ev_promocion').attr('checked')) {
+				jQuery('#seguimiento_alumno_ord_extra_ev_promocion_automatica').attr('checked',false);
+				jQuery('#seguimiento_alumno_ord_extra_ev_repetir').attr('checked',false);
+			}
+		});
+		jQuery('#seguimiento_alumno_ord_extra_ev_promocion_automatica').change(function(){
+			if (jQuery('#seguimiento_alumno_ord_extra_ev_promocion_automatica').attr('checked')) {
+				jQuery('#seguimiento_alumno_ord_extra_ev_promocion').attr('checked',false);
+				jQuery('#seguimiento_alumno_ord_extra_ev_repetir').attr('checked',false);
+			}
+		});
+		jQuery('#seguimiento_alumno_ord_extra_ev_repetir').change(function(){
+			if (jQuery('#seguimiento_alumno_ord_extra_ev_repetir').attr('checked')) {
+				jQuery('#seguimiento_alumno_ord_extra_ev_promocion').attr('checked',false);
+				jQuery('#seguimiento_alumno_ord_extra_ev_promocion_automatica').attr('checked',false);
+			}
+		});
+
+
+		// modelamos comportamiento de los checkbox de comp. básicas como options
+		jQuery('#seguimiento_alumno_com_bas_com_len_alta').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_com_len_alta').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_com_len_cons').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_com_len_no').attr('checked',false);
+			}
+		});
+		jQuery('#seguimiento_alumno_com_bas_com_len_cons').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_com_len_cons').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_com_len_alta').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_com_len_no').attr('checked',false);
+			}
+		});		
+		jQuery('#seguimiento_alumno_com_bas_com_len_no').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_com_len_no').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_com_len_alta').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_com_len_cons').attr('checked',false);
+			}
+		});		
+		jQuery('#seguimiento_alumno_com_bas_com_mat_alta').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_com_mat_alta').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_com_mat_cons').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_com_mat_no').attr('checked',false);
+			}
+		});
+		jQuery('#seguimiento_alumno_com_bas_com_mat_cons').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_com_mat_cons').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_com_mat_alta').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_com_mat_no').attr('checked',false);
+			}
+		});		
+		jQuery('#seguimiento_alumno_com_bas_com_mat_no').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_com_mat_no').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_com_mat_alta').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_com_mat_cons').attr('checked',false);
+			}
+		});		
+		jQuery('#seguimiento_alumno_com_bas_con_alta').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_con_alta').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_con_cons').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_con_no').attr('checked',false);
+			}
+		});
+		jQuery('#seguimiento_alumno_com_bas_con_cons').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_con_cons').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_con_alta').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_con_no').attr('checked',false);
+			}
+		});		
+		jQuery('#seguimiento_alumno_com_bas_con_no').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_con_no').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_con_alta').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_con_cons').attr('checked',false);
+			}
+		});		
+		jQuery('#seguimiento_alumno_com_bas_ti_alta').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_ti_alta').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_ti_cons').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_ti_no').attr('checked',false);
+			}
+		});
+		jQuery('#seguimiento_alumno_com_bas_ti_cons').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_ti_cons').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_ti_alta').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_ti_no').attr('checked',false);
+			}
+		});		
+		jQuery('#seguimiento_alumno_com_bas_ti_no').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_ti_no').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_ti_alta').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_ti_cons').attr('checked',false);
+			}
+		});		
+		jQuery('#seguimiento_alumno_com_bas_so_alta').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_so_alta').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_so_cons').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_so_no').attr('checked',false);
+			}
+		});
+		jQuery('#seguimiento_alumno_com_bas_so_cons').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_so_cons').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_so_alta').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_so_no').attr('checked',false);
+			}
+		});		
+		jQuery('#seguimiento_alumno_com_bas_so_no').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_so_no').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_so_alta').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_so_cons').attr('checked',false);
+			}
+		});		
+		jQuery('#seguimiento_alumno_com_bas_cu_alta').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_cu_alta').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_cu_cons').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_cu_no').attr('checked',false);
+			}
+		});
+		jQuery('#seguimiento_alumno_com_bas_cu_cons').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_cu_cons').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_cu_alta').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_cu_no').attr('checked',false);
+			}
+		});		
+		jQuery('#seguimiento_alumno_com_bas_cu_no').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_cu_no').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_cu_alta').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_cu_cons').attr('checked',false);
+			}
+		});		
+		jQuery('#seguimiento_alumno_com_bas_ap_alta').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_ap_alta').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_ap_cons').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_ap_no').attr('checked',false);
+			}
+		});
+		jQuery('#seguimiento_alumno_com_bas_ap_cons').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_ap_cons').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_ap_alta').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_ap_no').attr('checked',false);
+			}
+		});		
+		jQuery('#seguimiento_alumno_com_bas_ap_no').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_ap_no').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_ap_alta').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_ap_cons').attr('checked',false);
+			}
+		});		
+		jQuery('#seguimiento_alumno_com_bas_au_alta').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_au_alta').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_au_cons').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_au_no').attr('checked',false);
+			}
+		});
+		jQuery('#seguimiento_alumno_com_bas_au_cons').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_au_cons').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_au_alta').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_au_no').attr('checked',false);
+			}
+		});		
+		jQuery('#seguimiento_alumno_com_bas_au_no').change(function(){
+			if (jQuery('#seguimiento_alumno_com_bas_au_no').attr('checked')) {
+				jQuery('#seguimiento_alumno_com_bas_au_alta').attr('checked',false);
+				jQuery('#seguimiento_alumno_com_bas_au_cons').attr('checked',false);
+			}
+		});		
+
+
+                jQuery("#informe" ).accordion({
+                        collapsible: true,
+                        heightStyle: "fill",
+                        active: false
+                });
+        });
+</script>

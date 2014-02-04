@@ -53,6 +53,7 @@ if session.esProfesor:
 
 if session.profesor.esTutor:
     response.menu[4][3].append((T('Evaluaciones tutoría %s', session.profesor.tutor.curso), False, URL('evaluaciones', 'evaluaciones_tutoria'), []))
+    response.menu[4][3].append((T('Fichas - Registro %s', session.profesor.tutor.curso), False, URL('seguimiento', 'seguimiento_tutoria'), []))   
     response.menu[4][3].append((T('Informes tutoría %s', session.profesor.tutor.curso), False, URL('informes', 'evaluaciones_tutor'), []))
                                                                                 
                                                 

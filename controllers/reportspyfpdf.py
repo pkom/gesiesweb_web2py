@@ -1834,3 +1834,410 @@ def informecurso():
        
     response.headers['Content-Type']='application/pdf'
     return pdf.output(dest='S')
+
+@auth.requires_login()
+@auth.requires_membership(role='Profesores')
+def informefichas():
+    idgrupoprofesortutoria = int(request.args[-1]) or redirect('default', 'index')
+    # comprobemos que somos reponsables o tutor del grupo
+    if not session.esResponsable:
+        if not session.profesor.esTutor or idgrupoprofesortutoria <> session.profesor.tutor.id_curso_academico_grupo:
+            redirect(URL("default","index"))
+
+    query = ((db.grupo_alumno.id_curso_academico_grupo == idgrupoprofesortutoria) &
+             (db.grupo_alumno.id_alumno == db.alumno.id) &
+             (db.grupo_alumno.id == db.seguimiento_alumno.id_grupo_alumno))
+    alumnos_fichas = db(query).select(orderby=db.alumno.apellidos|db.alumno.nombre)
+    if len(alumnos_fichas) == 0:
+        return "No hay datos"
+
+    logo = os.path.join(request.env.web2py_path,"applications",request.application,"uploads", session.logo_centro)      
+    titulo = "Ficha-Registro de Seguimiento del Alumnado"
+    tnombre = "Alumno/a:"
+    tnie = "N.I.E.:"
+    tfecha = "Fec.Nac.:"   
+    tgrupo = "Grupo:"
+    ttutor = "Tutor/a:"
+    tcentro = session.codigo_centro+' '+session.nombre_centro
+    tcurso = session.curso_academico_nombre
+    tutor = db.curso_academico_grupo(idgrupoprofesortutoria).id_tutor.apellidos+", "+db.curso_academico_grupo(idgrupoprofesortutoria).id_tutor.nombre
+    nombreAlumno = alumnos_fichas[0].grupo_alumno.id_alumno.apellidos+', '+alumnos_fichas[0].grupo_alumno.id_alumno.nombre
+    nie = alumnos_fichas[0].grupo_alumno.id_alumno.nie
+    fnac = alumnos_fichas[0].grupo_alumno.id_alumno.fecha_nacimiento
+    grupo = alumnos_fichas[0].grupo_alumno.id_curso_academico_grupo.id_grupo.grupo
+    tutor = '%s, %s' % (alumnos_fichas[0].grupo_alumno.id_curso_academico_grupo.id_tutor.apellidos,
+            alumnos_fichas[0].grupo_alumno.id_curso_academico_grupo.id_tutor.nombre)
+    cad = alumnos_fichas[0].grupo_alumno.id_alumno.foto.split(".")
+    subpath = cad[:2]
+    subpath = os.path.join(".".join(subpath), cad[2][:2])
+    cad = ".".join(cad)
+    foto = os.path.join(request.folder,"uploads",subpath,cad)
+
+    class ficharegistroPDF(FPDF):
+        def header(self):
+            self.set_font('Arial','B',13)
+            #Logo del centro
+            self.image(logo,5,5,20,20)
+            #Poner código del centro y nombre el la parte izquierda superior
+            self.cell(15)
+            self.cell(w=0,h=0,txt=parsestr(tcentro),border=0,ln=0,align='L',fill=0)
+            #Ahora el curso académico en la parte derecha superior
+            self.cell(w=0,h=0,txt="Curso: "+parsestr(tcurso),border=0,ln=1,align='R',fill=0)
+            #Dibujamos una linea de separación
+            #self.set_line_width(.5)
+            #pdf.line(5,13,205,13)
+            #Calcular ancho del texto (titulo) y establecer posición
+            w=self.get_string_width(titulo)+6
+            self.set_x((210-w)/2)
+            #Titulo
+            self.cell(w=w,h=17,txt=parsestr(titulo),border=0,ln=1,align='C',fill=0)
+            #Linea
+            self.line(5,23,205,23)
+            #Fuente más pequeña sin bold
+            self.set_font('','',8)      
+            #Nombre alumno      
+            self.cell(w=20,h=0,txt=parsestr(tnombre),border=0,ln=0,align='R',fill=0)
+            self.set_font('','B',10)                        
+            self.cell(w=20,h=0,txt=parsestr(nombreAlumno),border=0,ln=1,align="L",fill=0)
+            
+            #Foto alumno
+            try:
+                self.image(foto,180,25,17,22)
+            except:
+                pass
+           
+            #Nie alumno
+            self.set_font('','',8)                        
+            self.cell(w=20,h=9,txt=parsestr(tnie),border=0,ln=0,align='R',fill=0)            
+            self.set_font('','B',10)                                    
+            self.cell(w=20,h=9,txt=parsestr(nie),border=0,ln=1,align="L",fill=0)
+            
+            #Fecha nacimiento
+            self.set_font('','',8)                                    
+            self.cell(w=20,h=0,txt=parsestr(tfecha),border=0,ln=0,align='R',fill=0)        
+            self.set_font('','B',10)                                                
+            self.cell(w=20,h=0,txt=fnac.isoformat(),border=0,ln=1,align="L",fill=0)
+            
+            #Grupo
+            self.set_font('','',8)                                                
+            self.cell(w=20,h=9,txt=parsestr(tgrupo),border=0,ln=0,align='R',fill=0)
+            self.set_font('','B',10)                                                            
+            self.cell(w=20,h=9,txt=parsestr(grupo),border=0,ln=1,align="L",fill=0)             
+
+            #Tutor
+            self.set_font('','',8)                                                            
+            self.cell(w=20,h=0,txt=parsestr(ttutor),border=0,ln=0,align='R',fill=0)            
+            self.set_font('','B',10)                                                                        
+            self.cell(w=20,h=0,txt=parsestr(tutor),border=0,ln=1,align="L",fill=0)           
+            self.line(5,48,205,48)
+            #Salto de línea
+            self.ln(5)           
+
+        def footer(self):
+            "hook to draw custom page header (printing page numbers)"
+            self.line(5,280,205,280)
+            self.set_y(-19)
+            self.set_font('Arial','I',8)
+            self.cell(w=0,h=9,txt=parsestr(titulo),border=0,ln=0,align='L',fill=0)
+            marcaid = parsestr(("Impreso por %s a las %s" % (session.auth.user.first_name+" "+session.auth.user.last_name,datetime.datetime.now().strftime("%H:%M:%S %d/%m/%Y"))))
+            self.cell(w=0,h=9,txt=marcaid,border=0,ln=1,align='R',fill=0)
+            txt = parsestr('Página')+' %s de %s' % (self.page_no(), self.alias_nb_pages())
+            self.cell(w=0,h=0,txt=txt,border=0,ln=0,align='R',fill=0)
+
+    pdf=ficharegistroPDF('P','mm','A4')
+    pdf.alias_nb_pages()
+    pdf.add_page()
+    pdf.set_font('Arial','',8)
+    pdf.set_fill_color(230,230,230)    
+    for ficha in alumnos_fichas:
+        if nie != ficha.grupo_alumno.id_alumno.nie:
+            # cambiamos de alumno
+            nombreAlumno = ficha.grupo_alumno.id_alumno.apellidos+', '+ficha.grupo_alumno.id_alumno.nombre
+            nie = ficha.grupo_alumno.id_alumno.nie
+            fnac = ficha.grupo_alumno.id_alumno.fecha_nacimiento
+            cad = ficha.grupo_alumno.id_alumno.foto.split(".")
+            subpath = cad[:2]
+            subpath = os.path.join(".".join(subpath), cad[2][:2])
+            cad = ".".join(cad)
+            foto = os.path.join(request.folder,"uploads",subpath,cad)
+            pdf.add_page()
+    
+        pdf.set_font('','B',12)
+        #Calcular ancho del texto y establecer posición
+        w=pdf.get_string_width("Evaluación Inicial")+6
+        pdf.set_x((210-w)/2)
+        pdf.cell(w=w,h=17,txt=parsestr("Evaluación Inicial"),border=0,ln=1,align='C',fill=0)
+        pdf.line(10,62,200,62)
+        pdf.set_font('','B',10)
+        pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.inicial_ev_materias_pendientes.label)),border=0,ln=1,align="L",fill=0)
+        pdf.cell(15)      
+        pdf.set_font('','',10)
+        pdf.multi_cell(w=0,h=5,txt=parsestr(ficha.seguimiento_alumno.inicial_ev_materias_pendientes),border=0,align="J",fill=1)
+        pdf.ln(1)
+        pdf.set_font('','B',10)
+        pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.inicial_ev_dificultades_detectadas.label)),border=0,ln=1,align="L",fill=0)
+        pdf.set_font('','',10)
+        pdf.cell(15)      
+        pdf.multi_cell(w=0,h=5,txt=parsestr(ficha.seguimiento_alumno.inicial_ev_dificultades_detectadas),border=0,align="J",fill=1)
+        pdf.ln(1)
+        if ficha.seguimiento_alumno.inicial_ev_refuerzo_indiv_aula:
+            pdf.set_font('','B',10)
+            pdf.cell(10)
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.inicial_ev_refuerzo_indiv_aula.label)),border=0,ln=1,align="L",fill=0)
+        if ficha.seguimiento_alumno.inicial_ev_refuerzo_apoyo_pt:
+            pdf.set_font('','B',10)
+            pdf.cell(10)            
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.inicial_ev_refuerzo_apoyo_pt.label)),border=0,ln=1,align="L",fill=0)
+        if ficha.seguimiento_alumno.inicial_ev_refuerzo_apoyo_ec:
+            pdf.set_font('','B',10)
+            pdf.cell(10)            
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.inicial_ev_refuerzo_apoyo_ec.label)),border=0,ln=1,align="L",fill=0)
+        if ficha.seguimiento_alumno.inicial_ev_aci_no_significativa:
+            pdf.set_font('','B',10)
+            pdf.cell(10)            
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.inicial_ev_aci_no_significativa.label)),border=0,ln=1,align="L",fill=0)
+        if ficha.seguimiento_alumno.inicial_ev_aci_significativa:
+            pdf.set_font('','B',10)
+            pdf.cell(10)            
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.inicial_ev_aci_significativa.label)),border=0,ln=1,align="L",fill=0)
+        if ficha.seguimiento_alumno.inicial_ev_otras:
+            pdf.set_font('','B',10)
+            pdf.cell(10)            
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.inicial_ev_otras.label)),border=0,ln=1,align="L",fill=0)
+            pdf.set_font('','',10)
+            pdf.cell(15)      
+            pdf.multi_cell(w=0,h=5,txt=parsestr(ficha.seguimiento_alumno.inicial_ev_otras_especificar),border=0,align="J",fill=1)
+            pdf.ln(1)
+
+        pdf.line(10,pdf.get_y(),200,pdf.get_y())            
+        pdf.set_font('','B',12)
+        w=pdf.get_string_width("Primera Evaluación")+6
+        pdf.set_x((210-w)/2)
+        pdf.cell(w=w,h=17,txt=parsestr("Primera Evaluación"),border=0,ln=1,align='C',fill=0)
+        pdf.line(10,pdf.get_y()-5,200,pdf.get_y()-5)
+        pdf.set_font('','B',10)
+        pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.primera_ev_dificultades.label)),border=0,ln=1,align="L",fill=0)
+        pdf.cell(15)      
+        pdf.multi_cell(w=0,h=5,txt=parsestr(ficha.seguimiento_alumno.primera_ev_dificultades),border=0,align="J",fill=1)
+        pdf.ln(1)
+        pdf.set_font('','B',10)
+        pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.primera_ev_evolucion.label)),border=0,ln=1,align="L",fill=0)
+        pdf.cell(15)      
+        pdf.multi_cell(w=0,h=5,txt=parsestr(ficha.seguimiento_alumno.primera_ev_evolucion),border=0,align="J",fill=1)
+        pdf.ln(1)
+        pdf.set_font('','B',10)
+        pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.primera_ev_decisiones.label)),border=0,ln=1,align="L",fill=0)
+        pdf.cell(15)      
+        pdf.multi_cell(w=0,h=5,txt=parsestr(ficha.seguimiento_alumno.primera_ev_decisiones),border=0,align="J",fill=1)
+        pdf.ln(1)
+
+        pdf.line(10,pdf.get_y(),200,pdf.get_y())            
+        pdf.set_font('','B',12)
+        w=pdf.get_string_width("Segunda Evaluación")+6
+        pdf.set_x((210-w)/2)
+        pdf.cell(w=w,h=17,txt=parsestr("Segunda Evaluación"),border=0,ln=1,align='C',fill=0)
+        pdf.line(10,pdf.get_y()-5,200,pdf.get_y()-5)
+        pdf.set_font('','B',10)
+        pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.segunda_ev_dificultades.label)),border=0,ln=1,align="L",fill=0)
+        pdf.cell(15)      
+        pdf.multi_cell(w=0,h=5,txt=parsestr(ficha.seguimiento_alumno.segunda_ev_dificultades),border=0,align="J",fill=1)
+        pdf.ln(1)
+        pdf.set_font('','B',10)
+        pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.segunda_ev_evolucion.label)),border=0,ln=1,align="L",fill=0)
+        pdf.cell(15)      
+        pdf.multi_cell(w=0,h=5,txt=parsestr(ficha.seguimiento_alumno.segunda_ev_evolucion),border=0,align="J",fill=1)
+        pdf.ln(1)
+        pdf.set_font('','B',10)
+        pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.segunda_ev_decisiones.label)),border=0,ln=1,align="L",fill=0)
+        pdf.cell(15)      
+        pdf.multi_cell(w=0,h=5,txt=parsestr(ficha.seguimiento_alumno.segunda_ev_decisiones),border=0,align="J",fill=1)
+        pdf.ln(1)
+
+        pdf.line(10,pdf.get_y(),200,pdf.get_y())            
+        pdf.set_font('','B',12)
+        w=pdf.get_string_width("Evaluación Ordinaria-Extraordinaria")+6
+        pdf.set_x((210-w)/2)
+        pdf.cell(w=w,h=17,txt=parsestr("Evaluación Ordinaria-Extraordinaria"),border=0,ln=1,align='C',fill=0)
+        pdf.line(10,pdf.get_y()-5,200,pdf.get_y()-5)
+        pdf.set_font('','B',10)
+        pdf.cell(w=10,h=5,txt=parsestr(str(T('Decisión adoptada:'))),border=0,ln=0,align="L",fill=0)
+        if ficha.seguimiento_alumno.ord_extra_ev_promocion:
+            pdf.cell(40)
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.ord_extra_ev_promocion.label)),border=0,ln=1,align="L",fill=0)
+        elif ficha.seguimiento_alumno.ord_extra_ev_promocion_automatica:
+            pdf.cell(40)
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.ord_extra_ev_promocion_automatica.label)),border=0,ln=1,align="L",fill=0)
+        elif ficha.seguimiento_alumno.ord_extra_ev_repetir:
+            pdf.cell(40)           
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.ord_extra_ev_repetir.label)),border=0,ln=1,align="L",fill=0)
+        else:    
+            pdf.cell(40)           
+            pdf.cell(w=10,h=5,txt=parsestr(str(T('Ninguna marcada'))),border=0,ln=1,align="L",fill=0)
+        pdf.set_font('','B',10)
+        pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.ord_extra_ev_asignatura_pendientes.label)),border=0,ln=1,align="L",fill=0)
+        pdf.cell(15)      
+        pdf.multi_cell(w=0,h=5,txt=parsestr(ficha.seguimiento_alumno.ord_extra_ev_asignatura_pendientes),border=0,align="J",fill=1)
+        pdf.ln(1)
+        pdf.set_font('','B',10)
+        pdf.cell(w=10,h=5,txt=parsestr(str(T('Medidas propuestas para el próximo curso:'))),border=0,ln=1,align="L",fill=0)
+        
+        if ficha.seguimiento_alumno.ord_extra_ev_frances:
+            pdf.set_font('','B',10)
+            pdf.cell(10)
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.ord_extra_ev_frances.label)),border=0,ln=1,align="L",fill=0)
+        if ficha.seguimiento_alumno.ord_extra_ev_dbm:
+            pdf.set_font('','B',10)
+            pdf.cell(10)           
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.ord_extra_ev_dbm.label)),border=0,ln=1,align="L",fill=0)
+        if ficha.seguimiento_alumno.ord_extra_ev_lha:
+            pdf.set_font('','B',10)
+            pdf.cell(10)            
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.ord_extra_ev_lha.label)),border=0,ln=1,align="L",fill=0)
+        if ficha.seguimiento_alumno.ord_extra_ev_apoyo:
+            pdf.set_font('','B',10)
+            pdf.cell(10)            
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.ord_extra_ev_apoyo.label)),border=0,ln=1,align="L",fill=0)
+        if ficha.seguimiento_alumno.ord_extra_ev_compensatoria:
+            pdf.set_font('','B',10)
+            pdf.cell(10)            
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.ord_extra_ev_compensatoria.label)),border=0,ln=1,align="L",fill=0)
+        if ficha.seguimiento_alumno.ord_extra_ev_pdc:
+            pdf.set_font('','B',10)
+            pdf.cell(10)            
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.ord_extra_ev_pdc.label)),border=0,ln=1,align="L",fill=0)
+        if ficha.seguimiento_alumno.ord_extra_ev_pcpi:
+            pdf.set_font('','B',10)
+            pdf.cell(10)            
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.ord_extra_ev_pcpi.label)),border=0,ln=1,align="L",fill=0)
+        if ficha.seguimiento_alumno.ord_extra_ev_adaptaciones:
+            pdf.set_font('','B',10)
+            pdf.cell(10)            
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.ord_extra_ev_adaptaciones.label)),border=0,ln=1,align="L",fill=0)
+            pdf.set_font('','',10)
+            pdf.cell(15)      
+            pdf.multi_cell(w=0,h=5,txt=parsestr(ficha.seguimiento_alumno.ord_extra_ev_adaptaciones_especificar),border=0,align="J",fill=1)
+            pdf.ln(1)
+        if ficha.seguimiento_alumno.ord_extra_ev_otras:
+            pdf.set_font('','B',10)
+            pdf.cell(10)            
+            pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.ord_extra_ev_otras.label)),border=0,ln=1,align="L",fill=0)
+            pdf.set_font('','',10)
+            pdf.cell(15)      
+            pdf.multi_cell(w=0,h=5,txt=parsestr(ficha.seguimiento_alumno.ord_extra_ev_otras_especificar),border=0,align="J",fill=1)
+            pdf.ln(1)
+
+        pdf.line(10,pdf.get_y(),200,pdf.get_y())            
+        pdf.set_font('','B',12)
+        w=pdf.get_string_width("Competencias Básicas")+6
+        pdf.set_x((210-w)/2)
+        pdf.cell(w=w,h=17,txt=parsestr("Competencias Básicas"),border=0,ln=1,align='C',fill=0)
+        pdf.line(10,pdf.get_y()-5,200,pdf.get_y()-5)
+        pdf.set_font('','B',10)
+        pdf.cell(w=10,h=5,txt=parsestr(str(T('Competencias básicas que ha adquirido suficientemente el/la'))),border=0,align="L",fill=0)
+        pdf.cell(110)
+        pdf.cell(w=10,h=5,txt=parsestr(str(T('Altamente'))),border=0,align="C",fill=0)
+        pdf.cell(45)
+        pdf.cell(w=10,h=5,txt=parsestr(str(T('No'))),border=0,align="C",ln=1,fill=0)
+        pdf.cell(w=10,h=5,txt=parsestr(str(T('alumno/a en el proceso de enseñanza-aprendizaje:'))),border=0,align="L",fill=0)
+        pdf.cell(110)
+        pdf.cell(w=10,h=5,txt=parsestr(str(T('conseguida'))),border=0,align="C",fill=0)
+        pdf.cell(17)
+        pdf.cell(w=10,h=5,txt=parsestr(str(T('conseguida'))),border=0,align="C",fill=0)       
+        pdf.cell(17)
+        pdf.cell(w=10,h=5,txt=parsestr(str(T('conseguida'))),border=0,align="C",ln=1,fill=0)
+        pdf.line(10,pdf.get_y()-1,200,pdf.get_y()-1)
+        pdf.ln(1)
+        pdf.set_font('','',10)
+        pdf.cell(w=115,h=5,txt=parsestr(str(T('Comunicación lingüística'))),border=0,align="L",ln=0,fill=1)
+        pdf.cell(1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_len_alta else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(1)
+        pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_len_cons else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_len_no else ' ')),align='C',ln=1,fill=1)        
+
+        pdf.cell(w=115,h=5,txt=parsestr(str(T('Competencia matemática'))),border=0,align="L",ln=0,fill=0)
+        pdf.cell(1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_mat_alta else ' ')),align='C',ln=0,fill=0)
+        pdf.cell(1)        
+        pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_mat_cons else ' ')),align='C',ln=0,fill=0)
+        pdf.cell(1)        
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_mat_no else ' ')),align='C',ln=1,fill=0)
+
+        pdf.cell(w=115,h=5,txt=parsestr(str(T('Conocicimiento e interacción con el mundo físico'))),border=0,align="L",ln=0,fill=1)
+        pdf.cell(1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_con_alta else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(1)        
+        pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_con_cons else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(1)        
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_con_no else ' ')),align='C',ln=1,fill=1)
+
+        pdf.cell(w=115,h=5,txt=parsestr(str(T('Tratamiento de la información y competencia digital'))),border=0,align="L",ln=0,fill=0)
+        pdf.cell(1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ti_alta else ' ')),align='C',ln=0,fill=0)
+        pdf.cell(1)        
+        pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ti_cons else ' ')),align='C',ln=0,fill=0)
+        pdf.cell(1)        
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ti_no else ' ')),align='C',ln=1,fill=0)
+
+        pdf.cell(w=115,h=5,txt=parsestr(str(T('Competencia social y ciudadana'))),border=0,align="L",ln=0,fill=1)
+        pdf.cell(1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_so_alta else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(1)        
+        pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_so_cons else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(1)        
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_so_no else ' ')),align='C',ln=1,fill=1)
+
+        pdf.cell(w=115,h=5,txt=parsestr(str(T('Competencia cultural y artística'))),border=0,align="L",ln=0,fill=0)
+        pdf.cell(1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_cu_alta else ' ')),align='C',ln=0,fill=0)
+        pdf.cell(1)        
+        pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_cu_cons else ' ')),align='C',ln=0,fill=0)
+        pdf.cell(1)        
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_cu_no else ' ')),align='C',ln=1,fill=0)
+
+        pdf.cell(w=115,h=5,txt=parsestr(str(T('Aprender a aprender'))),border=0,align="L",ln=0,fill=1)
+        pdf.cell(1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ap_alta else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(1)        
+        pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ap_cons else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(1)        
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ap_no else ' ')),align='C',ln=1,fill=1)
+
+        pdf.cell(w=115,h=5,txt=parsestr(str(T('Autonomía e iniciativa personal'))),border=0,align="L",ln=0,fill=0)
+        pdf.cell(1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_au_alta else ' ')),align='C',ln=0,fill=0)
+        pdf.cell(1)        
+        pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_au_cons else ' ')),align='C',ln=0,fill=0)
+        pdf.cell(1)        
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_au_no else ' ')),align='C',ln=1,fill=0)
+
+        pdf.line(10,pdf.get_y(),200,pdf.get_y())
+
+        pdf.set_font('','B',12)
+        w=pdf.get_string_width("Otras medidas y aspectos")+6
+        pdf.set_x((210-w)/2)
+        pdf.cell(w=w,h=17,txt=parsestr("Otras medidas y aspectos"),border=0,ln=1,align='C',fill=0)
+        pdf.line(10,pdf.get_y()-5,200,pdf.get_y()-5)
+        pdf.set_font('','B',10)
+        pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.medidas_propuestas.label)),border=0,ln=1,align="L",fill=0)
+        pdf.cell(15)      
+        pdf.multi_cell(w=0,h=5,txt=parsestr(ficha.seguimiento_alumno.medidas_propuestas),border=0,align="J",fill=1)
+        pdf.ln(1)
+        pdf.set_font('','B',10)
+        pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.otros_aspectos.label)),border=0,ln=1,align="L",fill=0)
+        pdf.cell(15)      
+        pdf.multi_cell(w=0,h=5,txt=parsestr(ficha.seguimiento_alumno.otros_aspectos),border=0,align="J",fill=1)
+        pdf.ln(1)
+        pdf.set_font('','B',10)
+        pdf.cell(w=10,h=5,txt=parsestr(str(db.seguimiento_alumno.aspectos_proximo_curso.label)),border=0,ln=1,align="L",fill=0)
+        pdf.cell(15)      
+        pdf.multi_cell(w=0,h=5,txt=parsestr(ficha.seguimiento_alumno.aspectos_proximo_curso),border=0,align="J",fill=1)
+        pdf.ln(1)
+
+
+
+
+
+    response.headers['Content-Type']='application/pdf'
+    return pdf.output(dest='S')
