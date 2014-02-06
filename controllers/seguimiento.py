@@ -219,7 +219,7 @@ def seguimiento_tutoria():
         div_fieldset.insert(3, div_pri)
         div_fieldset.insert(4, H3(A(T('Segunda Evaluación'))))
         div_fieldset.insert(5, div_seg)
-        div_fieldset.insert(6, H3(A(T('Evaluación Ordinaria-Extraoordinaria'))))
+        div_fieldset.insert(6, H3(A(T('Evaluación Ordinaria-Extraordinaria'))))
         div_fieldset.insert(7, div_ord)
         div_fieldset.insert(8, H3(A(T('Competencias Básicas'))))
         div_fieldset.insert(9, div_com)

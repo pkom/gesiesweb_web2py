@@ -2235,9 +2235,280 @@ def informefichas():
         pdf.multi_cell(w=0,h=5,txt=parsestr(ficha.seguimiento_alumno.aspectos_proximo_curso),border=0,align="J",fill=1)
         pdf.ln(1)
 
+    response.headers['Content-Type']='application/pdf'
+    return pdf.output(dest='S')
 
+@auth.requires_login()
+@auth.requires_membership(role='Profesores')
+def informeagrupado():
+    todoelcurso = True
+    if request.vars["idevaluacion"]:
+        todoelcurso = False
+        idevaluacion = int(request.vars["idevaluacion"])
 
+    if request.vars["idgrupos"]:
+        idgrupos=request.vars["idgrupos"].split(',')
+        idgrupos=[int(grupo) for grupo in idgrupos]
+    else:
+        redirect(URL("default","index"))    
 
+    # comprobemos que somos reponsables o tutor del grupo
+    if not session.esResponsable:
+        redirect(URL("default","index"))    
 
+    query = ((db.curso_academico_grupo.id.belongs(idgrupos)) &
+             (db.curso_academico_grupo.id_grupo == db.grupo.id) &
+             (db.grupo_profesor.id_curso_academico_grupo == db.curso_academico_grupo.id) &
+             (db.grupo_profesor_asignatura.id_grupo_profesor == db.grupo_profesor.id) &
+             (db.grupo_profesor_asignatura.id_asignatura == db.asignatura.id) &
+             (db.grupo_profesor_asignatura.id_grupo_profesor == db.grupo_profesor.id) &
+             (db.grupo_profesor.id_profesor == db.profesor.id) &
+             (db.grupo_profesor_asignatura_alumno.id_grupo_profesor_asignatura == db.grupo_profesor_asignatura.id) &
+             (db.grupo_profesor_asignatura_alumno.id_grupo_alumno == db.grupo_alumno.id) &
+             (db.grupo_alumno.id_alumno == db.alumno.id) &
+             (db.evaluacion_alumno.id_grupo_profesor_asignatura_alumno == db.grupo_profesor_asignatura_alumno.id) &
+             (db.evaluacion_alumno.id_curso_academico_evaluacion == db.curso_academico_evaluacion.id))
+
+    if not todoelcurso:
+        query &= db.evaluacion_alumno.id_curso_academico_evaluacion == idevaluacion
+
+    evaluaciones = db(query).select()
+
+    if len(evaluaciones) == 0:
+        return "No hay datos"
+    logo = os.path.join(request.env.web2py_path,"applications",request.application,"uploads", session.logo_centro)
+    if todoelcurso:
+        titulo = "Hoja Resumen de Evaluación de Grupos Anual"
+    else:
+        titulo = "Hoja Resumen de Evaluación de Grupos para "+db.curso_academico_evaluacion(idevaluacion).evaluacion
+
+    tgrupo = "Grupos:"
+    grupo = ""
+    tutor = ""
+    for gr in idgrupos:
+        grupo += db.curso_academico_grupo(gr).id_grupo.grupo+" "
+        tutor += db.curso_academico_grupo(gr).id_grupo.grupo+": "+ \
+            db.curso_academico_grupo(gr).id_tutor.apellidos+", "+db.curso_academico_grupo(gr).id_tutor.nombre+" "
+    tcentro = session.codigo_centro+' '+session.nombre_centro
+    tcurso = session.curso_academico_nombre
+    ttutor = "Tutores:"
+    nevaluaciones = len(evaluaciones) or 1
+    class informeagrupadoPDF(FPDF):
+        def header(self):
+            self.set_font('Arial','B',15)
+            #Logo del centro
+            self.image(logo,5,5,20,20)
+            #Poner código del centro y nombre el la parte izquierda superior
+            self.cell(15)
+            self.cell(w=0,h=0,txt=parsestr(tcentro),border=0,ln=0,align='L',fill=0)
+            #Ahora el curso académico en la parte derecha superior
+            self.cell(w=0,h=0,txt="Curso: "+parsestr(tcurso),border=0,ln=1,align='R',fill=0)
+            #Dibujamos una linea de separación
+            #self.set_line_width(.5)
+            #pdf.line(5,13,205,13)
+            #Calcular ancho del texto (titulo) y establecer posición
+            w=self.get_string_width(titulo)+6
+            self.set_x((297-w)/2)
+            #Titulo
+            self.cell(w=w,h=17,txt=parsestr(titulo),border=0,ln=1,align='C',fill=0)
+            #Linea
+            self.line(5,23,290,23)
+
+            pdf.set_font('','',8)      
+            
+            pdf.cell(w=20,h=0,txt=parsestr(tgrupo),border=0,ln=0,align='R',fill=0)
+            pdf.set_font('','B',10)                        
+            pdf.cell(w=20,h=0,txt=parsestr(grupo),border=0,ln=1,align="L",fill=0)
+            
+            pdf.set_font('','',8)                        
+            pdf.cell(w=20,h=9,txt=parsestr(ttutor),border=0,ln=0,align='R',fill=0)            
+            pdf.set_font('','B',10)                                    
+            pdf.cell(w=20,h=9,txt=parsestr(tutor),border=0,ln=1,align="L",fill=0)
+           
+            pdf.line(5,35,290,35)
+            
+            pdf.set_font('','B',9)
+            pdf.cell(w=10,h=9,txt=parsestr("Asignatura"))
+            pdf.cell(75)
+            pdf.line(75,40,160,40)
+            pdf.cell(w=10,h=4,txt=parsestr("Aspectos académicos"))
+            pdf.cell(85)            
+            pdf.cell(w=10,h=4,txt=parsestr("Aspectos actitudinales"))
+            pdf.line(170,40,250,40)
+            pdf.cell(20)            
+            pdf.cell(w=0,h=9,txt=parsestr("Medias asignaturas"),align="R")
+            pdf.ln(7)
+            pdf.cell(70)            
+            pdf.cell(w=10,h=0,txt=parsestr("Nivel"))
+            pdf.cell(8)           
+            pdf.cell(w=10,h=0,txt=parsestr("Trabajo en clase"))
+            pdf.cell(20)           
+            pdf.cell(w=10,h=0,txt=parsestr("Trabajo en casa"))
+            pdf.cell(40)           
+            pdf.cell(w=10,h=0,txt=parsestr("Interés"))
+            pdf.cell(10)           
+            pdf.cell(w=10,h=0,txt=parsestr("Participa"))
+            pdf.cell(10)           
+            pdf.cell(w=10,h=0,txt=parsestr("Comportamiento"))
+            pdf.line(5,45,290,45)
+            #Salto de línea
+            pdf.ln(5)            
+            
+            
+    pdf=informeagrupadoPDF('L','mm','A4')
+    pdf.alias_nb_pages()
+    pdf.add_page()
+    pdf.set_font('Arial','',8)
+    pdf.set_fill_color(230,230,230)    
+    datos = {}
+    for evaluacion in evaluaciones:
+        if evaluacion.asignatura.abreviatura not in datos.keys():
+            datos[evaluacion.asignatura.abreviatura] = {"evaluacion":evaluacion.evaluacion_alumno.evaluacion,
+                        "asignatura":evaluacion.asignatura.asignatura[:46-len(evaluacion.asignatura.abreviatura)]+" ("+evaluacion.asignatura.abreviatura+")",
+                        "aspectos": {"NIV":evaluacion.evaluacion_alumno.nivel,
+                                     "TCL":evaluacion.evaluacion_alumno.trabajo_clase,
+                                     "TCA":evaluacion.evaluacion_alumno.trabajo_casa,
+                                     "INT":evaluacion.evaluacion_alumno.interes,
+                                     "PART":evaluacion.evaluacion_alumno.participa,
+                                     "COMP":evaluacion.evaluacion_alumno.comportamiento},
+                        "nalumnos":1}
+                                     
+        else:
+            datos[evaluacion.asignatura.abreviatura]["evaluacion"] +=  evaluacion.evaluacion_alumno.evaluacion
+            datos[evaluacion.asignatura.abreviatura]["aspectos"]["NIV"] += evaluacion.evaluacion_alumno.nivel
+            datos[evaluacion.asignatura.abreviatura]["aspectos"]["TCL"] += evaluacion.evaluacion_alumno.trabajo_clase
+            datos[evaluacion.asignatura.abreviatura]["aspectos"]["TCA"] += evaluacion.evaluacion_alumno.trabajo_casa
+            datos[evaluacion.asignatura.abreviatura]["aspectos"]["INT"] += evaluacion.evaluacion_alumno.interes
+            datos[evaluacion.asignatura.abreviatura]["aspectos"]["PART"] += evaluacion.evaluacion_alumno.participa
+            datos[evaluacion.asignatura.abreviatura]["aspectos"]["COMP"] += evaluacion.evaluacion_alumno.comportamiento
+            datos[evaluacion.asignatura.abreviatura]["nalumnos"] += 1
+    
+    for asignatura in datos.keys():
+        datos[asignatura]["evaluacion"] = float(datos[asignatura]["evaluacion"])/datos[asignatura]["nalumnos"]
+        datos[asignatura]["aspectos"]["NIV"] = (float(datos[asignatura]["aspectos"]["NIV"])/datos[asignatura]["nalumnos"])
+        datos[asignatura]["aspectos"]["TCL"] = (float(datos[asignatura]["aspectos"]["TCL"])/datos[asignatura]["nalumnos"])/10
+        datos[asignatura]["aspectos"]["TCA"] = (float(datos[asignatura]["aspectos"]["TCA"])/datos[asignatura]["nalumnos"])/10
+        datos[asignatura]["aspectos"]["INT"] = (float(datos[asignatura]["aspectos"]["INT"])/datos[asignatura]["nalumnos"])/10
+        datos[asignatura]["aspectos"]["PART"] = (float(datos[asignatura]["aspectos"]["PART"])/datos[asignatura]["nalumnos"])/10
+        datos[asignatura]["aspectos"]["COMP"] = (float(datos[asignatura]["aspectos"]["COMP"])/datos[asignatura]["nalumnos"])/10
+       
+        
+        #esto no es correcto, debemos tener en cuenta criterios de evaluación de asignatura->departamento->centro
+        #miremos en la tabla de asignaturas si esa asignatura usa criterios
+        (peso1,peso2,peso3,peso4,peso5,peso6) = (0.0,0.0,0.0,0.0,0.0,0.0)
+        asignaturarow = db(db.asignatura.abreviatura==asignatura).select().first()
+        if asignaturarow.usar_criterios_asignatura:
+            (peso1,peso2,peso3,peso4,peso5,peso6) = (asignaturarow.peso_1,asignaturarow.peso_2,asignaturarow.peso_3,
+                                                   asignaturarow.peso_4,asignaturarow.peso_5,asignaturarow.peso_6)            
+        elif asignaturarow.id_departamento.usar_criterios_departamento:
+            (peso1,peso2,peso3,peso4,peso5,peso6) = (asignaturarow.id_departamento.peso_1,asignaturarow.id_departamento.peso_2,
+                                                   asignaturarow.id_departamento.peso_3,asignaturarow.id_departamento.peso_4,
+                                                   asignaturarow.id_departamento.peso_5,asignaturarow.id_departamento.peso_6)
+        else:                                                   
+            (peso1,peso2,peso3,peso4,peso5,peso6) = (evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_1,
+                                                   evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_2,
+                                                   evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_3,
+                                                   evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_4,
+                                                   evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_5,
+                                                   evaluaciones[0].curso_academico_evaluacion.id_curso_academico.peso_6)                                                   
+            
+        datos[asignatura]["evaluacion"] = (datos[asignatura]["aspectos"]["NIV"]*float(peso1) +
+                                           datos[asignatura]["aspectos"]["TCL"]*float(peso2) +
+                                           datos[asignatura]["aspectos"]["TCA"]*float(peso3) +
+                                           datos[asignatura]["aspectos"]["INT"]*float(peso4) +
+                                           datos[asignatura]["aspectos"]["PART"]*float(peso5) +
+                                           datos[asignatura]["aspectos"]["COMP"]*float(peso6))/100
+           
+    linea = 1
+    for asignatura in sorted(datos.iterkeys()):
+        # imprime resumen de asignatura
+        if linea % 2 <> 0:
+            # imprimimos relleno de fondo
+            fill = 1
+        else:
+            fill = 0
+
+        pdf.set_fill_color(230,230,230)    
+        pdf.set_font('','',8)
+        pdf.cell(w=50,h=5,txt=parsestr(datos[asignatura]["asignatura"]),border=0,ln=0,align="L",fill=fill)
+        pdf.cell(10,h=5,fill=fill)
+        nivel = datos[asignatura]["aspectos"]["NIV"]
+        pdf.cell(w=30,h=5,txt=parsestr(str('%.02f' % nivel)),align="C",fill=fill)
+        trabajo_clase = datos[asignatura]["aspectos"]["TCL"]
+        pdf.cell(w=25,h=5,txt=parsestr(str('%.02f' %  trabajo_clase)),align="C",fill=fill)
+        trabajo_casa = datos[asignatura]["aspectos"]["TCA"]
+        pdf.cell(w=30,h=5,txt=parsestr(str('%.02f' % trabajo_casa)),align="C",fill=fill)
+        pdf.cell(20,h=5,fill=fill)
+        interes = datos[asignatura]["aspectos"]["INT"]
+        pdf.cell(w=20,h=5,txt=parsestr(str('%.02f' % interes)),align="C",fill=fill)
+        #pdf.cell(10,fill=fill)
+        participa = datos[asignatura]["aspectos"]["PART"]
+        pdf.cell(w=20,h=5,txt=parsestr(str('%.02f' % participa)),align="C",fill=fill)
+        #pdf.cell(15,fill=fill)
+        comportamiento = datos[asignatura]["aspectos"]["COMP"]
+        pdf.cell(w=30,h=5,txt=parsestr(str('%.02f' % comportamiento)),align="C",fill=fill)
+        pdf.cell(w=10,h=5,fill=fill)
+        pdf.set_fill_color(200,200,200)           
+        pdf.set_font('','B',9)
+        border = "TLR" if linea == 1 else "LR"      
+        evalua = datos[asignatura]["evaluacion"]             
+        pdf.cell(w=0,h=5,txt=parsestr(str('%.02f' % evalua)),border=border,align="R",fill=1,ln=1)
+        # aumentamos el contador de linea
+        linea += 1
+
+    # estadísticas generales
+    sumanivel = 0
+    sumatrclase = 0
+    sumatrcasa = 0
+    sumainteres = 0
+    sumaparticipa = 0
+    sumacomportamiento = 0
+    sumaevaluacion = 0
+    for asignatura in datos.keys():
+        sumanivel += datos[asignatura]["aspectos"]["NIV"]
+        sumatrclase += datos[asignatura]["aspectos"]["TCL"]
+        sumatrcasa += datos[asignatura]["aspectos"]["TCA"]
+        sumainteres += datos[asignatura]["aspectos"]["INT"]
+        sumaparticipa += datos[asignatura]["aspectos"]["PART"]
+        sumacomportamiento += datos[asignatura]["aspectos"]["COMP"]
+        sumaevaluacion += datos[asignatura]["evaluacion"]
+    
+    nl = len(datos.keys())    
+    pdf.set_fill_color(200,200,200)    
+    pdf.set_font('','B',9)                        
+    pdf.cell(w=50,h=5,txt=parsestr(str("Estadísticas de la evaluación")),border="LTB",ln=0,align="L",fill=1)
+    pdf.cell(10,h=5,border="TB",fill=1)
+    nivel = sumanivel/float(nl)
+    pdf.cell(w=30,h=5,txt=parsestr(str('%.02f' % nivel)),border="TB",align="C",fill=1)
+    trabajo_clase = sumatrclase/float(nl)       
+    pdf.cell(w=25,h=5,txt=parsestr(str('%.02f' % trabajo_clase)),border="TB",align="C",fill=1)
+    trabajo_casa = sumatrcasa/float(nl)
+    pdf.cell(w=30,h=5,txt=parsestr(str('%.02f' % trabajo_casa)),border="TB",align="C",fill=1)
+    pdf.cell(20,h=5,border="TB",fill=1)
+    interes = sumainteres/float(nl)
+    pdf.cell(w=20,h=5,txt=parsestr(str('%.02f' % interes)),border="TB",align="C",fill=1)
+    participa = sumaparticipa/float(nl)
+    pdf.cell(w=20,h=5,txt=parsestr(str('%.02f' % participa)),border="TB",align="C",fill=1)
+    comportamiento = sumacomportamiento/float(nl)
+    pdf.cell(w=30,h=5,txt=parsestr(str('%.02f' % comportamiento)),border="TB",align="C",fill=1)
+    pdf.cell(w=10,h=5,border="TB",fill=1)
+    evalua = (sumaevaluacion/(nl))
+    pdf.set_font('','B',10)                            
+    pdf.cell(w=0,h=5,txt=parsestr(str('%.02f' % evalua)),border=1,align="R",fill=1)
+    fichero=os.path.join(request.folder,"uploads",str(uuid.uuid4())+".png")
+    d = {}
+    for asignatura in datos.keys():
+        d[asignatura] = datos[asignatura]["evaluacion"] 
+    genera_grafico_asignaturas(fichero, d)
+    graf = os.path.join(fichero)
+    pdf.image(graf,10,150)    
+    os.unlink(graf)
+    fichero=os.path.join(request.folder,"uploads",str(uuid.uuid4())+".png") 
+    genera_grafico_aspectos(fichero, {"NIV":nivel, "TCL":trabajo_clase,
+                                      "TCA":trabajo_casa, "INT":interes,
+                                      "PART":participa, "COMP":comportamiento})
+    graf = os.path.join(fichero)
+    pdf.image(graf,200,150)    
+    os.unlink(graf)
     response.headers['Content-Type']='application/pdf'
     return pdf.output(dest='S')
