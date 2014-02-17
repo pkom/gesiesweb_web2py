@@ -2,10 +2,13 @@
         <table id='grupoprofesorasignaturas' style='width: 100%'></table>
         <div id='pagergrupoprofesorasignaturas'></div>
 </div>        
-<div id="dialog-form"></div>
+<div id="dialog-form">
+    <div id="pruebas">
+    </div>
+</div>
 
-<div id="dialog-confirm" title="¿Borrar el registro seleccionado?" style="display:none;">
-    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Este elemento quedará permanentemente eliminado. ¿Está seguro?</p>
+<div id="dialog-confirm" title="¿Estás seguro de borrar el registro seleccionado?" style="display:none;">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Se eliminarán todas las evaluaciones del profesor en esta asignatura. ¿Está seguro?</p>
 </div>
 
 <div id="dialog-alert" title="Atención" style="display:none;">
@@ -137,16 +140,17 @@ jQuery(document).ready(function(){
   }); 
 
   jQuery("#grupoprofesorasignaturas").jqGrid('navButtonAdd','#pagergrupoprofesorasignaturas',{
-                caption: "Asigna alumnos",
+                caption: "Asignar",
                 buttonicon :'ui-icon-person',
       			title: "Asigna alumnos pendientes del grupo a este profesor y asignatura",
-                onClickButton : function (){ 
-                    asignaAlumnosProfesorAsignatura();
+                onClickButton : function (){
+                    if (confirm("¿Deseas continuar y asignar el resto de alumnos del grupo a esta asignatura y profesor?"))
+                        asignaAlumnosProfesorAsignatura();
                 } 
   }); 
 
   jQuery("#grupoprofesorasignaturas").jqGrid('navButtonAdd','#pagergrupoprofesorasignaturas',{
-                caption: "R",
+                caption: "Rápido",
                 buttonicon :'ui-icon-person',
       			title: "Asignación de alumnos del grupo a asignaturas modo rápido",
                 onClickButton : function (){ 
@@ -213,14 +217,14 @@ function deleteGrupoProfesorAsignaturas(){
             width:350,
             modal: true,
             buttons: {
+                "Cancelar": function() {
+                    $(this).dialog( "close" );
+                },                
                 "Borrar": function() {
                     jQuery.post("{{=URL(c='services_evaluacion',f='call',args=['json','deleteAsignacion'])}}",{idasignacion : id}, function(data){
                         jQuery("#dialog-confirm").dialog( "close" );
                         jQuery("#grupoprofesorasignaturas").trigger("reloadGrid");
                     });
-                },
-                "Cancelar": function() {
-                    $(this).dialog( "close" );
                 }
             }
         }).dialog('open');
@@ -241,22 +245,107 @@ function asignaAlumnosAsignatura(){
     var id = rowSelected();
     if(id==false)
          return false;
+
     jQuery("#dialog-form").html("");
     jQuery("#dialog-form").load("form_alumnos_asignaturas.html", function() {
-        jQuery("#form_data #action").val("add");
-        jQuery("#form_data #messageForm").html("Todos los campos son obligatorios");                                     
-    
-        x = (jQuery(window).width()-750)/2;
-        y = (jQuery(window).height()-400)/2;
-    
-        jQuery("#dialog-form").dialog({
-            resizable: false,
-            position: top,
-            modal: true,
-            width: 750,                     
-            title: "Asignar alumnos a asignaturas"
-        }).dialog('option', 'position', [x, y]);  
-        jQuery(".ui-button-text").css("padding-top", "0px");         
+        jQuery.getJSON("{{=URL(c='services_evaluacion',f='call',args=['json','dameAlumnosProfesoresAsignaturas'])}}",{ idgrupoprofesorasignatura: id }, function(result) {   
+            x = (jQuery(window).width()-1280)/2;
+            y = (jQuery(window).height()-400)/2;
+
+            var colNames = ['Alumnado', 'Id Grupo Alumno'];
+            var colModel = [ {name:"nombre", sortable:false, width: 250, fixed:true},
+                             {name:"id_grupo_alumno", sortable:false, align:'right', hidden:true, key:true}
+                           ];
+
+            var nasignaturas = result.nasignaturas;
+
+            for (i = 0; i < nasignaturas; i++) {
+                colNames.push(result.response[0]["asignatura_"+i]+" "+result.response[0]["asignatura_"+i+"_nombre_profesor"]);
+                colNames.push(result.response[0]["asignatura_"+i+"_id_grupo_profesor_asignatura"]);                
+                colModel.push({name:"asignatura_"+i+"_asignado", sortable:false, align:'center', editable:true,
+                                formatter:"checkbox",
+                                edittype:"checkbox",editoptions: {value:"1:0"},formatoptions:{disabled:false}
+                              });
+                colModel.push({name:"asignatura_"+i+"_id_grupo_profesor_asignatura", sortable:false, align:'right', editable:false, hidden:true});
+            };
+
+            var getColumnIndexByName = function(grid, columnName) {
+                var cm = grid.jqGrid('getGridParam', 'colModel'), i, l;
+                for (i = 0, l = cm.length; i < l; i += 1) {
+                    if (cm[i].name === columnName) {
+                        return i; // return the index
+                    }
+                }
+                return -1;
+            };
+
+
+            var ajustachecks = function() {
+                for (i = 0; i < nasignaturas; i++) {
+
+                    var iCol = getColumnIndexByName ($(this), 'asignatura_'+i+'_asignado'),
+                        rows = this.rows,
+                        ii,
+                        c = rows.length;
+
+                    for (ii = 0; ii < c; ii += 1) {
+                        $(rows[ii].cells[iCol]).find('input:checkbox').click(function (e) {
+                            var idgrupoalumno = $(e.target).closest('tr')[0].id;
+                            var isChecked = $(e.target).is(':checked');
+                            var idgrupoprofesorasignatura = $(e.target).parent().next()[0].title;
+
+                            jQuery.post("{{=URL(c='services_evaluacion',f='call',args=['json','actualizaAsignacion'])}}",
+                                {idgrupoalumno:idgrupoalumno,idgrupoprofesorasignatura:idgrupoprofesorasignatura,isChecked:isChecked },
+                                function(response){
+                                    if (response.response !== "OK") {
+                                        jQuery('#message').html(response.response).css("color","red").effect("highlight", {"color":"yellow"}, 5000);
+                                    };
+                                }
+                            );
+                        });           
+                    }
+                }
+            };
+
+
+            jQuery("#jqgridasignacion").jqGrid({
+                datatype: 'local',
+                data: result.response,
+                colNames: colNames,
+                colModel: colModel,
+                autowidth: true,
+                height: 'auto',
+                pagerpos: 'center',
+                shrinkToFit: true,                
+                rownum : 20,
+                pager : '#jqgridpagerasignacion',
+                viewrecords : true,
+                //rowlist : [20, 30, 40],
+                //vamos a poner eventos onclick en cada casilla...
+                loadComplete: ajustachecks,
+
+            });
+
+            //var gwdthjqgridasignacion = jQuery("#datos").width();
+            jQuery("#jqgridasignacion").jqGrid().setGridWidth(1262);  
+
+            //jQuery("#jqgridasignacion").jqGrid('setFrozenColumns');
+            //jQuery("#jqgridasignacion").triggerHandler("jqGridAfterGridComplete");
+
+
+
+
+            jQuery("#dialog-form").dialog({
+                resizable: false,
+                position: top,
+                modal: true,
+                width: 1280,                     
+                title: "Asignar alumnos a asignaturas"
+            }).dialog('option', 'position', [x, y]);
+            
+
+            jQuery(".ui-button-text").css("padding-top", "0px");
+        });
     });
 }
 

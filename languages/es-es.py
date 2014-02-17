@@ -471,6 +471,7 @@
 'Profesor/a: Rodríguez de Almansa Callejo': 'Profesor/a: Rodríguez de Almansa Callejo',
 'Profesor/a: Rodríguez de Almansa Callejo, Florentina': 'Profesor/a: Rodríguez de Almansa Callejo, Florentina',
 'Profesor/a: Sevilla Ortiz, Agustín': 'Profesor/a: Sevilla Ortiz, Agustín',
+'Profesor/a: Sánchez Núñez, Nuria': 'Profesor/a: Sánchez Núñez, Nuria',
 'Profesorado': 'Profesorado',
 'Profesores/as': 'Profesores/as',
 'Profile': 'Perfíl',

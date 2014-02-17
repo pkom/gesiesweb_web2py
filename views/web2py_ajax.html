@@ -1,6 +1,6 @@
 {{
 response.files.insert(0,URL('static','js/jquery-1.6.2.min.js'))
-#response.files.insert(0,URL('static','ui/js/jquery-1.6.2.min.js'))
+#response.files.insert(0,URL('static','js/jquery-1.9.0.min.js'))
 response.files.insert(1,URL('static','css/calendar.css'))
 response.files.insert(2,URL('static','js/calendar.js'))
 
@@ -10,14 +10,14 @@ response.files.insert(4,URL('static','ui/js/jquery-ui-1.8.16.custom.min.js'))
 response.files.insert(5,URL('static','ui/js/jquery.ui.datepicker_es.js'))
 
 #jquery-jqgrid (antes)
-response.files.insert(6,URL('static','jqgrid/css/ui.jqgrid.css'))
-response.files.insert(7,URL('static','jqgrid/js/i18n/grid.locale-es.js'))
-response.files.insert(8,URL('static','jqgrid/js/jquery.jqGrid.min.js'))
+#response.files.insert(6,URL('static','jqgrid/css/ui.jqgrid.css'))
+#response.files.insert(7,URL('static','jqgrid/js/i18n/grid.locale-es.js'))
+#response.files.insert(8,URL('static','jqgrid/js/jquery.jqGrid.min.js'))
 
-#jquery-jqgrid (ultima version) no va bien el evento ondblclickrow en los subgrids, se propaga y se ejecuta el superior tambien
-#response.files.insert(6,URL('static','jqgridlatest/css/ui.jqgrid.css'))
-#response.files.insert(7,URL('static','jqgridlatest/js/i18n/grid.locale-es.js'))
-#response.files.insert(8,URL('static','jqgridlatest/js/minified/jquery.jqGrid.min.js'))
+#jquery-jqgrid ultima version no va bien el evento ondblclickrow en los subgrids, se propaga y se ejecuta el superior tambien
+response.files.insert(6,URL('static','jqgridlatest/css/ui.jqgrid.css'))
+response.files.insert(7,URL('static','jqgridlatest/js/i18n/grid.locale-es.js'))
+response.files.insert(8,URL('static','jqgridlatest/js/jquery.jqGrid.min.js'))
 
 #estilos de paco
 response.files.insert(9,URL('static','css/paco.css'))
@@ -31,6 +31,11 @@ response.files.insert(12,URL('static','form/jquery.form.js'))
 
 #jeditable
 response.files.insert(13,URL('static','jeditable/jquery.jeditable.mini.js'))
+
+#datables
+#response.files.insert(14,URL('static','datatables/css/jquery.dataTables.css'))
+#response.files.insert(15,URL('static','datatables/js/jquery.dataTables.min.js'))
+#response.files.insert(15,URL('static','datatables/js/FixedColumns.min.js'))
 
 for _item in response.meta or []:}}
      <meta name="{{=_item}}" content="{{=response.meta[_item]}}" />{{

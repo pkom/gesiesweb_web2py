@@ -27,7 +27,7 @@ def show_evaluaciones():
                          csv=False, maxtextlengths={'curso_academico_evaluacion.evaluacion':50,'curso_academico_evaluacion.fecha':15},
                          links=[dict(header='Procesos',body=lambda row: BUTTON('Crear fichas', _title='Generar fichas de evaluación de los alumnos', 
                          _onclick="ajax('%s',[]);"%URL(c='services_evaluacion',f='crearFichasEvaluacion',args=[row.id])))],
-                         links_placement='left')
+                         links_placement='left',deletable=False)
     return dict(grid = grid)
     
 def comprueba_evaluacion(form):

@@ -249,3 +249,78 @@ def crearFichasEvaluacion():
         except:
             respuesta = 'fallo'    
     return respuesta
+
+@service.json
+def dameAlumnosProfesoresAsignaturas():
+    # Aqui debo leer la información de asignación de alumnos profesores y asignaturas y devolverla en formato json
+    # para construir el formulario apropiado que será procesado por la accion asignaAlumnosProfesoresAsignaturas
+    idgrupoprofesorasignatura = int(request.vars.idgrupoprofesorasignatura) or 0
+    # Primero localizaremos el grupo 
+    idcursoacademicogrupo = db.grupo_profesor_asignatura(idgrupoprofesorasignatura).id_grupo_profesor.id_curso_academico_grupo
+    alumnosgrupo = db((db.grupo_alumno.id_curso_academico_grupo == idcursoacademicogrupo) &
+                      (db.grupo_alumno.id_alumno == db.alumno.id)).select(orderby=db.alumno.apellidos | db.alumno.nombre)
+    lista = []
+    for alumno in alumnosgrupo:
+        alu = alumno.grupo_alumno.id
+        alumno = dict(nombre=alumno.alumno.apellidos+', '+alumno.alumno.nombre,id_grupo_alumno=alu)
+        # veamos sus asignaturas
+        asignaturas = db((db.grupo_profesor.id_curso_academico_grupo == idcursoacademicogrupo) &
+                         (db.grupo_profesor.id_profesor == db.profesor.id) &
+                         (db.grupo_profesor_asignatura.id_grupo_profesor == db.grupo_profesor.id) &
+                         (db.grupo_profesor_asignatura.id_asignatura == db.asignatura.id)).select(orderby=db.asignatura.abreviatura)
+        contador = 0
+        for asignatura in asignaturas:
+            # ¿está asignado ya?
+            if db((db.grupo_profesor_asignatura_alumno.id_grupo_alumno == alu) &
+                  (db.grupo_profesor_asignatura_alumno.id_grupo_profesor_asignatura == asignatura.grupo_profesor_asignatura.id)).select().first():
+                asignado = "1"
+            else:
+                asignado = "0"
+
+            alumno['asignatura_'+str(contador)] = asignatura.asignatura.abreviatura
+            alumno['asignatura_'+str(contador)+'_nombre_asignatura'] = asignatura.asignatura.asignatura           
+            alumno['asignatura_'+str(contador)+'_asignado'] = asignado
+            alumno['asignatura_'+str(contador)+'_nombre_profesor'] = asignatura.profesor.apellidos+', '+asignatura.profesor.nombre
+            alumno['asignatura_'+str(contador)+'_id_grupo_profesor_asignatura'] = asignatura.grupo_profesor_asignatura.id
+
+            contador+=1
+
+        lista.append(alumno)
+    return dict(response=lista, nasignaturas=contador)
+
+@service.json
+def actualizaAsignacion():
+    idgrupoalumno = int(request.vars.idgrupoalumno)
+    idgrupoprofesorasignatura = int(request.vars.idgrupoprofesorasignatura)
+    asignada = request.vars.isChecked
+    respuesta = ""
+    if ((idgrupoalumno == 0) or (idgrupoprofesorasignatura == 0) or (asignada == "")):
+        respuesta = 'datosincorrectos'
+    else:
+        try:
+            if asignada == 'true':
+                if (db((db.grupo_profesor_asignatura_alumno.id_grupo_profesor_asignatura == idgrupoprofesorasignatura) & 
+                       (db.grupo_profesor_asignatura_alumno.id_grupo_alumno == idgrupoalumno)).count() > 0):
+                    respuesta = "Problema: ya existe esta asignación, algo está funcionando mal"
+                else:
+                    # añadimos la asignacion
+                    db.grupo_profesor_asignatura_alumno.insert(id_grupo_profesor_asignatura=idgrupoprofesorasignatura, id_grupo_alumno=idgrupoalumno)
+                    respuesta = "OK"
+            elif asignada == 'false':
+                if (db((db.grupo_profesor_asignatura_alumno.id_grupo_profesor_asignatura == idgrupoprofesorasignatura) & 
+                       (db.grupo_profesor_asignatura_alumno.id_grupo_alumno == idgrupoalumno)).count() > 0):
+                    # borramos la asignación
+                    db((db.grupo_profesor_asignatura_alumno.id_grupo_profesor_asignatura == idgrupoprofesorasignatura) & 
+                       (db.grupo_profesor_asignatura_alumno.id_grupo_alumno == idgrupoalumno)).delete()
+                    respuesta = "OK"
+                else:
+                    # error
+                    respuesta = "Problema: no existe la asignación que se está intentando borrar, algo está funcionando mal"
+            else:
+                respuesta = "Problema: no se ha recibido el tipo de operación a realizar"
+                                      
+            db.commit()
+            respuesta = "OK"
+        except:
+            respuesta = "fallo"
+    return dict(response=respuesta)
