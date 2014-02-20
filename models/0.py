@@ -63,5 +63,10 @@ settings.security_key = 'a098c897-724b-4e05-b2d8-8ee993385ae6'
 settings.email_server = 'logging' or 'smtp.gmail.com:587'
 settings.email_sender = 'francisco.mora.sanchez@gmail.com'
 settings.email_login = ''
-settings.login_method = [ldap_auth(server='ldap', base_dn='ou=People,dc=instituto,dc=extremadura,dc=es')]
+settings.login_method = [ldap_auth(mode='uid', server='ldap', base_dn='ou=People,dc=instituto,dc=extremadura,dc=es',
+            allowed_groups=['teachers'],
+            group_dn='ou=Group,dc=instituto,dc=extremadura,dc=es',
+            group_name_attrib='cn',
+            group_member_attrib='memberUid',
+            group_filterstr='objectClass=*')]
 settings.login_config = ''
