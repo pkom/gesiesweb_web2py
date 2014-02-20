@@ -47,6 +47,7 @@ def initSession():
     session.esResponsable = False
     session.esInformatico = False
     session.esAdministrativo = False
+    session.esSustituto = False
     
     if auth.has_membership('Responsables'):
         session.esResponsable = True
@@ -82,6 +83,11 @@ def initSession():
             session.profesor.id_departamento = departamento_profesor.id_curso_academico_departamento.id_departamento
             session.profesor.departamento = departamento_profesor.id_curso_academico_departamento.id_departamento.departamento
 
+        if departamento_profesor.sustituye:
+            session.esSustituto = True
+            # pongamos ahora el codigo del profesor sustituido
+            session.sustituye = departamento_profesor.sustituye
+
         grupo_profesor = db((db.curso_academico_grupo.id == db.grupo_profesor.id_curso_academico_grupo) &
                             (db.curso_academico_grupo.id_curso_academico == session.curso_academico_id) &
                             (db.grupo_profesor.id_profesor == session.profesor.id)).select(db.grupo_profesor.ALL)
@@ -94,8 +100,13 @@ def initSession():
                 session.profesor.grupos.append(grupo)
 
         # Veamos si es tutor
-        tutor_grupo = db((db.curso_academico_grupo.id_curso_academico == session.curso_academico_id) & 
-                          (db.curso_academico_grupo.id_tutor == session.profesor.id)).select(db.curso_academico_grupo.ALL).first()
+        if session.esSustituto:
+            session.idProfesorSustituido = db.departamento_profesor[session.sustituye].id_profesor
+            tutor_grupo = db((db.curso_academico_grupo.id_curso_academico == session.curso_academico_id) & 
+                              (db.curso_academico_grupo.id_tutor == session.idProfesorSustituido)).select(db.curso_academico_grupo.ALL).first()            
+        else:
+            tutor_grupo = db((db.curso_academico_grupo.id_curso_academico == session.curso_academico_id) & 
+                              (db.curso_academico_grupo.id_tutor == session.profesor.id)).select(db.curso_academico_grupo.ALL).first()
         if tutor_grupo:
             session.profesor.esTutor = True
             session.profesor.tutor = Storage()

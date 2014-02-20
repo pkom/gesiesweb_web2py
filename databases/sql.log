@@ -544,3 +544,6 @@ CREATE TABLE seguimiento_alumno(
     PRIMARY KEY(id)
 ) ENGINE=InnoDB CHARACTER SET utf8;
 success!
+timestamp: 2014-02-19T09:12:57.301152
+ALTER TABLE departamento_profesor ADD sustituye INT, ADD INDEX sustituye__idx (sustituye), ADD FOREIGN KEY (sustituye) REFERENCES departamento_profesor (id) ON DELETE CASCADE;
+success!

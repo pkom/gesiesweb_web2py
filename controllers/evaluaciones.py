@@ -90,13 +90,22 @@ def evaluacion_old():
 @auth.requires_login()
 @auth.requires_membership(role='Profesores')    
 def evaluacion():
-    query = ((db.grupo_profesor.id_profesor == session.profesor.id) &
-             (db.grupo_profesor.id_curso_academico_grupo == db.curso_academico_grupo.id) &
-             (db.curso_academico_grupo.id_curso_academico == session.curso_academico_id) &
-             (db.curso_academico_grupo.id_grupo == db.grupo.id) &
-             (db.grupo_profesor_asignatura.id_grupo_profesor == db.grupo_profesor.id) &
-             (db.grupo_profesor_asignatura.id_asignatura == db.asignatura.id) &
-             (db.curso_academico_grupo.id_tutor == db.profesor.id))
+    if session.esSustituto:
+        query = ((db.grupo_profesor.id_profesor == session.idProfesorSustituido) &
+                 (db.grupo_profesor.id_curso_academico_grupo == db.curso_academico_grupo.id) &
+                 (db.curso_academico_grupo.id_curso_academico == session.curso_academico_id) &
+                 (db.curso_academico_grupo.id_grupo == db.grupo.id) &
+                 (db.grupo_profesor_asignatura.id_grupo_profesor == db.grupo_profesor.id) &
+                 (db.grupo_profesor_asignatura.id_asignatura == db.asignatura.id) &
+                 (db.curso_academico_grupo.id_tutor == db.profesor.id))       
+    else:
+        query = ((db.grupo_profesor.id_profesor == session.profesor.id) &
+                 (db.grupo_profesor.id_curso_academico_grupo == db.curso_academico_grupo.id) &
+                 (db.curso_academico_grupo.id_curso_academico == session.curso_academico_id) &
+                 (db.curso_academico_grupo.id_grupo == db.grupo.id) &
+                 (db.grupo_profesor_asignatura.id_grupo_profesor == db.grupo_profesor.id) &
+                 (db.grupo_profesor_asignatura.id_asignatura == db.asignatura.id) &
+                 (db.curso_academico_grupo.id_tutor == db.profesor.id))
     evaluaciones = db(db.curso_academico_evaluacion.id_curso_academico == session.curso_academico_id).select(orderby=db.curso_academico_evaluacion.evaluacion)
     db.grupo_profesor_asignatura.id.readable = False
     db.profesor.apellidos.readable = False

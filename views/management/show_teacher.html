@@ -2,10 +2,22 @@
 {{form['_class' ] = 'formulariopaco'}}
 {{=H3(T('Datos Profesor/a'))}}
 {{=form}}
+
+<table class="tablasgestion">
+    <tr class="cabtablasgestion">
+        <th>{{=T('Sustituto de')}}</th>
+        <th>{{=sustituyeselect}}</th>
+    </tr>
+    <tr>
+        <td></td>
+        <td></td>
+    </tr>
+</table>
+
 <table class="tablasgestion">
     <tr class="cabtablasgestion">
         <th>{{=T('Grupos')+': '+str(len(grupos))}}</th>
-        <th>{{=T('Departamentos')+': '+str(len(dptos))}}</th>        
+        <th>{{=T('Departamentos')+': '+str(len(dptos))}}</th>
     </tr>
     <tr>
         <td>
@@ -34,6 +46,16 @@
             </ul>
             {{pass}}        
         </td>
-        
     </tr>
 </table>
+
+<script type="text/javascript">
+jQuery(document).ready(function(){
+    //debemos asignar el evento onchange del select para cuando cambiemos el jefe del departamento
+    jQuery("#selectsustituye").change(function(opcion) {
+        var profe = jQuery(this).val();
+        var depprofe = {{=departamentoprofesor}};
+        jQuery.post('{{=URL(c="services_responsables",f="call",args=["json","realizaSustitucion"])}}', {iddepartamentoprofesor: depprofe ,idsustituido:profe});
+    });             
+});
+</script>

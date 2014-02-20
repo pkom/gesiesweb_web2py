@@ -1260,3 +1260,20 @@ def getStudentsResumeDelays():
     limitby = (page * pagesize - pagesize,page * pagesize)
     data = dict(total=pages,page=page,records=total,rows=rows[limitby[0]:limitby[1]])
     return data
+
+@service.json
+def realizaSustitucion():
+    iddepartamentoprofesor = int(request.vars.iddepartamentoprofesor) or None
+    idsustituido = int(request.vars.idsustituido) or None
+    if iddepartamentoprofesor and idsustituido:
+        try:
+            if idsustituido == -1: 
+                db.departamento_profesor[iddepartamentoprofesor] = dict(sustituye = None)
+            else:
+                db.departamento_profesor[iddepartamentoprofesor] = dict(sustituye = idsustituido)
+        except: 
+            return dict(estado='Fallo')
+        db.commit()
+        return dict(estado='OK')
+    else:
+        return dict(estado='NOPARAMETRO')

@@ -155,6 +155,7 @@ db.define_table("grupo_profesor",
 db.define_table("departamento_profesor",
       Field("id_curso_academico_departamento", db.curso_academico_departamento),
       Field("id_profesor", db.profesor),
+      Field("sustituye", "reference departamento_profesor"),
       migrate='departamento_profesor.table',      
       format='%(id)s')    
 

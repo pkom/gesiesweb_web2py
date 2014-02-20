@@ -89,11 +89,27 @@ def show_teachers():
 @auth.requires(auth.has_membership(role='Responsables') or auth.has_membership(role="Administrativos"))
 def show_teacher():
     profesor = db.profesor(request.args(0)) or redirect(URL('index'))
+    # vemos cual el id_departamento_profesor de este profesor en el curso
+    departamentoprofesor = db((db.departamento_profesor.id_profesor == profesor) &
+                              (db.departamento_profesor.id_curso_academico_departamento == db.curso_academico_departamento.id) &
+                              (db.curso_academico_departamento.id_curso_academico == session.curso_academico_id)).select(db.departamento_profesor.id).first().id
     form = crud.update(db.profesor, profesor, deletable = False, next = URL('show_teachers'), message = T('Teacher updated'))
     oprofesor = obies.Profesor(db, session)
     dptos = oprofesor.dame_profesor_departamentos(profesor.id)
     grupos = oprofesor.dame_profesor_grupos(profesor.id)
-    return dict(form=form, profesor=profesor, grupos=grupos, dptos=dptos)
+    profes = oprofesor.dame_profesores_curso()
+    sustituyeselect = SELECT(OPTION('No sustituye', _value = -1),_id='selectsustituye')
+    for profe in profes:
+        if not (profe.departamento_profesor.id == departamentoprofesor):
+            sustituyeselect.append(OPTION(profe.profesor.apellidos+', '+profe.profesor.nombre, _value=profe.profesor.id))
+        else:
+            # estoy procesando la opcion del propio profesor en edición
+            
+            if profe.departamento_profesor.sustituye:
+                sustituyeselect.append(OPTION(db.departamento_profesor[profe.departamento_profesor.sustituye].id_profesor.apellidos+', '
+                    +db.departamento_profesor[profe.departamento_profesor.sustituye].id_profesor.nombre, _value=profe.departamento_profesor.sustituye, _selected='selected'))
+
+    return dict(form=form, sustituyeselect=sustituyeselect, departamentoprofesor= departamentoprofesor, profesor=profesor, grupos=grupos, dptos=dptos)
 
 @auth.requires(auth.has_membership(role='Responsables') or auth.has_membership(role="Administrativos"))
 def show_group():
