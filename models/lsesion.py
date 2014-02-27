@@ -10,7 +10,8 @@ def initSession():
     session.profesor = Storage()
     session.profesor.esJefe = False
     session.profesor.esTutor = False    
-    session.profesor.grupos = List()    
+    session.profesor.grupos = List()
+    session.usuarios_ultima_hora = List()
     
     if not db(db.config).select().first():
         return      
