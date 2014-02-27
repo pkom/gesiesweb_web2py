@@ -100,7 +100,10 @@
         <div id="datoscentro">
           {{=H3(A((session.nombre_centro+' ('+session.codigo_centro+')' if session.nombre_centro else '')
                       +' '+T('Curso Académico Actual:')+' '+session.curso_academico_nombre if session.curso_academico_nombre else ''))}}
-          {{=H4(T('Curso Académico Seleccionado:')+' '+session.curso_academico_nombre if session.curso_academico_nombre else '')}}   
+          <div>
+            {{=P(T('Curso Académico Seleccionado:')+' '+session.curso_academico_nombre if session.curso_academico_nombre else '')}}
+            {{=P(T('Usuari@s última hora: '),B('|'.join([usu["last_name"]+', '+usu["first_name"] for usu in session.usuarios_ultima_hora])))}}
+          </div>
         </div>
         <script>
             $(function() {

@@ -18,7 +18,7 @@ def index():
     rendered by views/default/index.html or views/generic.html
     """
     #logger.debug('pagina de inicio...')
-    
+
     if not db(db.config).select().first():
         # Estamos ejecutando la aplicación por primera vez, no se han establecido datos correctos.
         # Insertaremos datos, importante crear el curso académico actual y establecerlo por defecto.
@@ -84,6 +84,18 @@ def index():
 
         return dict(form=form, message=T('Disciplinary Management in secondary schools'))
     else:
+        limit = request.now - datetime.timedelta(minutes=60)
+        query = db.auth_event.time_stamp > limit
+        query &= db.auth_event.description.contains('ha ')
+        events = db(query).select(db.auth_event.user_id, db.auth_event.description,
+            orderby=db.auth_event.user_id|db.auth_event.time_stamp)
+        users = []
+        for i in range(len(events)):
+            last_event = ((i == len(events) - 1) or
+                           events[i+1].user_id != events[i].user_id)
+            if last_event and 'ha entrado' in events[i].description:
+                users.append(events[i].user_id)
+        session.usuarios_ultima_hora = db(db.auth_user.id.belongs(users)).select().as_list()
         return dict(form=None, message=T('Disciplinary Management in secondary schools'))
 
 def user():
