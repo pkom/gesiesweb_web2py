@@ -110,6 +110,24 @@ def getAllWarnings():
     return data
 
 @service.json
+def getStatsWarnings():   
+    queries=[]
+    queries.append(db.amonestacion.id_grupo_alumno == db.grupo_alumno.id)
+    queries.append(db.amonestacion.id_departamento_profesor == db.departamento_profesor.id)   
+    queries.append(db.grupo_alumno.id_curso_academico_grupo == db.curso_academico_grupo.id)
+    queries.append(db.curso_academico_grupo.id_grupo == db.grupo.id)   
+    queries.append(db.curso_academico_grupo.id_curso_academico == session.curso_academico_id)    
+    queries.append(db.grupo_alumno.id_alumno == db.alumno.id)
+    queries.append(db.departamento_profesor.id_profesor == db.profesor.id)    
+    query = reduce(lambda a,b:(a&b),queries)    
+    total = db(query).count()
+    queries.append(db.amonestacion.comunicada == True)           
+    query = reduce(lambda a,b:(a&b),queries)       
+    comunicadas = db(query).count()
+    data = dict(total=total,comunicadas=comunicadas,no_comunicadas=total-comunicadas)
+    return data
+
+@service.json
 def getAllAbsentismos():
     fields = ['id','fecha','grupo','profesor','alumno','comunicada','id_grupo_alumno','id_departamento_profesor']  
     rows = []
@@ -1068,7 +1086,8 @@ def getStudentsAbsentismoResume():
     
 @service.json
 def getTeachersResume():
-    fields = ['profesor','departamento','totalavisos','id_departamento_profesor']  
+    fields = ['profesor','departamento','totalavisos','totalavisoscomunicados', 'totalavisosnocomunicados',
+    'id_departamento_profesor']  
     rows = []
     if request.vars._search == 'true':
         searching = True
@@ -1094,24 +1113,57 @@ def getTeachersResume():
             departamento = '%'+request.vars.departamento.lower()+'%'
             queries.append(db.departamento.departamento.lower().like(departamento)) 
     query = reduce(lambda a,b:(a&b),queries)
-    
-    for r in db(query).select(db.amonestacion.ALL, db.departamento.ALL, db.profesor.ALL, totalavisos, orderby=~totalavisos, groupby=db.amonestacion.id_departamento_profesor):
-        vals = []
-        for f in fields:
-            if f == 'profesor':
-                vals.append(r.profesor.apellidos+', '+r.profesor.nombre)
-            elif f == 'departamento':
-                vals.append(r.departamento.departamento)
-            elif f == 'totalavisos':
-                vals.append(r[totalavisos])                
+
+
+    # for r in db(query).select(db.amonestacion.ALL, db.departamento.ALL, db.profesor.ALL, totalavisos, orderby=~totalavisos, groupby=db.amonestacion.id_departamento_profesor):
+    #     vals = []
+    #     for f in fields:
+    #         if f == 'profesor':
+    #             vals.append(r.profesor.apellidos+', '+r.profesor.nombre)
+    #         elif f == 'departamento':
+    #             vals.append(r.departamento.departamento)
+    #         elif f == 'totalavisos':
+    #             vals.append(r[totalavisos])                
+    #         elif f == 'totalavisoscomunicados':
+    #             vals.append(0)                
+    #         elif f == 'totalavisosnocomunicados':
+    #             vals.append(0)                
+    #         else:
+    #             rep = db.amonestacion[f].represent
+    #             if rep:
+    #                 vals.append(rep(r.amonestacion[f]))
+    #             else:
+    #                 vals.append(r.amonestacion[f])
+    #     rows.append(dict(id=r.amonestacion.id_departamento_profesor,cell=vals))
+
+    datos = dict()
+    for r in db(query).select(db.amonestacion.ALL, db.departamento.ALL, db.profesor.ALL):
+        if r.amonestacion.id_departamento_profesor in datos:
+            datos[r.amonestacion.id_departamento_profesor][2] += 1
+            if r.amonestacion.comunicada:
+                datos[r.amonestacion.id_departamento_profesor][3] += 1         
             else:
-                rep = db.amonestacion[f].represent
-                if rep:
-                    vals.append(rep(r.amonestacion[f]))
-                else:
-                    vals.append(r.amonestacion[f])
-        rows.append(dict(id=r.amonestacion.id_departamento_profesor,cell=vals))
-      
+                datos[r.amonestacion.id_departamento_profesor][4] += 1           
+        else:
+            datos[r.amonestacion.id_departamento_profesor] = []
+            datos[r.amonestacion.id_departamento_profesor].append(r.profesor.apellidos+', '+r.profesor.nombre)
+            datos[r.amonestacion.id_departamento_profesor].append(r.departamento.departamento)
+            datos[r.amonestacion.id_departamento_profesor].append(1)
+            if r.amonestacion.comunicada:
+                datos[r.amonestacion.id_departamento_profesor].append(1)         
+                datos[r.amonestacion.id_departamento_profesor].append(0)
+            else:
+                datos[r.amonestacion.id_departamento_profesor].append(0)         
+                datos[r.amonestacion.id_departamento_profesor].append(1)
+
+    listadatos = datos.items()
+    listadatos.sort(key=lambda x: x[1][2])
+    rows = []
+    while listadatos:
+        p = listadatos.pop()
+        d = dict(cell=p[1], id=p[0])
+        rows.append(d)
+
     total = len(rows)
     if total <= pagesize:
         pages = 1

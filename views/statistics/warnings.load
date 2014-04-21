@@ -30,17 +30,17 @@ jQuery(document).ready(function(){
 
   jQuery("#avisosresponsable").jqGrid({
     url:'{{=URL(c="services_responsables",f="call",args=["json","getAllWarnings"])}}',
-    data: "{}",
+//    data: "{}",
     datatype: 'json',
     mtype: 'GET',
-    contentType: "application/json; charset=utf-8",
-    complete: function(jsondata, stat) {
-        if (stat == "success") {
-            var thegrid = jQuery("#avisosresponsable")[0];
-            thegrid.addJSONData(JSON.parse(jsondata.responseText).d);
-        }
-    },
-    colNames:['Id','Fecha','Grupo','Profesor/a','Alumno/a','Parte','Comunicada','Cerrada','idgrupoalumno','iddepartamentoprofesor'],
+//    contentType: "application/json; charset=utf-8",
+//    complete: function(jsondata, stat) {
+//        if (stat == "success") {
+//            var thegrid = jQuery("#avisosresponsable")[0];
+//            thegrid.addJSONData(JSON.parse(jsondata.responseText).d);
+//        }
+//    },
+    colNames:['Id','Fecha','Grupo','Profesor/a','Alumno/a','Parte','Comunicado','Cerrado','idgrupoalumno','iddepartamentoprofesor'],
     colModel :[ 
       {name:'idavisos',index:'id',width:40,fixed:true,align:'right',sortype:'int',search:false,editable:false}, 
       {name:'fechaavisos', index:'fecha',width:80,fixed:true,align:'center',sortype:'date',search:true,stype:'text',editable:false,
@@ -97,7 +97,7 @@ jQuery(document).ready(function(){
             jQuery("#cajaamonestacion").dialog("open")
         });    
     },
-    loadComplete: function () {
+    loadComplete: function (data) {
         var iCol = getColumnIndexByName ($(this), 'comunicadaavisos'), rows = this.rows, i,
             c = rows.length;
         for (i = 0; i < c; i += 1) {
@@ -105,9 +105,13 @@ jQuery(document).ready(function(){
                 var id = $(e.target).closest('tr')[0].id, isChecked = $(e.target).is(':checked');
                 jQuery.ajax( { url: '{{=URL(c="services",f="call",args=["json","updateComunicated"])}}', 
                                 type: 'POST',
-                                data: {id:id,isChecked:isChecked }});
-            });           
-        }    
+                                data: {id:id,isChecked:isChecked },
+                                success: function(data) {
+                                    actualizaCaption();
+                                }
+                            });
+            });                                
+        };
         var iCol = getColumnIndexByName ($(this), 'parteavisos'), rows = this.rows, i,
             c = rows.length;
         for (i = 0; i < c; i += 1) {
@@ -115,9 +119,13 @@ jQuery(document).ready(function(){
                 var id = $(e.target).closest('tr')[0].id, isChecked = $(e.target).is(':checked');
                 jQuery.ajax( { url: '{{=URL(c="services_responsables",f="call",args=["json","updateReported"])}}', 
                                 type: 'POST',
-                                data: {id:id,isChecked:isChecked }});
+                                data: {id:id,isChecked:isChecked },
+                                success: function(data) {
+                                    actualizaCaption();
+                                }
+                            });              
             });           
-        }           
+        };          
         var iCol = getColumnIndexByName ($(this), 'cerradaavisos'), rows = this.rows, i,
             c = rows.length;
         for (i = 0; i < c; i += 1) {
@@ -125,9 +133,14 @@ jQuery(document).ready(function(){
                 var id = $(e.target).closest('tr')[0].id, isChecked = $(e.target).is(':checked');
                 jQuery.ajax( { url: '{{=URL(c="services_responsables",f="call",args=["json","updateClosed"])}}', 
                                 type: 'POST',
-                                data: {id:id,isChecked:isChecked }});
+                                data: {id:id,isChecked:isChecked },
+                                success: function(data) {
+                                    actualizaCaption();
+                                }
+                            });                
             });           
-        }
+        };
+        actualizaCaption();
     },
     
     
@@ -248,6 +261,14 @@ jQuery(document).ready(function(){
                                          
 }); 
 
+function actualizaCaption() {
+    $.getJSON('{{=URL(c="services_responsables",f="call",args=["json","getStatsWarnings"])}}',
+        function(json) {
+            jQuery("#avisosresponsable").jqGrid('setCaption','{{=T('Partes y Seguimientos')}}'+
+                ' Totales: '+json.total+' Comunicados: '+json.comunicadas+' No comunicados:'+json.no_comunicadas);             
+        }
+    );
+};
 
 function rowSelectedAvisos(){
     var id = jQuery("#avisosresponsable").jqGrid('getGridParam','selrow'); 
