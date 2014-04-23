@@ -968,7 +968,8 @@ def getRetrasos():
 
 @service.json
 def getStudentsResume():
-    fields = ['alumno','grupo','totalavisos','id_grupo_alumno']  
+    fields = ['alumno','grupo','totalavisos','totalavisoscomunicados','totalavisosnocomunicados',
+    'id_grupo_alumno']  
     rows = []
     if request.vars._search == 'true':
         searching = True
@@ -995,22 +996,51 @@ def getStudentsResume():
             queries.append(db.grupo.grupo.lower().like(grupo)) 
     query = reduce(lambda a,b:(a&b),queries)
     
-    for r in db(query).select(db.amonestacion.ALL, db.grupo.ALL, db.alumno.ALL, totalavisos, orderby=~totalavisos, groupby=db.amonestacion.id_grupo_alumno):
-        vals = []
-        for f in fields:
-            if f == 'alumno':
-                vals.append(r.alumno.apellidos+', '+r.alumno.nombre)
-            elif f == 'grupo':
-                vals.append(r.grupo.grupo)
-            elif f == 'totalavisos':
-                vals.append(r[totalavisos])                
+    # for r in db(query).select(db.amonestacion.ALL, db.grupo.ALL, db.alumno.ALL, totalavisos, orderby=~totalavisos, groupby=db.amonestacion.id_grupo_alumno):
+    #     vals = []
+    #     for f in fields:
+    #         if f == 'alumno':
+    #             vals.append(r.alumno.apellidos+', '+r.alumno.nombre)
+    #         elif f == 'grupo':
+    #             vals.append(r.grupo.grupo)
+    #         elif f == 'totalavisos':
+    #             vals.append(r[totalavisos])                
+    #         else:
+    #             rep = db.amonestacion[f].represent
+    #             if rep:
+    #                 vals.append(rep(r.amonestacion[f]))
+    #             else:
+    #                 vals.append(r.amonestacion[f])
+    #     rows.append(dict(id=r.amonestacion.id_grupo_alumno,cell=vals))
+
+    datos = dict()
+    for r in db(query).select(db.amonestacion.ALL, db.grupo.ALL, db.alumno.ALL):
+        if r.amonestacion.id_grupo_alumno in datos:
+            datos[r.amonestacion.id_grupo_alumno][2] += 1
+            if r.amonestacion.comunicada:
+                datos[r.amonestacion.id_grupo_alumno][3] += 1         
             else:
-                rep = db.amonestacion[f].represent
-                if rep:
-                    vals.append(rep(r.amonestacion[f]))
-                else:
-                    vals.append(r.amonestacion[f])
-        rows.append(dict(id=r.amonestacion.id_grupo_alumno,cell=vals))
+                datos[r.amonestacion.id_grupo_alumno][4] += 1           
+        else:
+            datos[r.amonestacion.id_grupo_alumno] = []
+            datos[r.amonestacion.id_grupo_alumno].append(r.alumno.apellidos+', '+r.alumno.nombre)
+            datos[r.amonestacion.id_grupo_alumno].append(r.grupo.grupo)
+            datos[r.amonestacion.id_grupo_alumno].append(1)
+            if r.amonestacion.comunicada:
+                datos[r.amonestacion.id_grupo_alumno].append(1)         
+                datos[r.amonestacion.id_grupo_alumno].append(0)
+            else:
+                datos[r.amonestacion.id_grupo_alumno].append(0)         
+                datos[r.amonestacion.id_grupo_alumno].append(1)
+
+    listadatos = datos.items()
+    listadatos.sort(key=lambda x: x[1][2])
+    rows = []
+    while listadatos:
+        p = listadatos.pop()
+        d = dict(cell=p[1], id=p[0])
+        rows.append(d)
+
       
     total = len(rows)
     if total <= pagesize:

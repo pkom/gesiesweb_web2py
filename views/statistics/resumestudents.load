@@ -39,11 +39,13 @@ jQuery(document).ready(function(){
             thegrid.addJSONData(JSON.parse(jsondata.responseText).d);
         }
     },
-    colNames:['Alumno/a','Grupo','Total de Partes','idgrupoalumno'],
+    colNames:['Alumno/a','Grupo','Total de Partes','Comunicados','No Comunicados','idgrupoalumno'],
     colModel :[ 
       {name:'alumnoresumen', index:'alumno',stype:'text',editable:false,sortable:false}, 
       {name:'gruporesumen', index:'grupo',width:80,fixed:true,stype:'text',editable:false,align:'center',sortable:false},                  
-      {name:'totalavisosalumno',index:'totalavisos',width:130,fixed:true,align:'right',sortype:'int',search:false,editable:false,sortable:false}, 
+      {name:'totalavisosalumno',index:'totalavisos',width:95,fixed:true,align:'right',sortype:'int',search:false,editable:false,sortable:false}, 
+      {name:'totalavisoscomunicados',index:'totalavisoscomunicados',width:90,fixed:true,align:'right',sortype:'int',search:false,editable:false,sortable:false}, 
+      {name:'totalavisosnocomunicados',index:'totalavisosnocomunicados',width:105,fixed:true,align:'right',sortype:'int',search:false,editable:false,sortable:false},             
       {name:'idgrupoalumnoresumen', index:'id_grupo_alumno',hidden:true,viewable:false}
     ],
     autowidth: true,
