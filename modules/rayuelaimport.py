@@ -571,7 +571,7 @@ class AlumnoHandler(ContentHandler):
                     else:    
                         idgruposingrupo = filagruposingrupo.id    
                     # miremos si existe ese el dpto Sin_Departamento en el curso academico y si no se inserta
-                    filacursoacademicogruposingrupo = self.db((self.db.curso_academico_departamento.id_curso_academico == self.sesion.curso_academico_id) &
+                    filacursoacademicogruposingrupo = self.db((self.db.curso_academico_grupo.id_curso_academico == self.sesion.curso_academico_id) &
                                                (self.db.curso_academico_grupo.id_grupo == idgruposingrupo)).select().first()
                     if filacursoacademicogruposingrupo == None:
                         idcursoacademicogruposingrupo = self.db.curso_academico_grupo.insert(id_curso_academico=self.sesion.curso_academico_id,
