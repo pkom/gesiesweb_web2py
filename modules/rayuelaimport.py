@@ -273,21 +273,26 @@ class ProfesorHandler(ContentHandler):
                     #y asignaremos el profesor a este departamento
                     #esto lo hacemos para importar "todos" los profesores de rayuela, incluso aquellos que no hayan
                     #sido aun asignados a departamentos en rayuela...
-                    filadepartamentosindepartamento = self.db(self.db.departamento.departamento == "Sin_Departamento").select().first()
-                    if filadepartamentosindepartamento == None:
-                        iddepartamentosindepartamento = self.db.departamento.insert(departamento = "Sin_Departamento")
-                    else:    
-                        iddepartamentosindepartamento = filadepartamentosindepartamento.id    
+
+                    ########################... creo que no es buena idea crear esto, de momento lo desactivo
+                    #filadepartamentosindepartamento = self.db(self.db.departamento.departamento == "Sin_Departamento").select().first()
+                    #if filadepartamentosindepartamento == None:
+                    #    iddepartamentosindepartamento = self.db.departamento.insert(departamento = "Sin_Departamento")
+                    #else:
+                    #    iddepartamentosindepartamento = filadepartamentosindepartamento.id
+
+
+
                     # miremos si existe ese el dpto Sin_Departamento en el curso academico y si no se inserta
-                    filacursoacademicodepartamentosindepartamento = self.db((self.db.curso_academico_departamento.id_curso_academico == self.sesion.curso_academico_id) &
-                                               (self.db.curso_academico_departamento.id_departamento == iddepartamentosindepartamento)).select().first()
-                    if filacursoacademicodepartamentosindepartamento == None:
-                        idcursoacademicodepartamentosindepartamento = self.db.curso_academico_departamento.insert(id_curso_academico=self.sesion.curso_academico_id,
-                                            id_departamento = iddepartamentosindepartamento)
-                    else:
-                        idcursoacademicodepartamentosindepartamento = filacursoacademicodepartamentosindepartamento.id                        
+                    #filacursoacademicodepartamentosindepartamento = self.db((self.db.curso_academico_departamento.id_curso_academico == self.sesion.curso_academico_id) &
+                    #                           (self.db.curso_academico_departamento.id_departamento == iddepartamentosindepartamento)).select().first()
+                    #if filacursoacademicodepartamentosindepartamento == None:
+                    #    idcursoacademicodepartamentosindepartamento = self.db.curso_academico_departamento.insert(id_curso_academico=self.sesion.curso_academico_id,
+                    #                        id_departamento = iddepartamentosindepartamento)
+                    #else:
+                    #    idcursoacademicodepartamentosindepartamento = filacursoacademicodepartamentosindepartamento.id
                     #asignemos el profesor a Sin_Departamento
-                    self.db.departamento_profesor.insert(id_curso_academico_departamento = idcursoacademicodepartamentosindepartamento,
+                    #self.db.departamento_profesor.insert(id_curso_academico_departamento = idcursoacademicodepartamentosindepartamento,
                                                                                           id_profesor = idprofesor)                            
                         
                 if profesor.grupos:
@@ -565,21 +570,24 @@ class AlumnoHandler(ContentHandler):
                     #y asignaremos el alumno a este grupo
                     #esto lo hacemos para importar "todos" los alumnos de rayuela, incluso aquellos que no hayan
                     #sido aun asignados a grupos en rayuela...
-                    filagruposingrupo = self.db(self.db.grupo.grupo == "Sin_Grupo").select().first()
-                    if filagruposingrupo == None:
-                        idgruposingrupo = self.db.grupo.insert(grupo = "Sin_Grupo")
-                    else:    
-                        idgruposingrupo = filagruposingrupo.id    
+
+
+                    ####### creo que todo esto no es buena idea, de momento lo desactivo
+                    #filagruposingrupo = self.db(self.db.grupo.grupo == "Sin_Grupo").select().first()
+                    #if filagruposingrupo == None:
+                    #    idgruposingrupo = self.db.grupo.insert(grupo = "Sin_Grupo")
+                    #else:
+                    #    idgruposingrupo = filagruposingrupo.id
                     # miremos si existe ese el dpto Sin_Departamento en el curso academico y si no se inserta
-                    filacursoacademicogruposingrupo = self.db((self.db.curso_academico_grupo.id_curso_academico == self.sesion.curso_academico_id) &
-                                               (self.db.curso_academico_grupo.id_grupo == idgruposingrupo)).select().first()
-                    if filacursoacademicogruposingrupo == None:
-                        idcursoacademicogruposingrupo = self.db.curso_academico_grupo.insert(id_curso_academico=self.sesion.curso_academico_id,
-                                            id_grupo = idgruposingrupo)
-                    else:
-                        idcursoacademicogruposingrupo = filacursoacademicogruposingrupo.id                        
+                    #filacursoacademicogruposingrupo = self.db((self.db.curso_academico_grupo.id_curso_academico == self.sesion.curso_academico_id) &
+                    #                           (self.db.curso_academico_grupo.id_grupo == idgruposingrupo)).select().first()
+                    #if filacursoacademicogruposingrupo == None:
+                    #    idcursoacademicogruposingrupo = self.db.curso_academico_grupo.insert(id_curso_academico=self.sesion.curso_academico_id,
+                    #                        id_grupo = idgruposingrupo)
+                    #else:
+                    #    idcursoacademicogruposingrupo = filacursoacademicogruposingrupo.id
                     #asignemos el alumno a Sin_Grupo
-                    self.db.grupo_alumno.insert(id_curso_academico_grupo = idcursoacademicogruposingrupo, id_alumno = idalumno)                  
+                    #self.db.grupo_alumno.insert(id_curso_academico_grupo = idcursoacademicogruposingrupo, id_alumno = idalumno)
         return
         
     def characters(self, ch):

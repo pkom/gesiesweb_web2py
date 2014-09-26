@@ -7,13 +7,15 @@ import obies
 @auth.requires_membership(role='Responsables')    
 def evaluaciones():
     # primero rellenaremos los grupos activos en el curso actual y las evaluaciones existentes
+    ocurso = obies.Curso(db, session)
+    cursos = ocurso.dame_cursos(conactual=False)
     ogrupo = obies.Grupo(db, session)
-    grupos = ogrupo.dame_grupos_curso()
+    grupos = ogrupo.dame_grupos_curso(contutor=True)
     grup = FIELDSET("Escoge grupo: ", SELECT(*[OPTION(grupo.grupo.grupo+" ("+grupo.curso_academico_grupo.id_tutor.apellidos+", "+
              grupo.curso_academico_grupo.id_tutor.nombre+")", _value=grupo.curso_academico_grupo.id) for grupo in grupos],
             _id="selectgruposinformes", _name="selectgruposinformes"), _id="fieldsetescogegrupo")
     tipos = FIELDSET("Escoge tipo: ", SELECT([OPTION("Individualizado Grupo", _value=0), OPTION("Resumen Evaluación Grupo", _value=1), OPTION("Resumen Curso Grupo", _value=2),
-        OPTION("Fichas-Registro Grupo", _value=3), OPTION("Resumen Evaluación Agrupados", _value=4), OPTION("Resumen Curso Agrupados", _value=5)],
+        OPTION("Fichas-Registro Grupo", _value=3), OPTION("Resumen Evaluación Agrupados", _value=4), OPTION("Resumen Curso Agrupados", _value=5), OPTION("Fichas-Registro Curso Anterior", _value=6)],
         _id="selecttiposinformes", _name="selecttiposinformes"), _id="fieldsetescogetipo")
     oevaluaciones = obies.Evaluacion(db, session)
     evaluaciones = oevaluaciones.dame_evaluaciones()
@@ -22,7 +24,12 @@ def evaluaciones():
     otrosgrupos = FIELDSET("Escoge grupos para agrupar: ", SELECT(*[OPTION(grupo.grupo.grupo+" ("+grupo.curso_academico_grupo.id_tutor.apellidos+", "+
              grupo.curso_academico_grupo.id_tutor.nombre+")", _value=grupo.curso_academico_grupo.id) for grupo in grupos],
             _id="selectotrosgruposinformes", _name="selectotrosgruposinformes",_multiple="true",_size="10"), _id="fieldsetescogeotrosgrupos")
-    form = FORM([grup, tipos, evaluas, otrosgrupos, INPUT(_value="Generar informe", _type="submit", _id="pideinforme")], _id="forminformesevaluaciones")
+
+    otroscursos = FIELDSET("Escoge curso anterior: ", SELECT(*[OPTION(curso.curso, _value=curso.id) for curso in cursos],
+            _id="selectotroscursosinformes", _name="selectotroscursosinformes"), _id="fieldsetescogeotroscursos")
+
+
+    form = FORM([grup, tipos, evaluas, otrosgrupos, otroscursos, INPUT(_value="Generar informe", _type="submit", _id="pideinforme")], _id="forminformesevaluaciones")
     """
     if form.accepts(request,session):        
         if form.vars.selecttiposinformes == '0':

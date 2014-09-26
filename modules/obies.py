@@ -10,8 +10,13 @@ class Comun(object):
         self.sesion = sesion    
 
 class Curso(Comun):   
-    def dame_cursos(self):
-        return self.db(self.db.curso_academico.id > 0).select(self.db.curso_academico.ALL, orderby=~self.db.curso_academico.curso)
+    def dame_cursos(self, conactual=True):
+        if conactual:
+            return self.db(self.db.curso_academico.id > 0).select(self.db.curso_academico.ALL, orderby=~self.db.curso_academico.curso)
+        else:
+            return self.db((self.db.curso_academico.id > 0) & (self.db.curso_academico.id != self.sesion.curso_academico_id)) \
+                            .select(self.db.curso_academico.ALL, orderby=~self.db.curso_academico.curso)
+
     
 class Departamento(Comun):   
     def dame_departamentos(self):
@@ -124,10 +129,17 @@ class Grupo(Comun):
     def dame_grupos(self):
         return self.db().select(self.db.grupo.ALL,orderby=self.db.grupo.grupo)
     
-    def dame_grupos_curso(self, idcurso = None):
+    def dame_grupos_curso(self, idcurso=None, contutor=False):
         if idcurso == None:
             idcurso = self.sesion.curso_academico_id
-        return self.db((self.db.curso_academico_grupo.id_curso_academico == idcurso) &
+        if contutor:
+            return self.db((self.db.curso_academico_grupo.id_curso_academico == idcurso) &
+                       (self.db.curso_academico_grupo.id_tutor != None) &
+                       (self.db.curso_academico_grupo.id_grupo == self.db.grupo.id)).select(self.db.curso_academico_grupo.ALL,
+                               self.db.grupo.ALL,
+                               orderby=self.db.grupo.grupo)
+        else:
+            return self.db((self.db.curso_academico_grupo.id_curso_academico == idcurso) &
                        (self.db.curso_academico_grupo.id_grupo == self.db.grupo.id)).select(self.db.curso_academico_grupo.ALL,
                                self.db.grupo.ALL,
                                orderby=self.db.grupo.grupo)
