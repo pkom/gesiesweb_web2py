@@ -101,7 +101,7 @@ def show_teacher():
     sustituyeselect = SELECT(OPTION('No sustituye', _value = -1),_id='selectsustituye')
     for profe in profes:
         if not (profe.departamento_profesor.id == departamentoprofesor):
-            sustituyeselect.append(OPTION(profe.profesor.apellidos+', '+profe.profesor.nombre, _value=profe.profesor.id))
+            sustituyeselect.append(OPTION(profe.profesor.apellidos+', '+profe.profesor.nombre, _value=profe.departamento_profesor.id))
         else:
             # estoy procesando la opcion del propio profesor en edición
             
