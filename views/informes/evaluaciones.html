@@ -7,35 +7,56 @@
 
 <script>
 	jQuery(document).ready(function(){
+    	jQuery("#fieldsetescogetipo").show()
+        jQuery("#fieldsetescogegrupo").show();
+		jQuery("#fieldsetescogeevaluacion").show();
     	jQuery("#fieldsetescogeotrosgrupos").hide();
     	jQuery("#fieldsetescogeotroscursos").hide();
+    	jQuery("#fieldsetescogeotroscursosfichas").hide();
 
 		jQuery("#selecttiposinformes").change(function(){
-			if (jQuery("#selecttiposinformes").val() == 2 || jQuery("#selecttiposinformes").val() == 3 || jQuery("#selecttiposinformes").val() == 5)
-				jQuery("#fieldsetescogeevaluacion").hide();
-			else
-				jQuery("#fieldsetescogeevaluacion").show();
-
-			if (jQuery("#selecttiposinformes").val() == 4 || jQuery("#selecttiposinformes").val() == 5) {
-		    	jQuery("#fieldsetescogeotrosgrupos").show();
-		    	jQuery("#fieldsetescogegrupo").hide();
-		    }	
-		    else {
-		    	jQuery("#fieldsetescogegrupo").show();		    	
-		    	jQuery("#fieldsetescogeotrosgrupos").hide();
-		    	jQuery("#fieldsetescogeotroscursos").hide();
-		    }
-			if (jQuery("#selecttiposinformes").val() == 6) {
-		    	jQuery("#fieldsetescogegrupo").show();
-		    	jQuery("#fieldsetescogeotroscursos").show();
-				jQuery("#fieldsetescogeevaluacion").hide();
-		    }
-		    else {
-		    	jQuery("#fieldsetescogegrupo").show();
-		    	jQuery("#fieldsetescogeotrosgrupos").hide();
-		    	jQuery("#fieldsetescogeotroscursos").hide();
-		    }
-
+            if (jQuery("#selecttiposinformes").val() == 0 || jQuery("#selecttiposinformes").val() == 1) {
+                jQuery("#fieldsetescogegrupo").show();
+                jQuery("#fieldsetescogeevaluacion").show();
+                jQuery("#fieldsetescogeotrosgrupos").hide();
+                jQuery("#fieldsetescogeotroscursos").hide();
+            	jQuery("#fieldsetescogeotroscursosfichas").hide();
+            }
+            if (jQuery("#selecttiposinformes").val() == 2) {
+                jQuery("#fieldsetescogegrupo").show();
+                jQuery("#fieldsetescogeevaluacion").hide();
+                jQuery("#fieldsetescogeotrosgrupos").hide();
+                jQuery("#fieldsetescogeotroscursos").hide();
+            	jQuery("#fieldsetescogeotroscursosfichas").hide();
+            }
+            if (jQuery("#selecttiposinformes").val() == 3) {
+                jQuery("#fieldsetescogegrupo").show();
+                jQuery("#fieldsetescogeevaluacion").hide();
+                jQuery("#fieldsetescogeotrosgrupos").hide();
+                jQuery("#fieldsetescogeotroscursos").hide();
+            	jQuery("#fieldsetescogeotroscursosfichas").show();
+            }
+            if (jQuery("#selecttiposinformes").val() == 4) {
+                jQuery("#fieldsetescogegrupo").show();
+                jQuery("#fieldsetescogeevaluacion").show();
+                jQuery("#fieldsetescogeotrosgrupos").show();
+                jQuery("#fieldsetescogeotroscursos").hide();
+            	jQuery("#fieldsetescogeotroscursosfichas").hide();
+            }
+            if (jQuery("#selecttiposinformes").val() == 5) {
+                jQuery("#fieldsetescogegrupo").show();
+                jQuery("#fieldsetescogeevaluacion").hide();
+                jQuery("#fieldsetescogeotrosgrupos").show();
+                jQuery("#fieldsetescogeotroscursos").hide();
+            	jQuery("#fieldsetescogeotroscursosfichas").hide();
+            }
+            if (jQuery("#selecttiposinformes").val() == 6) {
+                jQuery("#fieldsetescogegrupo").show();
+                jQuery("#fieldsetescogeevaluacion").hide();
+                jQuery("#fieldsetescogeotrosgrupos").hide();
+                jQuery("#fieldsetescogeotroscursos").show();
+            	jQuery("#fieldsetescogeotroscursosfichas").hide();
+            }
 
 		});
 		jQuery("#pideinforme").click(function(){
@@ -50,7 +71,7 @@
 			else if (jQuery("#selecttiposinformes").val() == 2)
 			    window.open("/gesiesweb/reportspyfpdf/informecurso/"+jQuery("#selectgruposinformes").val());
 			else if (jQuery("#selecttiposinformes").val() == 3)
-			    window.open("/gesiesweb/reportspyfpdf/informefichas/"+jQuery("#selectgruposinformes").val());
+			    window.open("/gesiesweb/reportspyfpdf/informefichas/"+jQuery("#selectgruposinformes").val()+"/"+jQuery("#selectotroscursosfichasinformes").val());
 			else if (jQuery("#selecttiposinformes").val() == 4 && jQuery("#selectotrosgruposinformes").val())
 			    window.open("/gesiesweb/reportspyfpdf/informeagrupado/?idevaluacion="+encodeURIComponent(jQuery("#selectevaluacionesinformes").val())+
 			     "&idgrupos="+encodeURIComponent(jQuery("#selectotrosgruposinformes").val()));

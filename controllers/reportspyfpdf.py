@@ -1838,11 +1838,19 @@ def informecurso():
 @auth.requires_login()
 @auth.requires_membership(role='Profesores')
 def informefichas():
-    idgrupoprofesortutoria = int(request.args[-1]) or redirect('default', 'index')
+    idgrupoprofesortutoria = int(request.args[-2]) or redirect('default', 'index')
+    idcurso = int(request.args[-1]) or redirect('default', 'index')
+
+    # para que valga para todos los cursos queda implementar, el acceder al curso anterior y para ese grupo
+    # obtener su id y cambiar el idgrupoprofesortutoria...
+
     # comprobemos que somos reponsables o tutor del grupo
     if not session.esResponsable:
         if not session.profesor.esTutor or idgrupoprofesortutoria <> session.profesor.tutor.id_curso_academico_grupo:
             redirect(URL("default","index"))
+
+    idgrupo = db((db.curso_academico_grupo.id == idgrupoprofesortutoria)).select().first().id_grupo
+    idgrupoprofesortutoria = db((db.curso_academico_grupo.id_grupo == idgrupo) & (db.curso_academico_grupo.id_curso_academico == idcurso)).select().first().id
 
     query = ((db.grupo_alumno.id_curso_academico_grupo == idgrupoprofesortutoria) &
              (db.grupo_alumno.id_alumno == db.alumno.id) &
@@ -2255,8 +2263,6 @@ def informefichasanterior():
              (db.grupo_alumno.id_alumno == db.alumno.id))
     idsgrupoalumnosanterior = []
     alumnos = db(query).select()
-    if len(alumnos) == 0:
-        return "No hay datos"
     for alumno in alumnos:
         q = ((db.grupo_alumno.id_alumno == alumno.grupo_alumno.id_alumno) &
              (db.grupo_alumno.id_curso_academico_grupo == db.curso_academico_grupo.id) &

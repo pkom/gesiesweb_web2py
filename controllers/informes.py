@@ -28,8 +28,12 @@ def evaluaciones():
     otroscursos = FIELDSET("Escoge curso anterior: ", SELECT(*[OPTION(curso.curso, _value=curso.id) for curso in cursos],
             _id="selectotroscursosinformes", _name="selectotroscursosinformes"), _id="fieldsetescogeotroscursos")
 
+    cursos = ocurso.dame_cursos()
+    fichascurso = FIELDSET("Escoge curso del informe: ", SELECT(*[OPTION(curso.curso, _value=curso.id) for curso in cursos],
+            _id="selectotroscursosfichasinformes", _name="selectotroscursosfichasinformes"), _id="fieldsetescogeotroscursosfichas")
 
-    form = FORM([grup, tipos, evaluas, otrosgrupos, otroscursos, INPUT(_value="Generar informe", _type="submit", _id="pideinforme")], _id="forminformesevaluaciones")
+
+    form = FORM([tipos, grup, evaluas, otrosgrupos, otroscursos, fichascurso, INPUT(_value="Generar informe", _type="submit", _id="pideinforme")], _id="forminformesevaluaciones")
     """
     if form.accepts(request,session):        
         if form.vars.selecttiposinformes == '0':
