@@ -2297,8 +2297,8 @@ def informefichasanterior():
     nie = alumnos_fichas[0].grupo_alumno.id_alumno.nie
     fnac = alumnos_fichas[0].grupo_alumno.id_alumno.fecha_nacimiento
     grupo = alumnos_fichas[0].grupo_alumno.id_curso_academico_grupo.id_grupo.grupo
-    tutor = '%s, %s' % (alumnos_fichas[0].grupo_alumno.id_curso_academico_grupo.id_tutor.apellidos,
-            alumnos_fichas[0].grupo_alumno.id_curso_academico_grupo.id_tutor.nombre)
+    #tutor = '%s, %s' % (alumnos_fichas[0].grupo_alumno.id_curso_academico_grupo.id_tutor.apellidos,
+    #        alumnos_fichas[0].grupo_alumno.id_curso_academico_grupo.id_tutor.nombre)
     cad = alumnos_fichas[0].grupo_alumno.id_alumno.foto.split(".")
     subpath = cad[:2]
     subpath = os.path.join(".".join(subpath), cad[2][:2])
