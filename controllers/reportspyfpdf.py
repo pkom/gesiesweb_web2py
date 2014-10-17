@@ -2297,8 +2297,8 @@ def informefichasanterior():
     nie = alumnos_fichas[0].grupo_alumno.id_alumno.nie
     fnac = alumnos_fichas[0].grupo_alumno.id_alumno.fecha_nacimiento
     grupo = alumnos_fichas[0].grupo_alumno.id_curso_academico_grupo.id_grupo.grupo
-    #tutor = '%s, %s' % (alumnos_fichas[0].grupo_alumno.id_curso_academico_grupo.id_tutor.apellidos,
-    #        alumnos_fichas[0].grupo_alumno.id_curso_academico_grupo.id_tutor.nombre)
+    tutor = '%s, %s' % (alumnos_fichas[0].grupo_alumno.id_curso_academico_grupo.id_tutor.apellidos,
+            alumnos_fichas[0].grupo_alumno.id_curso_academico_grupo.id_tutor.nombre)
     cad = alumnos_fichas[0].grupo_alumno.id_alumno.foto.split(".")
     subpath = cad[:2]
     subpath = os.path.join(".".join(subpath), cad[2][:2])
@@ -2393,6 +2393,11 @@ def informefichasanterior():
             cad = ".".join(cad)
             foto = os.path.join(request.folder,"uploads",subpath,cad)
             pdf.add_page()
+            # habría que ver el grupo y el tutor anterior del nuevo alumno
+            # y asignarlo en grupo y tutor
+            grupo = ficha.grupo_alumno.id_curso_academico_grupo.id_grupo.grupo
+            tutor = '%s, %s' % (ficha.grupo_alumno.id_curso_academico_grupo.id_tutor.apellidos,
+                    ficha.grupo_alumno.id_curso_academico_grupo.id_tutor.nombre)
 
         pdf.set_font('','B',12)
         #Calcular ancho del texto y establecer posición
