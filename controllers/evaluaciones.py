@@ -135,7 +135,11 @@ def mi_evaluacion():
                db.grupo_profesor_asignatura(id_grupo_profesor_asignatura).id_grupo_profesor.id_profesor.nombre
     caption = evaluacion.evaluacion+' ('+(T('Bloqueada') if evaluacion.bloqueada else 
                  T('Abierta'))+') '+ T('del grupo')+': '+grupo+' '+T('de la asignatura')+': '+asignatura+' '+T('Profesor/a: '+profesor)
-    return dict(evaluacion=evaluacion,id_grupo_profesor_asignatura=id_grupo_profesor_asignatura,caption=caption)
+    evaluaciones = db((db.curso_academico_evaluacion.id_curso_academico == session.curso_academico_id) &
+                      (db.curso_academico_evaluacion.id <> evaluacion)).select(orderby=db.curso_academico_evaluacion.evaluacion)
+    selectevaluaciones = SELECT([OPTION('Selecciona evaluación', _value=0)]+[OPTION(evalua.evaluacion, _value=evalua.id) for evalua in evaluaciones],
+                          _id='selectevaluacion')
+    return dict(evaluacion=evaluacion,id_grupo_profesor_asignatura=id_grupo_profesor_asignatura,caption=caption, selectevaluaciones=selectevaluaciones)
 
 @auth.requires_login()
 @auth.requires_membership(role='Profesores')    

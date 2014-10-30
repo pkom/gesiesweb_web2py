@@ -1,15 +1,19 @@
 {{extend 'layout.html'}}
 
-<div id="contenedormievaluacion" class='centerGrid'>       
+<div id="dialog" title="Confirmación Requerida">
+  ¿Estás seguro de copiar esta evaluación?
+</div>
+
+<div id="contenedormievaluacion" class='centerGrid'>
     <table id='mievaluacion' style='width: 100%'></table>
   <div id='pagermievaluacion'></div>
-</div>       
+</div>
 
 <script language="javascript">
 
 
     jQuery(document).ready(function() {
-                                                    
+
         jQuery("#mievaluacion").jqGrid({
             url:'{{=URL(c="services",f="call",args=["json","getMiEvaluacion"])}}?idgrupoprofesorasignatura='+{{=id_grupo_profesor_asignatura}}+'&idevaluacion='+{{=evaluacion.id}},
             data: "{}",
@@ -24,30 +28,30 @@
                 },
             cellEdit: ("{{=evaluacion.bloqueada}}" === "True" ? false : true),
             cellurl: "{{=URL('services','modificaEvaluacion')}}",
-            afterSaveCell : function(rowid,name,val,iRow,iCol) { 
+            afterSaveCell : function(rowid,name,val,iRow,iCol) {
                 // muy lento, habrá que probar alterando en el lado del cliente
                 jQuery("#mievaluacion").trigger("reloadGrid");
-            },                       
-                           
+            },
+
             colNames:['Alumno/a','Nivel','Tr.Clase','Tr.Casa','Interés','Participa','Comport.','Global','Observac.'],
-            colModel :[ 
-                {name:'alumno', index:'alumno',fixed:false,sortable:true,editable:false,align:'left'},                  
+            colModel :[
+                {name:'alumno', index:'alumno',fixed:false,sortable:true,editable:false,align:'left'},
                 //{name:'nivel', index:'nivel',fixed:true,width:100,sortable:true,editable:true,align:'center',formatter:'select',
                 //     edittype:'select', editoptions:{value:"0:Abandono;10:Insuficiente 1;20:Insuficiente 2;30:Insuficiente 3;40:Insuficiente 4;50:Suficiente;60:Bien;70:Notable //7;80:Notable 8;90:Sobresaliente 9;100:Sobresaliente 10"}},
                 {name:'nivel', index:'nivel',fixed:true,width:40,sortable:true,align:'right',formatter:'number',
-                                       editrules:{required: true,number:true,minValue:0,maxValue:10},editable:true},               
+                                       editrules:{required: true,number:true,minValue:0,maxValue:10},editable:true},
                 {name:'trclase',index:'trclase',fixed:true,width:110,sortable:false,align:'center',editable:true,formatter:'select',
-                                       edittype:'select', editoptions:{value:"0:Nunca;50:Casi nunca;75:A veces;100:Habitualmente"}},     
+                                       edittype:'select', editoptions:{value:"0:Nunca;50:Casi nunca;75:A veces;100:Habitualmente"}},
                 {name:'trcasa',index:'trcasa',fixed:true,width:110,sortable:false,align:'center',editable:true,formatter:'select',
-                                       edittype:'select', editoptions:{value:"0:Nunca;50:Casi nunca;75:A veces;100:Habitualmente"}},     
+                                       edittype:'select', editoptions:{value:"0:Nunca;50:Casi nunca;75:A veces;100:Habitualmente"}},
                 {name:'interes',index:'interes',fixed:true,width:75,sortable:false,align:'center',editable:true,formatter:'select',
-                                       edittype:'select', editoptions:{value:"0:Nada;50:Poco;75:Normal;100:Mucho"}},     
+                                       edittype:'select', editoptions:{value:"0:Nada;50:Poco;75:Normal;100:Mucho"}},
                 {name:'participa',index:'participa',fixed:true,width:75,sortable:false,align:'center',editable:true,formatter:'select',
-                                       edittype:'select', editoptions:{value:"0:Nada;50:Poco;75:Normal;100:Mucho"}},     
+                                       edittype:'select', editoptions:{value:"0:Nada;50:Poco;75:Normal;100:Mucho"}},
                 {name:'comportamiento',index:'comportamiento',fixed:true,width:110,sortable:false,editable:true,align:'center',formatter:'select',
-                                       edittype:'select', editoptions:{value:"0:Disruptivo;50:Puede mejorar;75:Bueno;100:Muy bueno"}},     
+                                       edittype:'select', editoptions:{value:"0:Disruptivo;50:Puede mejorar;75:Bueno;100:Muy bueno"}},
                 {name:'global',index:'global',fixed:true,width:40,sortable:true,editable:false,align:'right'},
-                {name:'observaciones',index:'observaciones',fixed:true,width:80,sortable:false,editable:true,edittype:'textarea',editoptions:{rows:"2",cols:"10"}}     
+                {name:'observaciones',index:'observaciones',fixed:true,width:80,sortable:false,editable:true,edittype:'textarea',editoptions:{rows:"2",cols:"10"}}
             ],
             forceFit: true,
             autowidth: true,
@@ -62,15 +66,78 @@
             viewrecords: true,
             caption: '{{=caption}}',
             multiselect: false,
-        }); 
-        
+        });
+
         jQuery("#mievaluacion").jqGrid('navGrid','#pagermievaluacion',{add:false,edit:false,del:false,view:false,search:false,alertzIndex:1050});
         gwdthmievaluacion = jQuery("#contenedormievaluacion").width();
         jQuery("#mievaluacion").jqGrid().setGridWidth(gwdthmievaluacion);
-        //jQuery("#mievaluacion").jqGrid().setGridWidth(965);           
+        //jQuery("#mievaluacion").jqGrid().setGridWidth(965);
         // ajustemos el estilo del select para que sean más pequeños
-        //jQuery(".ui-widget select").css("font-size", ".7em");                    
+        //jQuery(".ui-widget select").css("font-size", ".7em");
         //$.extend($.jgrid.jqModal, {zIndex: 1005});
+
+        //vamos a hacer algo para traer los datos de otra evaluación
+        jQuery("#mievaluacion").jqGrid('navButtonAdd','#pagermievaluacion',{
+            caption: "Copia evaluación",
+            buttonicon :'ui-icon-gear',
+            title: "Carga datos de",
+            onClickButton : function (){
+                evaluacionDesde = jQuery('#selectevaluacion').val()
+                if (evaluacionDesde == 0) {
+                    alert('Debes escoger una evaluación desde la que copiar los datos')
+                }
+                else {
+
+                    jQuery("#dialog").dialog({
+                        buttons : {
+                            "Cancelar" : function() {
+                                jQuery(this).dialog("close");
+                            },
+                            "Confirmar" : function() {
+                                jQuery(this).dialog("close");
+                                jQuery('#ajaximg').show();
+                                jQuery.ajax({
+                                    type: 'POST',
+                                    url:'{{=URL(c="services",f="call",args=["json","cargarDatosEvaluacion"])}}',
+                                    data: {
+                                        'desdeEvaluacion': evaluacionDesde,
+                                        'aEvaluacion': {{=evaluacion.id}},
+                                        'id_grupo_profesor_asignatura': {{=id_grupo_profesor_asignatura}}
+                                    },
+                                    success: function(data){
+                                        jQuery('#resultcarga').text(data);
+                                        jQuery("#mievaluacion").trigger("reloadGrid");
+                                        jQuery('#ajaximg').hide();
+                                    },
+                                    error:function(xhr){
+                                        alert("Ha ocurrido un error: " + xhr.status + " " + xhr.statusText);
+                                        jQuery('#ajaximg').hide();
+                                    }
+                                })
+                            }
+                        }
+
+                        //jQuery(".ui-widget select").css("align-text", "middle");
+
+                    });
+                    jQuery("#dialog").dialog("open");
+                }
+            }
+        });
+
+        jQuery('#pagermievaluacion_left table tbody tr td:last').after('<td>{{=selectevaluaciones}}</td>');
+        jQuery('#pagermievaluacion_left table tbody tr td:last').after('<td id="resultcarga"></td>');
+        jQuery('#pagermievaluacion_left table tbody tr td:last').after('<td id="ajaximg"><img src="{{=URL('static','images/ajax.gif')}}"/></td>');
+        jQuery('#ajaximg').hide();
+
+
+        jQuery("#dialog").dialog({
+            autoOpen: false,
+            modal: true
+        });
+
     });
-                                    
+
+
+
 </script>

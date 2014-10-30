@@ -22,7 +22,7 @@ if settings.produccion:
     settings.log_level = logging.ERROR   
     track_changes(False)
 else:
-    settings.db_uri = 'mysql://amonies:quemalosson@mysql/datosies'
+    settings.db_uri = 'mysql://amonies:quemalosson@mysql/datosiesdev'
     settings.migrate = True
     settings.log_level = logging.DEBUG
     track_changes(True)

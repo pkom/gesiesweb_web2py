@@ -959,3 +959,41 @@ def getEvaluacionesTutoria():
             pages += 1
     data = dict(total=pages,page=page,records=total,rows=rows)
     return data
+
+@service.json
+def cargarDatosEvaluacion():
+    aEvaluacion = int(request.vars['aEvaluacion'])
+    desdeEvaluacion = int(request.vars['desdeEvaluacion'])
+    id_grupo_profesor_asignatura = int(request.vars['id_grupo_profesor_asignatura'])
+    if (id_grupo_profesor_asignatura == 0 or aEvaluacion == 0 or desdeEvaluacion == 0):
+        respuesta = 'datosincorrectos'
+    else:
+        try:
+            # obtengamos los alumnos de esa asignatura y ese profesor
+            grupoProfesorAsignaturaAlumno = db(db.grupo_profesor_asignatura_alumno.id_grupo_profesor_asignatura ==
+                                                id_grupo_profesor_asignatura).select()
+
+            # ahora recorramos los datos de la evaluación desdeEvaluacion
+            for evaluacionAlumno in grupoProfesorAsignaturaAlumno:
+                evaluacionAnterior = db((db.evaluacion_alumno.id_grupo_profesor_asignatura_alumno == evaluacionAlumno.id) &
+                                        (db.evaluacion_alumno.id_curso_academico_evaluacion == desdeEvaluacion)).select().first()
+                # veamos la de ahora
+                evaluacionActual = db((db.evaluacion_alumno.id_grupo_profesor_asignatura_alumno == evaluacionAlumno.id) &
+                                        (db.evaluacion_alumno.id_curso_academico_evaluacion == aEvaluacion)).select().first()
+
+                if evaluacionActual:
+                    evaluacionActual.update_record(nivel = evaluacionAnterior.nivel,
+                                                   trabajo_clase = evaluacionAnterior.trabajo_clase,
+                                                   trabajo_casa = evaluacionAnterior.trabajo_casa,
+                                                   interes = evaluacionAnterior.interes,
+                                                   participa = evaluacionAnterior.participa,
+                                                   comportamiento = evaluacionAnterior.comportamiento,
+                                                   observaciones = evaluacionAnterior.observaciones,
+                                                   evaluacion = evaluacionAnterior.evaluacion)
+
+            db.commit()
+            respuesta = 'OK'
+        except:
+            raise
+            respuesta = 'Fallo'
+    return respuesta
