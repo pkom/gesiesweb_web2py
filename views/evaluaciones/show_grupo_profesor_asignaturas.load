@@ -317,10 +317,10 @@ function asignaAlumnosAsignatura(){
                 height: 'auto',
                 pagerpos: 'center',
                 shrinkToFit: true,                
-                rownum : 20,
+                rowNum : 30,
                 pager : '#jqgridpagerasignacion',
                 viewrecords : true,
-                //rowlist : [20, 30, 40],
+                rowlist : [30, 60],
                 //vamos a poner eventos onclick en cada casilla...
                 loadComplete: ajustachecks,
 
