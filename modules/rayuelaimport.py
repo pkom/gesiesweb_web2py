@@ -293,7 +293,8 @@ class ProfesorHandler(ContentHandler):
                     #    idcursoacademicodepartamentosindepartamento = filacursoacademicodepartamentosindepartamento.id
                     #asignemos el profesor a Sin_Departamento
                     #self.db.departamento_profesor.insert(id_curso_academico_departamento = idcursoacademicodepartamentosindepartamento,
-                                                                                          id_profesor = idprofesor)                            
+                    #                                       id_profesor = idprofesor)
+                    pass
                         
                 if profesor.grupos:
                     for grupo in profesor.grupos:
@@ -588,6 +589,7 @@ class AlumnoHandler(ContentHandler):
                     #    idcursoacademicogruposingrupo = filacursoacademicogruposingrupo.id
                     #asignemos el alumno a Sin_Grupo
                     #self.db.grupo_alumno.insert(id_curso_academico_grupo = idcursoacademicogruposingrupo, id_alumno = idalumno)
+                    pass
         return
         
     def characters(self, ch):
