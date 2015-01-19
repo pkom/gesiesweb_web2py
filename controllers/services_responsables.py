@@ -1032,6 +1032,7 @@ def getStudentsResume():
             else:
                 datos[r.amonestacion.id_grupo_alumno].append(0)         
                 datos[r.amonestacion.id_grupo_alumno].append(1)
+            datos[r.amonestacion.id_grupo_alumno].append(r.amonestacion.id_grupo_alumno)
 
     listadatos = datos.items()
     listadatos.sort(key=lambda x: x[1][2])
@@ -1185,6 +1186,7 @@ def getTeachersResume():
             else:
                 datos[r.amonestacion.id_departamento_profesor].append(0)         
                 datos[r.amonestacion.id_departamento_profesor].append(1)
+            datos[r.amonestacion.id_departamento_profesor].append(r.amonestacion.id_departamento_profesor)
 
     listadatos = datos.items()
     listadatos.sort(key=lambda x: x[1][2])
