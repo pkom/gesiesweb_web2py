@@ -11,7 +11,7 @@ from gluon.contrib.pyfpdf import FPDF
 from obies import Aviso, Absentismo, Evaluacion
 
 def parsestr(txt):
-    return unicode(txt, 'utf-8').encode('iso-8859-1')
+    return unicode(txt, 'utf-8').encode(encoding='iso-8859-1',errors='ignore')
 
 @auth.requires_login()
 @auth.requires_membership(role='Responsables')
