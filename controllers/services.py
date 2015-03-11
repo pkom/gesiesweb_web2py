@@ -965,8 +965,14 @@ def cargarDatosEvaluacion():
     aEvaluacion = int(request.vars['aEvaluacion'])
     desdeEvaluacion = int(request.vars['desdeEvaluacion'])
     id_grupo_profesor_asignatura = int(request.vars['id_grupo_profesor_asignatura'])
-    if (id_grupo_profesor_asignatura == 0 or aEvaluacion == 0 or desdeEvaluacion == 0):
-        respuesta = 'datosincorrectos'
+    bloqueada = True
+    aEvaluacionDb = db(db.curso_academico_evaluacion.id == aEvaluacion).select().first()
+    if aEvaluacionDb:
+        if aEvaluacionDb.bloqueada:
+            respuesta = 'Eval. bloqueada'
+            return respuesta
+    if (id_grupo_profesor_asignatura == 0 or aEvaluacion == 0 or desdeEvaluacion == 0 or aEvaluacionDb == None):
+        respuesta = 'Datos incorrectos'
     else:
         try:
             # obtengamos los alumnos de esa asignatura y ese profesor
