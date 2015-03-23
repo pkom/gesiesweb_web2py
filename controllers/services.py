@@ -987,7 +987,7 @@ def cargarDatosEvaluacion():
                 evaluacionActual = db((db.evaluacion_alumno.id_grupo_profesor_asignatura_alumno == evaluacionAlumno.id) &
                                         (db.evaluacion_alumno.id_curso_academico_evaluacion == aEvaluacion)).select().first()
 
-                if evaluacionActual and evaluacionanterior:
+                if evaluacionActual and evaluacionAnterior:
                     evaluacionActual.update_record(nivel = evaluacionAnterior.nivel,
                                                    trabajo_clase = evaluacionAnterior.trabajo_clase,
                                                    trabajo_casa = evaluacionAnterior.trabajo_casa,
