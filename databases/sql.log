@@ -547,3 +547,87 @@ success!
 timestamp: 2014-02-19T09:12:57.301152
 ALTER TABLE departamento_profesor ADD sustituye INT, ADD INDEX sustituye__idx (sustituye), ADD FOREIGN KEY (sustituye) REFERENCES departamento_profesor (id) ON DELETE CASCADE;
 success!
+timestamp: 2016-09-26T10:55:09.106436
+ALTER TABLE seguimiento_alumno ADD com_lin_no CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:09.556542
+ALTER TABLE seguimiento_alumno ADD com_lin_media CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:09.948139
+ALTER TABLE seguimiento_alumno ADD com_mat_baja CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:10.475910
+ALTER TABLE seguimiento_alumno ADD com_dig_no CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:10.856025
+ALTER TABLE seguimiento_alumno ADD com_ini_media CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:11.362893
+ALTER TABLE seguimiento_alumno ADD com_con_alta CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:11.749262
+ALTER TABLE seguimiento_alumno ADD com_mat_no CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:12.308913
+ALTER TABLE seguimiento_alumno ADD com_con_baja CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:12.663057
+ALTER TABLE seguimiento_alumno ADD com_ap_no CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:13.113281
+ALTER TABLE seguimiento_alumno ADD com_lin_baja CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:13.915373
+ALTER TABLE seguimiento_alumno ADD com_ap_media CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:14.950616
+ALTER TABLE seguimiento_alumno ADD com_soc_no CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:15.386533
+ALTER TABLE seguimiento_alumno ADD com_soc_media CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:15.763328
+ALTER TABLE seguimiento_alumno ADD com_con_media CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:16.317897
+ALTER TABLE seguimiento_alumno ADD com_dig_media CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:16.910617
+ALTER TABLE seguimiento_alumno ADD com_ap_baja CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:17.288217
+ALTER TABLE seguimiento_alumno ADD com_dig_baja CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:17.647465
+ALTER TABLE seguimiento_alumno ADD com_con_no CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:18.156700
+ALTER TABLE seguimiento_alumno ADD com_ini_alta CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:18.533873
+ALTER TABLE seguimiento_alumno ADD com_lin_alta CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:19.435366
+ALTER TABLE seguimiento_alumno ADD com_dig_alta CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:20.119603
+ALTER TABLE seguimiento_alumno ADD com_soc_alta CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:20.471916
+ALTER TABLE seguimiento_alumno ADD com_mat_media CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:21.461980
+ALTER TABLE seguimiento_alumno ADD com_ini_no CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:21.856787
+ALTER TABLE seguimiento_alumno ADD com_soc_baja CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:22.224806
+ALTER TABLE seguimiento_alumno ADD com_ap_alta CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:22.625263
+ALTER TABLE seguimiento_alumno ADD com_mat_alta CHAR(1);
+success!
+timestamp: 2016-09-26T10:55:23.141307
+ALTER TABLE seguimiento_alumno ADD com_ini_baja CHAR(1);
+success!
