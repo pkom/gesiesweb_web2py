@@ -2275,6 +2275,9 @@ def informefichasanterior():
     for id in idsgrupoalumnosanterior:
         queries.append(db.seguimiento_alumno.id_grupo_alumno == id)
 
+    if len(queries) == 0:
+        return "No hay datos"
+
     query = reduce(lambda a,b:(a|b),queries)
     query &= db.seguimiento_alumno.id_grupo_alumno == db.grupo_alumno.id
     query &= db.grupo_alumno.id_alumno == db.alumno.id
