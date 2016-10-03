@@ -942,6 +942,8 @@ def absentismosTeacher():
 @auth.requires_login()
 @auth.requires_membership(role='Profesores')
 def hojasevaluacion():
+    if request.args[-2] == "null":
+        return "No hay datos"
     idevaluacion = int(request.args[-2]) or redirect('default', 'index')
     idgrupoprofesortutoria = int(request.args[-1]) or redirect('default', 'index')
     # comprobemos que somos reponsables o tutor del grupo
@@ -1355,7 +1357,9 @@ def imprime_estadistica_alumno(pdf,nl,sumanivel,sumatrclase,sumatrcasa,sumainter
 @auth.requires_login()
 @auth.requires_membership(role='Profesores')
 def informeevaluacion():
-    idevaluacion = int(request.args[-2]) or redirect('default', 'index')    
+    if request.args[-2] == "null":
+        return "No hay datos"
+    idevaluacion = int(request.args[-2]) or redirect('default', 'index')
     idgrupoprofesortutoria = int(request.args[-1]) or redirect('default', 'index')
     # comprobemos que somos reponsables o tutor del grupo
     if not session.esResponsable:
@@ -1838,9 +1842,12 @@ def informecurso():
 @auth.requires_login()
 @auth.requires_membership(role='Profesores')
 def informefichas():
-    idgrupoprofesortutoria = int(request.args[-2]) or redirect('default', 'index')
-    idcurso = int(request.args[-1]) or redirect('default', 'index')
-
+    if len(request.args) == 2:
+        idgrupoprofesortutoria = int(request.args[-2]) or redirect('default', 'index')
+        idcurso = int(request.args[-1]) or redirect('default', 'index')
+    else:
+        idgrupoprofesortutoria = int(request.args[-1]) or redirect('default', 'index')
+        idcurso = session.curso_academico_id
     # para que valga para todos los cursos queda implementar, el acceder al curso anterior y para ese grupo
     # obtener su id y cambiar el idgrupoprofesortutoria...
 
@@ -2135,92 +2142,195 @@ def informefichas():
             pdf.ln(1)
 
         pdf.line(10,pdf.get_y(),200,pdf.get_y())
+
+
+
+        #Nuevo informe con competencias clave
         pdf.set_font('','B',12)
-        w=pdf.get_string_width("Competencias Básicas")+6
+        w=pdf.get_string_width("Competencias Clave")+6
         pdf.set_x((210-w)/2)
-        pdf.cell(w=w,h=17,txt=parsestr("Competencias Básicas"),border=0,ln=1,align='C',fill=0)
+        pdf.cell(w=w,h=17,txt=parsestr("Competencias Clave"),border=0,ln=1,align='C',fill=0)
         pdf.line(10,pdf.get_y()-5,200,pdf.get_y()-5)
         pdf.set_font('','B',10)
-        pdf.cell(w=10,h=5,txt=parsestr(str(T('Competencias básicas que ha adquirido suficientemente el/la'))),border=0,align="L",fill=0)
-        pdf.cell(110)
-        pdf.cell(w=10,h=5,txt=parsestr(str(T('Altamente'))),border=0,align="C",fill=0)
-        pdf.cell(45)
-        pdf.cell(w=10,h=5,txt=parsestr(str(T('No'))),border=0,align="C",ln=1,fill=0)
+        pdf.cell(w=10,h=5,txt=parsestr(str(T('Competencias clave que ha adquirido el/la'))),border=0,align="L",fill=0,ln=1)
+#        pdf.cell(110)
+#        pdf.cell(w=10,h=5,txt=parsestr(str(T('Altamente'))),border=0,align="C",fill=0)
+#        pdf.cell(45)
+#        pdf.cell(w=10,h=5,txt=parsestr(str(T('No'))),border=0,align="C",ln=1,fill=0)
         pdf.cell(w=10,h=5,txt=parsestr(str(T('alumno/a en el proceso de enseñanza-aprendizaje:'))),border=0,align="L",fill=0)
-        pdf.cell(110)
-        pdf.cell(w=10,h=5,txt=parsestr(str(T('conseguida'))),border=0,align="C",fill=0)
-        pdf.cell(17)
-        pdf.cell(w=10,h=5,txt=parsestr(str(T('conseguida'))),border=0,align="C",fill=0)
-        pdf.cell(17)
-        pdf.cell(w=10,h=5,txt=parsestr(str(T('conseguida'))),border=0,align="C",ln=1,fill=0)
+        pdf.cell(100)
+        pdf.cell(w=10,h=5,txt=parsestr(str(T('No conseguido'))),border=0,align="C",fill=0)
+        pdf.cell(15)
+        pdf.cell(w=10,h=5,txt=parsestr(str(T('Bajo'))),border=0,align="C",fill=0)
+        pdf.cell(10)
+        pdf.cell(w=10,h=5,txt=parsestr(str(T('Medio'))),border=0,align="C",fill=0)
+        pdf.cell(10)
+        pdf.cell(w=10,h=5,txt=parsestr(str(T('Alto'))),border=0,align="C",ln=1,fill=0)
         pdf.line(10,pdf.get_y()-1,200,pdf.get_y()-1)
         pdf.ln(1)
         pdf.set_font('','',10)
-        pdf.cell(w=115,h=5,txt=parsestr(str(T('Comunicación lingüística'))),border=0,align="L",ln=0,fill=1)
+        pdf.cell(w=100,h=5,txt=parsestr(str(T('Comunicación lingüística'))),border=0,align="L",ln=0,fill=1)
         pdf.cell(1)
-        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_len_alta else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(w=27,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_lin_no else ' ')),align='C',ln=0,fill=1)
         pdf.cell(1)
-        pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_len_cons else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_lin_baja else ' ')),align='C',ln=0,fill=1)
         pdf.cell(1)
-        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_len_no else ' ')),align='C',ln=1,fill=1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_lin_media else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_lin_alta else ' ')),align='C',ln=1,fill=1)
 
-        pdf.cell(w=115,h=5,txt=parsestr(str(T('Competencia matemática'))),border=0,align="L",ln=0,fill=0)
+        pdf.cell(w=100,h=5,txt=parsestr(str(T('Competencia matemática y básicas en ciencias sociales'))),border=0,align="L",ln=0,fill=0)
         pdf.cell(1)
-        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_mat_alta else ' ')),align='C',ln=0,fill=0)
+        pdf.cell(w=27,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_mat_no else ' ')),align='C',ln=0,fill=0)
         pdf.cell(1)
-        pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_mat_cons else ' ')),align='C',ln=0,fill=0)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_mat_baja else ' ')),align='C',ln=0,fill=0)
         pdf.cell(1)
-        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_mat_no else ' ')),align='C',ln=1,fill=0)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_mat_media else ' ')),align='C',ln=0,fill=0)
+        pdf.cell(1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_mat_alta else ' ')),align='C',ln=1,fill=0)
 
-        pdf.cell(w=115,h=5,txt=parsestr(str(T('Conocicimiento e interacción con el mundo físico'))),border=0,align="L",ln=0,fill=1)
+        pdf.cell(w=100,h=5,txt=parsestr(str(T('Competencia digital'))),border=0,align="L",ln=0,fill=1)
         pdf.cell(1)
-        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_con_alta else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(w=27,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_dig_no else ' ')),align='C',ln=0,fill=1)
         pdf.cell(1)
-        pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_con_cons else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_dig_baja else ' ')),align='C',ln=0,fill=1)
         pdf.cell(1)
-        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_con_no else ' ')),align='C',ln=1,fill=1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_dig_media else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_dig_alta else ' ')),align='C',ln=1,fill=1)
 
-        pdf.cell(w=115,h=5,txt=parsestr(str(T('Tratamiento de la información y competencia digital'))),border=0,align="L",ln=0,fill=0)
+        pdf.cell(w=100,h=5,txt=parsestr(str(T('Aprende a aprender'))),border=0,align="L",ln=0,fill=0)
         pdf.cell(1)
-        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ti_alta else ' ')),align='C',ln=0,fill=0)
+        pdf.cell(w=27,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_ap_no else ' ')),align='C',ln=0,fill=0)
         pdf.cell(1)
-        pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ti_cons else ' ')),align='C',ln=0,fill=0)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_ap_baja else ' ')),align='C',ln=0,fill=0)
         pdf.cell(1)
-        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ti_no else ' ')),align='C',ln=1,fill=0)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_ap_media else ' ')),align='C',ln=0,fill=0)
+        pdf.cell(1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_ap_alta else ' ')),align='C',ln=1,fill=0)
 
-        pdf.cell(w=115,h=5,txt=parsestr(str(T('Competencia social y ciudadana'))),border=0,align="L",ln=0,fill=1)
+        pdf.cell(w=100,h=5,txt=parsestr(str(T('Competencias sociales y cívicas'))),border=0,align="L",ln=0,fill=1)
         pdf.cell(1)
-        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_so_alta else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(w=27,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_soc_no else ' ')),align='C',ln=0,fill=1)
         pdf.cell(1)
-        pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_so_cons else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_soc_baja else ' ')),align='C',ln=0,fill=1)
         pdf.cell(1)
-        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_so_no else ' ')),align='C',ln=1,fill=1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_soc_media else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_soc_alta else ' ')),align='C',ln=1,fill=1)
 
-        pdf.cell(w=115,h=5,txt=parsestr(str(T('Competencia cultural y artística'))),border=0,align="L",ln=0,fill=0)
+        pdf.cell(w=100,h=5,txt=parsestr(str(T('Sentido de iniciativa y espíritu emprendedor'))),border=0,align="L",ln=0,fill=0)
         pdf.cell(1)
-        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_cu_alta else ' ')),align='C',ln=0,fill=0)
+        pdf.cell(w=27,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_ini_no else ' ')),align='C',ln=0,fill=0)
         pdf.cell(1)
-        pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_cu_cons else ' ')),align='C',ln=0,fill=0)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_ini_baja else ' ')),align='C',ln=0,fill=0)
         pdf.cell(1)
-        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_cu_no else ' ')),align='C',ln=1,fill=0)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_ini_media else ' ')),align='C',ln=0,fill=0)
+        pdf.cell(1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_ini_alta else ' ')),align='C',ln=1,fill=0)
 
-        pdf.cell(w=115,h=5,txt=parsestr(str(T('Aprender a aprender'))),border=0,align="L",ln=0,fill=1)
+        pdf.cell(w=100,h=5,txt=parsestr(str(T('Conciencia y expresiones culturales'))),border=0,align="L",ln=0,fill=1)
         pdf.cell(1)
-        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ap_alta else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(w=27,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_con_no else ' ')),align='C',ln=0,fill=1)
         pdf.cell(1)
-        pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ap_cons else ' ')),align='C',ln=0,fill=1)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_con_baja else ' ')),align='C',ln=0,fill=1)
         pdf.cell(1)
-        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ap_no else ' ')),align='C',ln=1,fill=1)
-
-        pdf.cell(w=115,h=5,txt=parsestr(str(T('Autonomía e iniciativa personal'))),border=0,align="L",ln=0,fill=0)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_con_media else ' ')),align='C',ln=0,fill=1)
         pdf.cell(1)
-        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_au_alta else ' ')),align='C',ln=0,fill=0)
-        pdf.cell(1)
-        pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_au_cons else ' ')),align='C',ln=0,fill=0)
-        pdf.cell(1)
-        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_au_no else ' ')),align='C',ln=1,fill=0)
+        pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_con_alta else ' ')),align='C',ln=1,fill=1)
 
         pdf.line(10,pdf.get_y(),200,pdf.get_y())
+
+
+
+        #Antiguo informe
+
+        # pdf.set_font('','B',12)
+        # w=pdf.get_string_width("Competencias Básicas")+6
+        # pdf.set_x((210-w)/2)
+        # pdf.cell(w=w,h=17,txt=parsestr("Competencias Básicas"),border=0,ln=1,align='C',fill=0)
+        # pdf.line(10,pdf.get_y()-5,200,pdf.get_y()-5)
+        # pdf.set_font('','B',10)
+        # pdf.cell(w=10,h=5,txt=parsestr(str(T('Competencias básicas que ha adquirido suficientemente el/la'))),border=0,align="L",fill=0)
+        # pdf.cell(110)
+        # pdf.cell(w=10,h=5,txt=parsestr(str(T('Altamente'))),border=0,align="C",fill=0)
+        # pdf.cell(45)
+        # pdf.cell(w=10,h=5,txt=parsestr(str(T('No'))),border=0,align="C",ln=1,fill=0)
+        # pdf.cell(w=10,h=5,txt=parsestr(str(T('alumno/a en el proceso de enseñanza-aprendizaje:'))),border=0,align="L",fill=0)
+        # pdf.cell(110)
+        # pdf.cell(w=10,h=5,txt=parsestr(str(T('conseguida'))),border=0,align="C",fill=0)
+        # pdf.cell(17)
+        # pdf.cell(w=10,h=5,txt=parsestr(str(T('conseguida'))),border=0,align="C",fill=0)
+        # pdf.cell(17)
+        # pdf.cell(w=10,h=5,txt=parsestr(str(T('conseguida'))),border=0,align="C",ln=1,fill=0)
+        # pdf.line(10,pdf.get_y()-1,200,pdf.get_y()-1)
+        # pdf.ln(1)
+        # pdf.set_font('','',10)
+        # pdf.cell(w=115,h=5,txt=parsestr(str(T('Comunicación lingüística'))),border=0,align="L",ln=0,fill=1)
+        # pdf.cell(1)
+        # pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_len_alta else ' ')),align='C',ln=0,fill=1)
+        # pdf.cell(1)
+        # pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_len_cons else ' ')),align='C',ln=0,fill=1)
+        # pdf.cell(1)
+        # pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_len_no else ' ')),align='C',ln=1,fill=1)
+        #
+        # pdf.cell(w=115,h=5,txt=parsestr(str(T('Competencia matemática'))),border=0,align="L",ln=0,fill=0)
+        # pdf.cell(1)
+        # pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_mat_alta else ' ')),align='C',ln=0,fill=0)
+        # pdf.cell(1)
+        # pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_mat_cons else ' ')),align='C',ln=0,fill=0)
+        # pdf.cell(1)
+        # pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_com_mat_no else ' ')),align='C',ln=1,fill=0)
+        #
+        # pdf.cell(w=115,h=5,txt=parsestr(str(T('Conocicimiento e interacción con el mundo físico'))),border=0,align="L",ln=0,fill=1)
+        # pdf.cell(1)
+        # pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_con_alta else ' ')),align='C',ln=0,fill=1)
+        # pdf.cell(1)
+        # pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_con_cons else ' ')),align='C',ln=0,fill=1)
+        # pdf.cell(1)
+        # pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_con_no else ' ')),align='C',ln=1,fill=1)
+        #
+        # pdf.cell(w=115,h=5,txt=parsestr(str(T('Tratamiento de la información y competencia digital'))),border=0,align="L",ln=0,fill=0)
+        # pdf.cell(1)
+        # pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ti_alta else ' ')),align='C',ln=0,fill=0)
+        # pdf.cell(1)
+        # pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ti_cons else ' ')),align='C',ln=0,fill=0)
+        # pdf.cell(1)
+        # pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ti_no else ' ')),align='C',ln=1,fill=0)
+        #
+        # pdf.cell(w=115,h=5,txt=parsestr(str(T('Competencia social y ciudadana'))),border=0,align="L",ln=0,fill=1)
+        # pdf.cell(1)
+        # pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_so_alta else ' ')),align='C',ln=0,fill=1)
+        # pdf.cell(1)
+        # pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_so_cons else ' ')),align='C',ln=0,fill=1)
+        # pdf.cell(1)
+        # pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_so_no else ' ')),align='C',ln=1,fill=1)
+        #
+        # pdf.cell(w=115,h=5,txt=parsestr(str(T('Competencia cultural y artística'))),border=0,align="L",ln=0,fill=0)
+        # pdf.cell(1)
+        # pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_cu_alta else ' ')),align='C',ln=0,fill=0)
+        # pdf.cell(1)
+        # pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_cu_cons else ' ')),align='C',ln=0,fill=0)
+        # pdf.cell(1)
+        # pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_cu_no else ' ')),align='C',ln=1,fill=0)
+        #
+        # pdf.cell(w=115,h=5,txt=parsestr(str(T('Aprender a aprender'))),border=0,align="L",ln=0,fill=1)
+        # pdf.cell(1)
+        # pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ap_alta else ' ')),align='C',ln=0,fill=1)
+        # pdf.cell(1)
+        # pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ap_cons else ' ')),align='C',ln=0,fill=1)
+        # pdf.cell(1)
+        # pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_ap_no else ' ')),align='C',ln=1,fill=1)
+        #
+        # pdf.cell(w=115,h=5,txt=parsestr(str(T('Autonomía e iniciativa personal'))),border=0,align="L",ln=0,fill=0)
+        # pdf.cell(1)
+        # pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_au_alta else ' ')),align='C',ln=0,fill=0)
+        # pdf.cell(1)
+        # pdf.cell(w=30,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_au_cons else ' ')),align='C',ln=0,fill=0)
+        # pdf.cell(1)
+        # pdf.cell(w=20,h=5,txt=parsestr(str('X' if ficha.seguimiento_alumno.com_bas_au_no else ' ')),align='C',ln=1,fill=0)
+        #
+        # pdf.line(10,pdf.get_y(),200,pdf.get_y())
 
         pdf.set_font('','B',12)
         w=pdf.get_string_width("Otras medidas y aspectos")+6
@@ -2689,7 +2799,7 @@ def informefichasanterior():
 @auth.requires_membership(role='Profesores')
 def informeagrupado():
     todoelcurso = True
-    if request.vars["idevaluacion"]:
+    if request.vars["idevaluacion"] <> "null" and request.vars["idevaluacion"]:
         todoelcurso = False
         idevaluacion = int(request.vars["idevaluacion"])
 

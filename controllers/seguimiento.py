@@ -198,18 +198,115 @@ def seguimiento_tutoria():
         div_com = DIV(div_com_table,_id='div_com')
         # ajustamos su estilo para aparezca una caja
         div_com['_style'] =  'border: 2px solid #DEDEDE; padding: 6px;'
+
+
+
+
+
+
+        # recuperamos los divs de las nuevas competencias básicas
+        div_comp_lin_alta = div_fieldset[0][54]
+        div_comp_lin_media = div_fieldset[0][55]
+        div_comp_lin_baja = div_fieldset[0][56]
+        div_comp_lin_no = div_fieldset[0][57]
+        div_comp_mat_alta = div_fieldset[0][58]
+        div_comp_mat_media = div_fieldset[0][59]
+        div_comp_mat_baja = div_fieldset[0][60]
+        div_comp_mat_no = div_fieldset[0][61]
+        div_comp_dig_alta = div_fieldset[0][62]
+        div_comp_dig_media = div_fieldset[0][63]
+        div_comp_dig_baja = div_fieldset[0][64]
+        div_comp_dig_no = div_fieldset[0][65]
+        div_comp_ap_alta = div_fieldset[0][66]
+        div_comp_ap_media = div_fieldset[0][67]
+        div_comp_ap_baja = div_fieldset[0][68]
+        div_comp_ap_no = div_fieldset[0][69]
+        div_comp_soc_alta = div_fieldset[0][70]
+        div_comp_soc_media = div_fieldset[0][71]
+        div_comp_soc_baja = div_fieldset[0][72]
+        div_comp_soc_no = div_fieldset[0][73]
+        div_comp_ini_alta = div_fieldset[0][74]
+        div_comp_ini_media = div_fieldset[0][75]
+        div_comp_ini_baja = div_fieldset[0][76]
+        div_comp_ini_no = div_fieldset[0][77]
+        div_comp_con_alta = div_fieldset[0][78]
+        div_comp_con_media = div_fieldset[0][79]
+        div_comp_con_baja = div_fieldset[0][80]
+        div_comp_con_no = div_fieldset[0][81]
+
+        div_competencias_table = TABLE(TR(TH(T('Competencias Clave')),
+                                   TH(T('No Conseguido')),TH(T('Bajo')),TH(T('Medio')),TH(T('Alto'))),
+                              TR(TD(T('Comunicación lingüística')),
+                                   TD(div_comp_lin_no[1],_style='text-align: center;'),
+                                   TD(div_comp_lin_baja[1],_style='text-align: center;'),
+                                   TD(div_comp_lin_media[1],_style='text-align: center;'),
+                                   TD(div_comp_lin_alta[1],_style='text-align: center;')),
+
+                              TR(TD(T('Competencia matemática y competencias básicas en ciencia y tecnología')),
+                                      TD(div_comp_mat_no[1], _style='text-align: center;'),
+                                      TD(div_comp_mat_baja[1], _style='text-align: center;'),
+                                      TD(div_comp_mat_media[1], _style='text-align: center;'),
+                                      TD(div_comp_mat_alta[1], _style='text-align: center;')),
+
+                                TR(TD(T('Competencia digital')),
+                                   TD(div_comp_dig_no[1], _style='text-align: center;'),
+                                   TD(div_comp_dig_baja[1], _style='text-align: center;'),
+                                   TD(div_comp_dig_media[1], _style='text-align: center;'),
+                                   TD(div_comp_dig_alta[1], _style='text-align: center;')),
+
+                                TR(TD(T('Aprende a aprender')),
+                                   TD(div_comp_ap_no[1], _style='text-align: center;'),
+                                   TD(div_comp_ap_baja[1], _style='text-align: center;'),
+                                   TD(div_comp_ap_media[1], _style='text-align: center;'),
+                                   TD(div_comp_ap_alta[1], _style='text-align: center;')),
+
+                                TR(TD(T('Competencias sociales y cívicas')),
+                                   TD(div_comp_soc_no[1], _style='text-align: center;'),
+                                   TD(div_comp_soc_baja[1], _style='text-align: center;'),
+                                   TD(div_comp_soc_media[1], _style='text-align: center;'),
+                                   TD(div_comp_soc_alta[1], _style='text-align: center;')),
+
+                                TR(TD(T('Sentido de iniciativa y espíritu emprendedor')),
+                                   TD(div_comp_ini_no[1], _style='text-align: center;'),
+                                   TD(div_comp_ini_baja[1], _style='text-align: center;'),
+                                   TD(div_comp_ini_media[1], _style='text-align: center;'),
+                                   TD(div_comp_ini_alta[1], _style='text-align: center;')),
+
+                                TR(TD(T('Conciencia y expresiones culturales')),
+                                  TD(div_comp_con_no[1], _style='text-align: center;'),
+                                  TD(div_comp_con_baja[1], _style='text-align: center;'),
+                                  TD(div_comp_con_media[1], _style='text-align: center;'),
+                                  TD(div_comp_con_alta[1], _style='text-align: center;'))
+
+                            )
+
+
+
+        # div de competencias básicas
+        div_competencias = DIV(div_competencias_table,_id='div_competencias')
+        # ajustamos su estilo para aparezca una caja
+        div_competencias['_style'] =  'border: 2px solid #DEDEDE; padding: 6px;'
+
+
+
+
+
+
+
+
+
         # borramos los elementos que ya hemos reordenado
 
-        div_medidas = div_fieldset[0][54]
-        div_otros = div_fieldset[0][55]
-        div_aspectos = div_fieldset[0][56]
+        div_medidas = div_fieldset[0][82]
+        div_otros = div_fieldset[0][83]
+        div_aspectos = div_fieldset[0][84]
         # divs de resto de información
         div_resto = DIV(div_medidas,div_otros,div_aspectos,_id='div_resto')
         # ajustamos su estilo para aparezca una caja
         div_resto['_style'] =  'border: 2px solid #DEDEDE; padding: 6px;'
 
 
-        for i in range(57):
+        for i in range(85):
             del div_fieldset[0][0]
 
         # introducimos los nuevos divs en el fieldset
@@ -221,8 +318,10 @@ def seguimiento_tutoria():
         div_fieldset.insert(5, div_seg)
         div_fieldset.insert(6, H3(A(T('Evaluación Ordinaria-Extraordinaria'))))
         div_fieldset.insert(7, div_ord)
-        div_fieldset.insert(8, H3(A(T('Competencias Básicas'))))
-        div_fieldset.insert(9, div_com)
+#        div_fieldset.insert(8, H3(A(T('Competencias Básicas'))))
+#        div_fieldset.insert(9, div_com)
+        div_fieldset.insert(8, H3(A(T('Competencias Clave'))))
+        div_fieldset.insert(9, div_competencias)
         div_fieldset.insert(10, H3(A(T('Otros Aspectos y Medidas'))))
         div_fieldset.insert(11, div_resto)
 

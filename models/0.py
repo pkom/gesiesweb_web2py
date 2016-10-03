@@ -9,7 +9,7 @@ T.force('es-es')
 
 settings = Storage()
 
-settings.produccion = True
+settings.produccion = False
 
 if settings.produccion == True:
     settings.expiracion = 60 * 60  # logout after 5 minutes of inactivity
