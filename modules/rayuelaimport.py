@@ -499,7 +499,10 @@ class AlumnoHandler(ContentHandler):
             for alumno in self.datos.alumnos:                
                 if alumno.nie:
                     # vemos si tiene archivo con la foto
-                    if alumno.nombre_fichero:
+                    # hemos tenido problemas si el XML no contiene foto
+                    # if alumno.nombre_fichero:
+                    stream = None
+                    if alumno.con_foto == "true":
                         filename = '/tmp/rayuela-ldap/'+alumno.nombre_fichero
                         foto = Image.open(filename)
                         ancho, alto = (80, 100)
